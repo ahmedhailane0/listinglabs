@@ -1,66 +1,20 @@
 {
   "token": "EDGE",
   "name": "edgeX",
-  "chain": "bsc",
-  "token_contract": "0x70f2eadf1ca1969ff42b0c78e9da519e8937cbaf",
-  "gecko_pool": "0x0c2e58fab72adad8a58db68e592b8f6922f8dafaaf0d2b394605241a7ab777ae",
-  "fdv_usd": 1380596359.29,
-  "fdv_source": "CMC/GeckoTerminal (current)",
-  "category": "",
+  "chain": "eth",
+  "token_contract": "0xB0076DE78Dc50581770BBa1D211dDc0aD4F2a241",
+  "gecko_pool": "0x428b5bd0580803f8ff01449d26fb618d449e1f77d82cb7480130caf9bd5f5fa0",
+  "fdv_usd": 704600000,
+  "fdv_source": "CoinMarketCap edgex (id) 2026-06-02; price/chart from Gate EDGEX_USDT",
+  "category": "Perp DEX (orderbook) native token",
   "cmc_slug": "edgex",
-  "mcap_usd": 483208725.75,
-  "circulating_supply": 350000000.0,
-  "total_supply": 1000000000.0,
-  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
-  "window_start_utc": "2025-04-01T18:00:00Z",
-  "window_end_utc": "2026-05-30T20:51:49.598153Z",
+  "mcap_usd": 246610000,
+  "circulating_supply": 350000000,
+  "total_supply": 1000000000,
+  "mcap_source": "CoinMarketCap edgex, 2026-06-02 (current)",
+  "window_start_utc": "2026-03-31T12:00:00Z",
+  "window_end_utc": "2026-04-07T00:00:00Z",
   "events": [
-    {
-      "exchange": "Coinbase Spot",
-      "iso_time_utc": "2025-04-02T00:00:00Z"
-    },
-    {
-      "exchange": "Kraken Spot",
-      "iso_time_utc": "2025-04-02T00:00:00Z",
-      "note": "earliest-candle sweep (daily resolution)"
-    },
-    {
-      "exchange": "Gate.io Spot",
-      "iso_time_utc": "2025-04-02T00:00:00Z",
-      "note": "earliest-candle sweep (daily resolution)"
-    },
-    {
-      "exchange": "Gate.io Perp",
-      "iso_time_utc": "2025-04-03T00:00:00Z",
-      "note": "earliest-candle sweep (daily resolution)"
-    },
-    {
-      "exchange": "Coinone",
-      "iso_time_utc": "2025-09-18T02:04:00Z",
-      "note": "first Coinone KRW candle"
-    },
-    {
-      "exchange": "Bithumb",
-      "iso_time_utc": "2026-03-03T00:00:00Z"
-    },
-    {
-      "exchange": "Upbit",
-      "iso_time_utc": "2026-03-04T00:00:00Z"
-    },
-    {
-      "exchange": "Binance Perp",
-      "iso_time_utc": "2026-03-19T14:00:00Z"
-    },
-    {
-      "exchange": "Bybit Perp",
-      "iso_time_utc": "2026-03-20T00:00:00Z",
-      "note": "earliest-candle sweep (daily resolution)"
-    },
-    {
-      "exchange": "KuCoin Futures",
-      "iso_time_utc": "2026-03-20T00:00:00Z",
-      "note": "earliest-candle sweep (daily resolution)"
-    },
     {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-03-31T00:00:00Z"
@@ -81,6 +35,11 @@
       "note": "earliest-candle sweep (daily resolution)"
     },
     {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-03-31T12:00:00Z",
+      "note": "EDGEX_USDT spot launch on Gate (chart source)."
+    },
+    {
       "exchange": "OKX Perp",
       "iso_time_utc": "2026-04-01T00:00:00Z",
       "note": "earliest-candle sweep (daily resolution)"
@@ -92,5 +51,6 @@
     }
   ],
   "not_listed": [],
-  "funnel": true
+  "funnel": true,
+  "data_note": "Corrected 2026-06-02: this is EdgeX (perp DEX, eth 0xB007..., CMC edgex), NOT the old Edge token. Removed pre-launch (<2026-03-31) events that belonged to the old Edge."
 }

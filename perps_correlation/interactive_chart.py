@@ -92,28 +92,19 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     # headline; users pan/scroll right to follow the token's full live history.
     _win_lo = cfg.get("window_start_utc")
     _win_hi = cfg.get("window_end_utc")
-    # Extend the default view's upper bound to cover any real (non-sweep) listing event
-    # past window_end, so late co-listings are visible by default, not just on pan
-    # (audit M-2). Daily-resolution sweep artifacts are excluded so a bogus midnight
-    # date can't stretch the view (audit M-1).
-    if _win_lo and _win_hi:
-        _sweep = ("earliest-candle sweep", "daily resolution")
-        ev_times = []
-        for ev in cfg.get("events", []):
-            note = (ev.get("note") or "").lower()
-            if ev.get("iso_time_utc") and not any(m in note for m in _sweep):
-                try:
-                    ev_times.append(parse_iso(ev["iso_time_utc"]))
-                except Exception:
-                    pass
-        hi = parse_iso(_win_hi)
-        if ev_times:
-            latest = max(ev_times)
-            if latest > hi:
-                hi = latest + timedelta(hours=6)
-        win_range = [_win_lo, hi.strftime("%Y-%m-%dT%H:%M:%SZ")]
-    else:
-        win_range = None
+    # Default view shows the FULL chart: launch (the data's left edge / window_start)
+    # through the most recent candle. A small right-pad keeps the latest point off the
+    # frame edge. fitY (below) scales the y-axis to whatever x-range is in view.
+    lo_dt = datetime.fromtimestamp(rows[0][0] / 1000, tz=timezone.utc)
+    if _win_lo:
+        try:
+            lo_dt = min(lo_dt, parse_iso(_win_lo))
+        except Exception:
+            pass
+    hi_dt = datetime.fromtimestamp(rows[-1][0] / 1000, tz=timezone.utc)
+    pad = (hi_dt - lo_dt) * 0.02 or timedelta(hours=6)
+    win_range = [lo_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                 (hi_dt + pad).strftime("%Y-%m-%dT%H:%M:%SZ")]
 
     # L-2: bound the inline payload. Long histories (esp. Binance-fallback tokens with
     # 100k+ candles) would make pages multi-MB. Keep full 5m resolution where it's
@@ -188,7 +179,6 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     # the listing moment above). Hover shows the date; not clickable (the article
     # link lives in the Listing Events table's Note column). Always-on trace, kept
     # visible across timeframe toggles like the Listings trace.
-    ann_floor = (min(pos) if pos else 0.0)  # sit on the bottom of the price area
     ax, ay, atext = [], [], []
     for label, a in (announcements or {}).items():
         d = a.get("date") if isinstance(a, dict) else None
@@ -198,13 +188,16 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
         if placed is None:
             continue
         ax.append(placed[0])
-        ay.append(ann_floor)
+        ay.append(0.0)  # pinned to the x-axis via the fixed overlay axis y2 (below)
         title = (a.get("title") or "")[:90]
         atext.append(f"<b>{label} — listing announced</b><br>"
                      f"{placed[1].strftime('%Y-%m-%d')}<br>{title}")
+    # Pinned to the x-axis on a fixed [0,1] overlay axis (y2) so the squares always sit
+    # ON the axis line, never floating in the plot and never drifting when the price
+    # y-axis is zoomed (audit/UX: "announcement square should stick to the X axis").
     fig.add_trace(go.Scatter(
-        x=ax, y=ay, mode="markers", name="Announcements", visible=True,
-        marker=dict(size=10, color="#e67e22", symbol="square",
+        x=ax, y=ay, mode="markers", name="Announcements", visible=True, yaxis="y2",
+        marker=dict(size=11, color="#e67e22", symbol="triangle-up",
                     line=dict(color="white", width=1)),
         customdata=atext, hovertemplate="%{customdata}<extra></extra>",
     ))
@@ -299,6 +292,9 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
         yaxis=dict(title=dict(text="Price (USD)", font=dict(size=11, color="#6b7785")),
                    tickprefix="$", tickformat=pfmt, showgrid=True,
                    gridcolor="#eef2f6", zeroline=False, tickfont=dict(size=11)),
+        # fixed [0,1] overlay so the announcement pins stick to the x-axis baseline
+        yaxis2=dict(overlaying="y", side="left", range=[0, 1], visible=False,
+                    fixedrange=True),
         hoverlabel=dict(bgcolor="white", bordercolor="#e1e7ee",
                         font=dict(size=12, color="#1d2733")),
         hovermode="x", template="plotly_white", showlegend=False,
@@ -313,12 +309,16 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
         ],
     )
     div_id = f"chart-{token.lower()}"
-    # Hide Plotly's floating modebar — its icons overlapped the custom
-    # timeframe / Guides buttons. Zoom (drag + scroll) and reset (double-click)
-    # still work without it.
+    # Show a curated modebar (zoom / pan / box-zoom / reset / PNG) on hover so users
+    # have real chart controls; drop the noisy/duplicate tools. It sits top-right
+    # inside the plot, clear of the custom timeframe buttons in the top margin.
     snippet = fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
                           config={"scrollZoom": True, "displaylogo": False,
-                                  "displayModeBar": False})
+                                  "displayModeBar": "hover", "responsive": True,
+                                  "modeBarButtonsToRemove": ["lasso2d", "select2d",
+                                      "autoScale2d", "zoomIn2d", "zoomOut2d",
+                                      "toggleSpikelines", "hoverCompareCartesian",
+                                      "hoverClosestCartesian"]})
     return snippet + _autofit_js(div_id)
 
 
