@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from listing_chart import fetch_geckoterminal, parse_iso
@@ -62,8 +62,19 @@ def refresh_one(cfg: dict) -> str:
         except Exception:
             old = []
 
+    # INCREMENTAL: only pull candles since the last cached one (with a 2h overlap so
+    # we never miss any around the boundary). This is the difference between ~1 page
+    # and ~12 pages per token — critical because GeckoTerminal rate-limits (429) the
+    # shared CI IP, and every extra page stacks multi-second backoffs. First-ever pull
+    # for a token (no cache) still fetches the full launch window -> now.
+    if old:
+        last_dt = datetime.fromtimestamp(old[-1][0] / 1000, tz=timezone.utc)
+        fetch_start = max(w_start, last_dt - timedelta(hours=2))
+    else:
+        fetch_start = w_start
+
     try:
-        fresh = fetch_geckoterminal(chain, pool, w_start, now)
+        fresh = fetch_geckoterminal(chain, pool, fetch_start, now)
     except SystemExit as e:           # fetch_geckoterminal raises SystemExit on empty
         return f"{token}: fetch failed ({e}) — kept {len(old)} cached"
     except Exception as e:

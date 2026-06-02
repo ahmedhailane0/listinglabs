@@ -47,6 +47,8 @@ jobs:
       - name: Refresh price candles (charts stay current)
         run: python refresh_klines.py
         continue-on-error: true   # a flaky pool must never block the build
+        timeout-minutes: 12       # hard ceiling; each token writes as it goes, so a
+                                  # timeout just means the rest resume on the next run
 
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
