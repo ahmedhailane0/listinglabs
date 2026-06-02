@@ -1,0 +1,71 @@
+{
+  "token": "NEX",
+  "name": "Nexus",
+  "chain": "bsc",
+  "token_contract": "0x365de036a1f7dccb621530d517133521debb2013",
+  "gecko_pool": "0xae74941d0ff92e1e6c26a11fa0762ef29b87786e60daf62be00477288ec41abd",
+  "fdv_usd": 364568077,
+  "fdv_source": "CoinMarketCap v2 quotes (id 39965 nexus-labs), 2026-05-26",
+  "category": "zkVM / verifiable compute",
+  "cmc_slug": "nexus-labs",
+  "mcap_usd": 214291095,
+  "circulating_supply": 60000000000000,
+  "total_supply": 100000000000000,
+  "mcap_source": "CoinMarketCap quotes/latest, 2026-05-29 (current, not at-listing)",
+  "window_start_utc": "2026-05-20T12:00:00Z",
+  "window_end_utc": "2026-05-27T14:00:00Z",
+  "events": [
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-05-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-05-20T14:00:00Z",
+      "note": "ALPHA_971, listingTime=1779285600000, contract on BSC."
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-05-20T15:00:00Z",
+      "note": "NEX/USDT first 1m candle."
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-05-20T15:00:00Z",
+      "note": "NEXUSDT first 1m candle (confirmed via 1h+1m probe; was at launch, not later)."
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-05-20T15:26:00Z",
+      "note": "NEX/USD first trade (probe); earlier than the 18:00 retail-enable previously noted."
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-05-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-05-21T03:30:00Z",
+      "note": "NEXUSDTM perp first 1m candle (probe); first derivative after Alpha."
+    },
+    {
+      "exchange": "Bybit Futures",
+      "iso_time_utc": "2026-05-21T07:57:22Z",
+      "note": "10000NEXUSDT linear perp (contract size 10k NEX); 1h perp probe confirms ~08:00."
+    }
+  ],
+  "not_listed": [
+    "Binance main spot",
+    "Binance USDT-M perp",
+    "OKX spot+perp",
+    "Bybit spot",
+    "Bitget perp",
+    "Gate.io spot+perp",
+    "Kraken spot+futures",
+    "Upbit",
+    "Bithumb"
+  ],
+  "reprobe_2026-05-27": "Re-probed all allowlist spot + perp/futures venues over the full week. New since launch day: KuCoin Futures (2026-05-21 03:30). Binance/OKX/Bitget perps + Gate/Kraken derivatives + binance/okx/bybit/kraken/gate spot symbols still don't exist. Bybit perp 1h probe (08:00) matches the existing 07:57 event. Wide-window 1m probes for kucoin/bitget spot hit ~1000-candle caps (artifact timestamps 05-26); true times confirmed via coarser granularity."
+}

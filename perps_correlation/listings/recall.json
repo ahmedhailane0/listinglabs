@@ -1,0 +1,77 @@
+{
+  "token": "RECALL",
+  "name": "Recall",
+  "chain": "base",
+  "token_contract": "0x1f16e03c1a5908818f47f6ee7bb16690b40d0671",
+  "gecko_pool": "0x0abe41c8aaa9282429e06ebed48be36298981d94",
+  "fdv_usd": 52833575.8,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "recall-network",
+  "mcap_usd": 13679080.04,
+  "circulating_supply": 258908844.14714,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-10-14T18:00:00Z",
+  "window_end_utc": "2026-01-15T12:30:00Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-10-15T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-10-15T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-10-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-10-15T12:30:00Z"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-10-16T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-10-20T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-10-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

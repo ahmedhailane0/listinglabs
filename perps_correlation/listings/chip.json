@@ -1,0 +1,96 @@
+{
+  "token": "CHIP",
+  "name": "USD.AI",
+  "chain": "arbitrum",
+  "token_contract": "0x0c1c1c109fe34733fca54b82d7b46b75cfb71f6e",
+  "gecko_pool": "0x49340dbb8fb5ece2f9b594e77ab774e65725e9d8",
+  "fdv_usd": 392573843.03,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "usd-ai",
+  "mcap_usd": 78514768.61,
+  "circulating_supply": 2000000000.0,
+  "total_supply": 10000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2026-04-16T01:15:00Z",
+  "window_end_utc": "2026-05-30T20:51:49.908143Z",
+  "events": [
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-04-16T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-04-16T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-04-16T07:15:00Z"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-04-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-04-20T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2026-04-21T13:30:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-04-22T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2026-04-24T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>TAGGER (TAG) — Scam Watchlist</title><style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { font: 14px/1.5 -apple-system, Segoe UI, Roboto, sans-serif; margin: 0;
+       background: #f4f6f9; color: #1d2733; }
+header { padding: 18px 32px; background: #1f4e79; color: #fff; }
+header h1 { margin: 0; font-size: 20px; }
+header p { margin: 4px 0 0; opacity: .8; font-size: 13px; }
+/* live BWEnews listing-signal strip */
+.newsbar { display: flex; align-items: center; gap: 12px; padding: 9px 32px;
+           background: #102a43; color: #e5edf6; border-bottom: 1px solid #0b1f33;
+           overflow-x: auto; white-space: nowrap; font-size: 12.5px; }
+.newsbar .nlabel { font-weight: 700; display: inline-flex; flex-direction: column;
+                   line-height: 1.2; flex: 0 0 auto; }
+.newsbar .nlabel small { font-weight: 400; opacity: .6; font-size: 10.5px; }
+.newsbar .pills { display: inline-flex; gap: 8px; }
+.newsbar .sig { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14);
+                border-radius: 999px; padding: 3px 10px; flex: 0 0 auto; }
+.newsbar .sig a { color: #7fc4ff; font-weight: 600; }
+.newsbar .sig .v { opacity: .7; }
+.newsbar .sig.untracked { opacity: .8; }
+.newsbar .sig .new { background: #c0392b; color: #fff; border-radius: 4px;
+                     font-size: 9.5px; padding: 0 4px; font-weight: 700; text-transform: uppercase; }
+.newsbar .sig .src { opacity: .6; }
+.topnav { margin: 8px 0 2px; display: flex; gap: 8px; }
+.topnav a { font-size: 13px; color: #fff; opacity: .8; padding: 4px 12px; border-radius: 999px;
+            border: 1px solid rgba(255,255,255,.35); }
+.topnav a:hover { opacity: 1; text-decoration: none; background: rgba(255,255,255,.1); }
+.topnav a.active { opacity: 1; background: #fff; color: #1f4e79; border-color: #fff; font-weight: 600; }
+a { color: inherit; text-decoration: none; }
+.back { color: #fff; font-size: 13px; opacity: .9; }
+.back:hover { opacity: 1; text-decoration: underline; }
+
+/* filter bar */
+.filters { padding: 14px 32px; background: #fff; border-bottom: 1px solid #e1e7ee;
+           display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.filters #search { font-size: 13px; padding: 6px 12px; border: 1px solid #cdd6e0;
+                   border-radius: 999px; outline: none; min-width: 220px; flex: 0 1 260px; }
+.filters #search:focus { border-color: #1f4e79; box-shadow: 0 0 0 2px rgba(31,78,121,.12); }
+.filters .flabel { font-weight: 600; color: #6b7785; font-size: 13px; }
+.filters .group { display: inline-flex; flex-wrap: wrap; gap: 6px; padding: 0 4px;
+                  border-left: 1px solid #e1e7ee; }
+.filters .group:first-of-type { border-left: 0; }
+.filters label { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px;
+                 background: #f4f6f9; border: 1px solid #e1e7ee; border-radius: 999px;
+                 padding: 4px 11px 4px 9px; cursor: pointer; user-select: none; }
+.filters label:has(input:checked) { background: #eaf2fb; border-color: #1f4e79; color: #1f4e79; }
+.filters label.muted { opacity: .45; }
+.filters label .c { font-size: 11px; color: #8a96a3; font-weight: 600; }
+.filters label:has(input:checked) .c { color: #1f4e79; }
+.filters input { accent-color: #1f4e79; margin: 0; }
+.filters #clear { font-size: 12px; color: #6b7785; background: none; border: 0;
+                  cursor: pointer; text-decoration: underline; }
+.filters .count { margin-left: auto; font-size: 12px; color: #6b7785; }
+.viewtoggle { display: inline-flex; border: 1px solid #cdd6e0; border-radius: 999px; overflow: hidden; }
+.viewtoggle button { font-size: 12px; padding: 5px 12px; background: #fff; border: 0; cursor: pointer; color: #6b7785; }
+.viewtoggle button.active { background: #1f4e79; color: #fff; font-weight: 600; }
+
+/* view switching */
+.view-grid .listwrap { display: none; }
+.view-list .grid { display: none; }
+
+/* list view table */
+.listwrap { padding: 16px 32px 28px; overflow-x: auto; }
+table.list { width: 100%; border-collapse: collapse; background: #fff; font-size: 13px;
+             border: 1px solid #e1e7ee; border-radius: 10px; overflow: hidden; table-layout: fixed; }
+/* deterministic column widths so the # column can't balloon (auto-layout dumps
+   slack into the first columns). 12 cols: #, Token, TGE, Since, 24h, 7d, 30d,
+   90d, FDV, MC, OI%, Funding. */
+table.list th:nth-child(1) { width: 3%; }
+table.list th:nth-child(2) { width: 19%; text-align: left; }
+table.list th:nth-child(3) { width: 9%; }
+table.list th:nth-child(4), table.list th:nth-child(5), table.list th:nth-child(6),
+table.list th:nth-child(7), table.list th:nth-child(8) { width: 6.5%; }
+table.list th:nth-child(9), table.list th:nth-child(10) { width: 9%; }
+table.list th:nth-child(11) { width: 7%; }
+table.list th:nth-child(12) { width: 13%; }
+table.list td { overflow: hidden; }
+table.list th { position: sticky; top: 0; background: #eef2f6; text-align: right; padding: 8px 10px;
+                border-bottom: 2px solid #d6dee6; cursor: pointer; white-space: nowrap; font-size: 12px; }
+table.list th:first-child { text-align: left; }
+table.list th.sorted { color: #1f4e79; background: #e3edf7; }
+table.list tbody { counter-reset: rank; }
+table.list tbody tr { counter-increment: rank; }
+table.list td.rank::before { content: counter(rank); color: #8a96a3; font-variant-numeric: tabular-nums; }
+table.list td.rank { text-align: right; color: #8a96a3; width: 1%; white-space: nowrap; }
+table.list td { padding: 7px 10px; border-bottom: 1px solid #eef2f6; }
+table.list td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.list td.tge { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; }
+table.list tr:hover td { background: #f7faff; }
+table.list td.tok a { display: flex; align-items: center; gap: 10px; }
+table.list td.tok .thumb { width: 64px; height: 26px; border: 0; background: none; flex: 0 0 auto; }
+table.list td.tok .lname { font-weight: 600; }
+table.list td.tok .sym { color: #8a96a3; font-weight: 400; font-size: 12px; }
+table.list td .sub { display: block; font-size: 11px; color: #8a96a3; font-weight: 400; }
+table.list .pos { color: #1a8f4c; } table.list .neg { color: #c0392b; }
+
+/* funding */
+.lead { color: #1f6fb2; font-size: 11px; font-weight: 600; }
+
+/* index grid */
+.grid { padding: 24px 32px; display: grid; gap: 18px;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+.tile { background: #fff; border: 1px solid #e1e7ee; border-radius: 10px;
+        overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.05);
+        transition: transform .12s, box-shadow .12s; display: block; }
+.tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(31,78,121,.18); }
+.thumb { display: block; width: 100%; height: 90px;
+         border-bottom: 1px solid #eef2f6; background: #f7faff; }
+.spark-fill { fill: rgba(31,111,178,.12); stroke: none; }
+.spark-line { fill: none; stroke: #1f6fb2; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.spark-alpha { stroke: #c0392b; stroke-width: 1; stroke-dasharray: 2 2;
+               vector-effect: non-scaling-stroke; opacity: .65; }
+.tile-body { padding: 12px 14px; }
+.tile-head { display: flex; align-items: baseline; gap: 8px; }
+.tile-head .name { font-size: 16px; font-weight: 700; }
+.tile-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px;
+             font-size: 12px; color: #6b7785; }
+.tile-meta b { color: #1f4e79; font-weight: 600; }
+
+/* detail card */
+main:not(.grid) { padding: 24px 32px; }
+.card { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px;
+        background: #fff; border: 1px solid #e1e7ee; border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,.05); overflow: hidden; }
+.info { padding: 20px 22px; min-width: 0; }
+.info h2 { margin: 0 0 14px; font-size: 18px; }
+.sym { color: #1f4e79; font-weight: 600; font-size: 13px;
+       background: #eaf2fb; padding: 2px 8px; border-radius: 6px; }
+dl { display: grid; grid-template-columns: 88px 1fr; gap: 4px 12px; margin: 0 0 16px; }
+dt { color: #6b7785; font-weight: 600; }
+dd { margin: 0; word-break: break-word; }
+.mono, .t { font-family: ui-monospace, Menlo, Consolas, monospace; }
+.mono { font-size: 12px; }
+.src { display: block; color: #8a96a3; font-size: 11px; }
+a.src { display: inline; text-decoration: none; }
+a.src:hover { text-decoration: underline; color: #1f6fb2; }
+.note { color: #6b7785; font-size: 12px; }
+h4 { margin: 16px 0 8px; font-size: 13px; text-transform: uppercase;
+     letter-spacing: .04em; color: #6b7785; }
+table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12.5px; }
+th { text-align: left; color: #6b7785; border-bottom: 2px solid #e1e7ee; padding: 5px 6px; }
+td { border-bottom: 1px solid #eef2f6; padding: 5px 6px; vertical-align: top; }
+th, td { overflow-wrap: anywhere; word-break: break-word; }
+th:nth-child(1), td:nth-child(1) { width: 24%; }
+th:nth-child(2), td:nth-child(2) { width: 26%; }
+td.t { color: #1f4e79; word-break: normal; overflow-wrap: normal; }
+.ann-link { color: #1f4e79; text-decoration: none; }
+.ann-link:hover { text-decoration: underline; }
+tr.alpha td { background: #fff7e6; font-weight: 600; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+       margin-right: 6px; vertical-align: middle; }
+.cat { display: inline-block; font-size: 12px; color: #1f4e79; background: #eaf2fb;
+       border-radius: 6px; padding: 2px 9px; margin: 0 0 10px; font-weight: 600; }
+.links { margin: 0 0 14px; font-size: 12.5px; }
+.links a { color: #1f6fb2; text-decoration: none; }
+.links a:hover { text-decoration: underline; }
+.links.project { margin: 0 0 6px; font-weight: 600; }
+.links.project a { color: #1f4e79; }
+.pos { color: #1a8f4c; font-weight: 600; }
+.neg { color: #c0392b; font-weight: 600; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+         gap: 8px; margin-bottom: 8px; }
+.stat { background: #f7f9fc; border: 1px solid #e7edf3; border-radius: 8px; padding: 8px 10px; }
+.stat .k, .chk .k { display: block; font-size: 10.5px; text-transform: uppercase;
+                    letter-spacing: .03em; color: #8a96a3; margin-bottom: 2px; }
+.stat .v { font-size: 15px; font-weight: 600; }
+.stat .v small { font-size: 11px; font-weight: 400; color: #8a96a3; }
+.checks { display: flex; flex-wrap: wrap; gap: 8px; }
+.chk { background: #fff; border: 1px solid #e7edf3; border-radius: 8px;
+       padding: 6px 12px; text-align: center; }
+.chk .v { font-size: 14px; }
+h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
+           color: #aab3bd; font-size: 11px; }
+.ann { margin-top: 14px; background: #f7f9fc; border: 1px solid #e7edf3;
+       border-radius: 8px; padding: 8px 14px; }
+.ann ul { margin: 6px 0 4px; padding-left: 18px; }
+.chart { padding: 14px; display: flex; align-items: flex-start; justify-content: center;
+         background: #fafbfc; }
+.chart img { width: 100%; height: auto; border-radius: 6px; }
+.chart > .plotly-graph-div, .chart > div { width: 100%; }
+.missing { color: #b00; font-style: italic; }
+@media (max-width: 900px) { .card { grid-template-columns: 1fr; } }
+
+.fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
+.links.note{color:#8a96a3;font-style:italic}
+/* deterministic column widths (12 cols: #, Token, Since, 24h, 7d, 30d, 90d,
+   FDV, MC, OI%, Funding, Memo). Fixed layout reads widths from the header row. */
+#ltab{table-layout:fixed}
+#ltab th{overflow:hidden}
+#ltab th:nth-child(1){width:3%}
+#ltab th:nth-child(2){width:18%;text-align:left}
+#ltab th:nth-child(3),#ltab th:nth-child(4),#ltab th:nth-child(5),
+#ltab th:nth-child(6),#ltab th:nth-child(7){width:6%}
+#ltab th:nth-child(8),#ltab th:nth-child(9){width:8%}
+#ltab th:nth-child(10){width:6%}
+#ltab th:nth-child(11){width:10%}
+#ltab th:nth-child(12){width:13%;text-align:left}
+#ltab td{overflow:hidden}
+#ltab td.rank{text-align:center}
+#ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
+#ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+</style><script src="../report/plotly.min.js"></script></head><body>
+<header><a class="back" href="index.html">← all watchlist tokens</a></header>
+<main><section class="card">
+  <div class="info">
+    <h2>TAGGER <span class="sym">TAG</span></h2>
+    
+    <div class="links project"><a href="https://tagger.pro/" target="_blank" rel="noopener">Website ↗</a> · <a href="https://x.com/taggerai" target="_blank" rel="noopener">X (@taggerai) ↗</a></div><div class="links"><a href="https://www.coingecko.com/en/coins/tagger?chart=type%3Dprice%26mode%3Dline%26timeframe%3Dd30" target="_blank" rel="noopener">CoinGecko</a> · <a href="https://coinmarketcap.com/currencies/tagger/" target="_blank" rel="noopener">CoinMarketCap</a> · <a href="https://bscscan.com/token/0x208bf3e7da9639f1eaefa2de78c23396b0682025" target="_blank" rel="noopener">Contract ↗</a></div>
+    <dl>
+      <dt>Chain</dt><dd>binance-smart-chain</dd>
+      <dt>Contract</dt><dd class="mono">0x208bf3e7da9639f1eaefa2de78c23396b0682025</dd>
+      <dt>Price</dt><dd>$0.00123</dd>
+      <dt>Market cap</dt><dd>$134.5M</dd>
+      <dt>FDV</dt><dd>$501.0M</dd>
+      <dt>FDV / MC</dt><dd>3.7×</dd>
+      <dt>Volume (24h)</dt><dd>$2.8M</dd>
+      <dt>Open interest</dt><dd>$49.7M · 37% of mcap</dd>
+      <dt>Funding</dt><dd>—</dd>
+      <dt>Days &gt;$1B</dt><dd>—</dd>
+      <dt>Memo</dt><dd class="note">Steady uptrend since Apr 30</dd>
+    </dl>
+    <h4>Price reaction <span class="asof">trailing 180 days</span></h4><div class="stats">
+    <div class="stat"><span class="k">First (180d)</span><span class="v">$0.000485</span></div>
+    <div class="stat"><span class="k">All-time high</span><span class="v">$0.00158</span></div>
+    <div class="stat"><span class="k">All-time low</span><span class="v">$0.000261</span></div>
+    <div class="stat"><span class="k">Since (180d)</span><span class="v"><span class="pos">+154.2%</span></span></div>
+    <div class="stat"><span class="k">Peak gain</span><span class="v"><span class="pos">+225.6%</span></span></div>
+    <div class="stat"><span class="k">Max drawdown</span><span class="v"><span class="neg">-55.7%</span></span></div></div><h4>Performance checkpoints</h4><div class="checks"><div class="chk"><span class="k">24h</span><span class="v"><span class="neg">-1.8%</span></span></div><div class="chk"><span class="k">7d</span><span class="v"><span class="neg">-15.8%</span></span></div><div class="chk"><span class="k">30d</span><span class="v"><span class="pos">+44.0%</span></span></div><div class="chk"><span class="k">90d</span><span class="v"><span class="pos">+256.4%</span></span></div></div>
+  </div>
+  <div class="chart"><div>                            <div id="chart-tag" class="plotly-graph-div" style="height:520px; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("chart-tag")) {                    Plotly.newPlot(                        "chart-tag",                        [{"fill":"tozeroy","fillcolor":"rgba(31,78,121,0.07)","hovertemplate":"%{x|%b %d %Y}  \u003cb\u003e$%{y:.6f}\u003c\u002fb\u003e\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#1f4e79","width":2},"mode":"lines","x":["2025-12-04T00:00:00+00:00","2025-12-05T00:00:00+00:00","2025-12-06T00:00:00+00:00","2025-12-07T00:00:00+00:00","2025-12-08T00:00:00+00:00","2025-12-09T00:00:00+00:00","2025-12-10T00:00:00+00:00","2025-12-11T00:00:00+00:00","2025-12-12T00:00:00+00:00","2025-12-13T00:00:00+00:00","2025-12-14T00:00:00+00:00","2025-12-15T00:00:00+00:00","2025-12-16T00:00:00+00:00","2025-12-17T00:00:00+00:00","2025-12-18T00:00:00+00:00","2025-12-19T00:00:00+00:00","2025-12-20T00:00:00+00:00","2025-12-21T00:00:00+00:00","2025-12-22T00:00:00+00:00","2025-12-23T00:00:00+00:00","2025-12-24T00:00:00+00:00","2025-12-25T00:00:00+00:00","2025-12-26T00:00:00+00:00","2025-12-27T00:00:00+00:00","2025-12-28T00:00:00+00:00","2025-12-29T00:00:00+00:00","2025-12-30T00:00:00+00:00","2025-12-31T00:00:00+00:00","2026-01-01T00:00:00+00:00","2026-01-02T00:00:00+00:00","2026-01-03T00:00:00+00:00","2026-01-04T00:00:00+00:00","2026-01-05T00:00:00+00:00","2026-01-06T00:00:00+00:00","2026-01-07T00:00:00+00:00","2026-01-08T00:00:00+00:00","2026-01-09T00:00:00+00:00","2026-01-10T00:00:00+00:00","2026-01-11T00:00:00+00:00","2026-01-12T00:00:00+00:00","2026-01-13T00:00:00+00:00","2026-01-14T00:00:00+00:00","2026-01-15T00:00:00+00:00","2026-01-16T00:00:00+00:00","2026-01-17T00:00:00+00:00","2026-01-18T00:00:00+00:00","2026-01-19T00:00:00+00:00","2026-01-20T00:00:00+00:00","2026-01-21T00:00:00+00:00","2026-01-22T00:00:00+00:00","2026-01-23T00:00:00+00:00","2026-01-24T00:00:00+00:00","2026-01-25T00:00:00+00:00","2026-01-26T00:00:00+00:00","2026-01-27T00:00:00+00:00","2026-01-28T00:00:00+00:00","2026-01-29T00:00:00+00:00","2026-01-30T00:00:00+00:00","2026-01-31T00:00:00+00:00","2026-02-01T00:00:00+00:00","2026-02-02T00:00:00+00:00","2026-02-03T00:00:00+00:00","2026-02-04T00:00:00+00:00","2026-02-05T00:00:00+00:00","2026-02-06T00:00:00+00:00","2026-02-07T00:00:00+00:00","2026-02-08T00:00:00+00:00","2026-02-09T00:00:00+00:00","2026-02-10T00:00:00+00:00","2026-02-11T00:00:00+00:00","2026-02-12T00:00:00+00:00","2026-02-13T00:00:00+00:00","2026-02-14T00:00:00+00:00","2026-02-15T00:00:00+00:00","2026-02-16T00:00:00+00:00","2026-02-17T00:00:00+00:00","2026-02-18T00:00:00+00:00","2026-02-19T00:00:00+00:00","2026-02-20T00:00:00+00:00","2026-02-21T00:00:00+00:00","2026-02-22T00:00:00+00:00","2026-02-23T00:00:00+00:00","2026-02-24T00:00:00+00:00","2026-02-25T00:00:00+00:00","2026-02-26T00:00:00+00:00","2026-02-27T00:00:00+00:00","2026-02-28T00:00:00+00:00","2026-03-01T00:00:00+00:00","2026-03-02T00:00:00+00:00","2026-03-03T00:00:00+00:00","2026-03-04T00:00:00+00:00","2026-03-05T00:00:00+00:00","2026-03-06T00:00:00+00:00","2026-03-07T00:00:00+00:00","2026-03-08T00:00:00+00:00","2026-03-09T00:00:00+00:00","2026-03-10T00:00:00+00:00","2026-03-11T00:00:00+00:00","2026-03-12T00:00:00+00:00","2026-03-13T00:00:00+00:00","2026-03-14T00:00:00+00:00","2026-03-15T00:00:00+00:00","2026-03-16T00:00:00+00:00","2026-03-17T00:00:00+00:00","2026-03-18T00:00:00+00:00","2026-03-19T00:00:00+00:00","2026-03-20T00:00:00+00:00","2026-03-21T00:00:00+00:00","2026-03-22T00:00:00+00:00","2026-03-23T00:00:00+00:00","2026-03-24T00:00:00+00:00","2026-03-25T00:00:00+00:00","2026-03-26T00:00:00+00:00","2026-03-27T00:00:00+00:00","2026-03-28T00:00:00+00:00","2026-03-29T00:00:00+00:00","2026-03-30T00:00:00+00:00","2026-03-31T00:00:00+00:00","2026-04-01T00:00:00+00:00","2026-04-02T00:00:00+00:00","2026-04-03T00:00:00+00:00","2026-04-04T00:00:00+00:00","2026-04-05T00:00:00+00:00","2026-04-06T00:00:00+00:00","2026-04-07T00:00:00+00:00","2026-04-08T00:00:00+00:00","2026-04-09T00:00:00+00:00","2026-04-10T00:00:00+00:00","2026-04-11T00:00:00+00:00","2026-04-12T00:00:00+00:00","2026-04-13T00:00:00+00:00","2026-04-14T00:00:00+00:00","2026-04-15T00:00:00+00:00","2026-04-16T00:00:00+00:00","2026-04-17T00:00:00+00:00","2026-04-18T00:00:00+00:00","2026-04-19T00:00:00+00:00","2026-04-20T00:00:00+00:00","2026-04-21T00:00:00+00:00","2026-04-22T00:00:00+00:00","2026-04-23T00:00:00+00:00","2026-04-24T00:00:00+00:00","2026-04-25T00:00:00+00:00","2026-04-26T00:00:00+00:00","2026-04-27T00:00:00+00:00","2026-04-28T00:00:00+00:00","2026-04-29T00:00:00+00:00","2026-04-30T00:00:00+00:00","2026-05-01T00:00:00+00:00","2026-05-02T00:00:00+00:00","2026-05-03T00:00:00+00:00","2026-05-04T00:00:00+00:00","2026-05-05T00:00:00+00:00","2026-05-06T00:00:00+00:00","2026-05-07T00:00:00+00:00","2026-05-08T00:00:00+00:00","2026-05-09T00:00:00+00:00","2026-05-10T00:00:00+00:00","2026-05-11T00:00:00+00:00","2026-05-12T00:00:00+00:00","2026-05-13T00:00:00+00:00","2026-05-14T00:00:00+00:00","2026-05-15T00:00:00+00:00","2026-05-16T00:00:00+00:00","2026-05-17T00:00:00+00:00","2026-05-18T00:00:00+00:00","2026-05-19T00:00:00+00:00","2026-05-20T00:00:00+00:00","2026-05-21T00:00:00+00:00","2026-05-22T00:00:00+00:00","2026-05-23T00:00:00+00:00","2026-05-24T00:00:00+00:00","2026-05-25T00:00:00+00:00","2026-05-26T00:00:00+00:00","2026-05-27T00:00:00+00:00","2026-05-28T00:00:00+00:00","2026-05-29T00:00:00+00:00","2026-05-30T00:00:00+00:00","2026-05-31T00:00:00+00:00","2026-06-01T00:00:00+00:00","2026-06-01T01:13:05+00:00"],"y":[0.00048519600488601517,0.0004591995750451655,0.0004573517283787614,0.00045288866264697904,0.0004410984460366269,0.00045392389106360426,0.0004601871480596806,0.0004730538266159357,0.0004957648920842711,0.0004897981338282372,0.0005892715481425415,0.0005839246964722943,0.0005830614893628191,0.0005793492145730927,0.0005724112610338743,0.0005121225837834463,0.0005522010856887997,0.0005689510482110752,0.0004874594561685061,0.0004769367532982285,0.0004348203144644008,0.0004764984078235646,0.0005077727391048479,0.00046932930521581827,0.0004634677293614438,0.00045482409722536095,0.0004633365514777171,0.0005355422502735872,0.0005358049081338835,0.0005189589183798444,0.0004983005091875778,0.0004710712531962741,0.000469749972145516,0.000498163189684616,0.0004799855697088772,0.00046971066306570285,0.0004797599945209862,0.00046072664583022936,0.0004568071468500891,0.00044880149242295373,0.00045346304000665785,0.00046667365380853885,0.0004571457963692755,0.00041356595291741025,0.00043407577653967584,0.0004117142344457358,0.00040647507386189745,0.00041093567627901843,0.0003896547773130253,0.00038463677842570654,0.00038542877579782577,0.000385105053357677,0.0003849281370694598,0.0003935044984673039,0.00039897220436454264,0.00038486890090062533,0.0003807193531149725,0.0003903004493413098,0.000421929819764536,0.00038954901107901807,0.00038172825314211183,0.0003865078720839719,0.00035543772245473547,0.0003932257299286558,0.00027446422248145967,0.0002661930003087981,0.0002841725629629931,0.00026085731319452557,0.0003000784278316955,0.0003154015584883318,0.00036662516830677795,0.0003883568433365339,0.00038295955217336225,0.00037828172536951375,0.00039093952076880187,0.0003833158613258182,0.00038762248103153287,0.0003818665458181469,0.0003897291597411562,0.0003642554545098407,0.00036830603026015044,0.0004027987061974437,0.00038576106095000924,0.00037230466310963513,0.00036179433791468405,0.0003475783303155838,0.00035495373982907737,0.0003509113107624691,0.00034291760451132526,0.0003461250501977166,0.00036753800996999764,0.0004229687505616521,0.000450891966323273,0.00045020913678091507,0.00045745510006830293,0.0004525164843007125,0.0004463676469299219,0.0004664321497678827,0.0004412483295117516,0.0004396473534739628,0.0005736457159633916,0.000566133577586346,0.0006410981864768747,0.0006369024786027654,0.0006213137221296317,0.0006289676016997568,0.0006078058255523464,0.0005669620971044705,0.0005680360009636065,0.0005816405366643582,0.0006234387808459889,0.0006487519881622076,0.0005965422371309034,0.0005878343012035544,0.0005777898985031265,0.0005726449398646905,0.0005993558941570469,0.0005734569675496886,0.0005584607816465895,0.0007516232535123081,0.0009305239856596734,0.0007848116295231734,0.0006877676785952894,0.0006482623252609512,0.0006134680758881071,0.0005918854184363862,0.0005875028295315108,0.0005853807516328915,0.0005804987905537779,0.0007718488100074985,0.0008811624243506773,0.0007735538874697947,0.0007101392707855853,0.0006831932464676558,0.0006761319932183142,0.000739101108565808,0.0007274764352480918,0.000688843204182751,0.000646478430309634,0.0006622772959505675,0.0006536326362284138,0.0006556146876687239,0.0006644484146390469,0.0006547464648382755,0.0006800156659625501,0.0007136574131472803,0.0005861892528869504,0.0005351498183296383,0.0006574223731419369,0.0008565953284603832,0.0011725273962814797,0.0015168596680670363,0.0012913332511495718,0.0013047606204247687,0.00145219791123469,0.0013965249295429048,0.0013780765890461738,0.001305170339459651,0.0013720958123326602,0.0013695146293006867,0.0014014882820753086,0.0013193394180051248,0.00122017585022768,0.001225090710455056,0.0011367889546372606,0.001074056503875855,0.0010348631573725011,0.0010910002531602893,0.0011185463733821412,0.0011620541596674555,0.001537115655539366,0.0014235835607686706,0.0014657144864760872,0.0015800041980240577,0.001406982613752893,0.0013517749896959906,0.0012688935409362792,0.0012722016894801754,0.0012559253359255335,0.0012247516758860607,0.0012336015138718378],"type":"scatter"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"margin":{"l":58,"r":24,"t":20,"b":40},"font":{"family":"Segoe UI, -apple-system, Roboto, sans-serif","size":12,"color":"#1d2733"},"xaxis":{"tickfont":{"size":11},"showgrid":false,"showline":true,"linecolor":"#e1e7ee"},"yaxis":{"title":{"font":{"size":11,"color":"#6b7785"},"text":"Price (USD)"},"tickprefix":"$","tickformat":".6f","gridcolor":"#eef2f6","zeroline":false},"height":520,"paper_bgcolor":"white","plot_bgcolor":"white","hovermode":"x","showlegend":false,"dragmode":"pan"},                        {"displayModeBar": false, "scrollZoom": true, "responsive": true}                    )                };            </script>        </div></div>
+</section></main></body></html>

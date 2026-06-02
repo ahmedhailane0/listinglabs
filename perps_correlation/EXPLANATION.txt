@@ -1,0 +1,1062 @@
+==============================================================================
+EXPLANATION: What this whole folder does, in plain English
+==============================================================================
+
+Read this once and you won't need to ask me anything to understand the project.
+It is long on purpose. Skim the headings, dive into the parts you care about.
+
+Table of contents
+-----------------
+  1. The question we were trying to answer
+  2. What "Binance perps" even means (a 60-second primer)
+  3. The four data sources we pulled from
+  4. What each script does, file by file
+  5. The big spreadsheet — every column explained
+  6. The cleaning step — what was wrong and how we fixed it
+  7. What "correlation" really means in this context
+  8. The findings, slowly
+  9. How to verify any finding for yourself, with no coding
+  10. A worked example: PENGU
+  11. What I'd do next if we had more time
+  12. Glossary at the bottom for any word you don't know
+
+
+==============================================================================
+1. The question we were trying to answer
+==============================================================================
+
+Your starting question:
+
+  "Is there a correlation between Binance launching a perp on a token and
+   other things — how many exchanges the token was already on, how much
+   funding the project raised, the trading volume?"
+
+We made that more specific so we could actually measure it:
+
+  "When Binance launches a perpetual futures contract for a token, does the
+   price and trading volume of that perp in the first 30 days have anything
+   to do with these BEFORE-the-fact things:
+     - how many other exchanges had already listed the token
+     - how much VC money the project had raised
+     - how many investors had backed it
+     - how big the token's FDV was at launch"
+
+We had a list of 347 tokens that got a Binance perp between January 2025
+and May 2026. For each one we gathered "facts about it before the launch"
+and "what happened after the launch", put them in one big spreadsheet,
+and ran a math procedure that asks "do these two numbers tend to move
+together across all 347 tokens".
+
+That's the whole thing. The rest of this file is the boring details.
+
+
+==============================================================================
+2. What "Binance perps" even means (a 60-second primer)
+==============================================================================
+
+Three exchange-product types appear constantly in this project. Quick
+definitions:
+
+  SPOT      You buy the actual token. If you buy 100 PENGU on Binance spot,
+            you own 100 PENGU. Simple.
+
+  PERP      Short for "perpetual futures contract". You don't own the token;
+            you have a leveraged bet on its price. Binance perps let traders
+            bet much bigger than their account balance. This is where the
+            big-money speculation happens. When Binance launches a new perp,
+            it's a major liquidity event — billions of dollars in volume can
+            show up on day one.
+
+  FUNDING   A small fee that perp longs pay shorts (or vice versa) every 8
+  RATE      hours. If everyone wants to go long, longs pay shorts. If they
+            want to go short, shorts pay longs. It tells you which way the
+            crowd is leaning.
+
+So when the project talks about a "Binance perp launch", it means: the
+moment Binance opened a futures market for that token. The token may have
+already existed for years on other venues; the perp launch is just a new
+trading venue going live.
+
+Other exchanges we tracked: OKX (perp + spot), Coinbase (spot only — they
+have a separate intl perp venue we did not pull), Bithumb (Korean), Upbit
+(Korean).
+
+
+==============================================================================
+3. The four data sources we pulled from
+==============================================================================
+
+For each of the 347 tokens we needed data from four different web APIs:
+
+  A) BINANCE FUTURES API  (fapi.binance.com)
+     Public, no API key required.
+     What we asked for:
+       - Daily price + volume for each perp, starting from its launch date,
+         for 60 days
+       - Historical funding rates for the first 30 days
+
+  B) CRYPTORANK PUBLIC API  (api.cryptorank.io/v0)
+     Public, no API key required (the v0 endpoints are what their own
+     website calls).
+     What we asked for:
+       - The list of investors backing each project, split by tier
+         ("tier1" = top-tier VCs like a16z, Paradigm; "angel" = individual
+         backers; etc.)
+
+  C) ROOTDATA OPEN API  (api.rootdata.com/open)
+     This DID require a key. You gave us one. It is saved outside this
+     folder at C:\Users\PC\.config\verifysheet\secrets.env so it doesn't
+     leak into any backup of the project.
+     What we asked for:
+       - Total funding raised (in USD)
+       - Investor list with "is this a lead investor?" flags
+       - Token symbol, project name, year founded
+
+  D) THE ORIGINAL VERIFICATION CACHE  (already in cache/ from your earlier
+     project)
+     Files like cache/bithumb_dates.json and cache/upbit_listings.json that
+     tell us which Korean exchanges listed which tokens, and on what dates.
+
+Each script's job is to call one of these APIs for all 347 tokens, save
+the raw answer to a file in the cache/ folder, and never call that API
+again for that token. This means re-running scripts is safe — they pick
+up where they left off.
+
+
+==============================================================================
+4. What each script does, file by file
+==============================================================================
+
+In the order you would run them. There are 5 Python scripts and 1 notebook.
+The fetch scripts are slow (~5 min each) because we politely wait 0.2-0.3s
+between API calls so we don't get rate-limited. The build/clean scripts
+are fast (seconds).
+
+------------------------------------------------------------------------------
+fetch_perp_klines.py
+------------------------------------------------------------------------------
+What it does:
+  For each of the 347 tokens, look up the Binance perp symbol (e.g. PENGU
+  becomes "PENGUUSDT"), then ask Binance's futures API for:
+    - 60 days of daily candles starting from the launch date
+      (open price, high, low, close, USD volume)
+    - 30 days of funding rate history
+
+Why we want this:
+  - "Returns" — was the price up or down 1, 7, 30 days after launch?
+  - "Volume decay" — did trading volume fall off a cliff after day 1?
+  - "Funding rate" — were traders mostly long or short the perp?
+
+Output:
+  cache/binance_perp_klines.json — { symbol -> list of daily candles }
+  cache/binance_funding.json     — { symbol -> list of funding records }
+  cache/perp_symbol_map.json     — { ticker -> Binance symbol it maps to }
+
+Coverage achieved: 345 out of 348 tokens. Two tickers (BONDEX, INFINIT) had
+no Binance perp symbol in the exchange info, so they got skipped.
+
+------------------------------------------------------------------------------
+fetch_cryptorank.py
+------------------------------------------------------------------------------
+What it does:
+  For each token, search CryptoRank by the project name, pick the best
+  matching project, then fetch its coin page and its investor list.
+
+Why we want this:
+  CryptoRank tells us how many investors backed the project and which
+  tier they're in. More tier-1 investors might mean the launch hype is
+  bigger, which could affect the perp's first-week performance.
+
+Output:
+  cache/cryptorank.json — { ticker -> { slug, coin, investors } }
+
+Coverage achieved: 258 out of 347 tokens. Some projects either aren't on
+CryptoRank or had no good match — that's fine, they show up as nulls in
+the analysis and the math handles missing data.
+
+------------------------------------------------------------------------------
+fetch_rootdata.py
+------------------------------------------------------------------------------
+What it does:
+  For each token, call RootData's search endpoint with the project name
+  to find a project ID, then call get_item with that ID to download the
+  full project record including total funding and investor list.
+
+Why we want this:
+  RootData is the cleanest single source for "how much total VC money did
+  this project raise". CryptoRank's free API only exposes ICO/public-sale
+  funding, which most modern crypto projects don't do. RootData aggregates
+  every announced round.
+
+Output:
+  cache/rootdata.json — { ticker -> { project_id, search_hit, item } }
+
+Coverage achieved: 343 out of 347 tokens. Of those, ~60% have a non-null
+total_funding number; the rest are listed in RootData but their funding
+amount is unknown or unreported.
+
+------------------------------------------------------------------------------
+build_enriched.py
+------------------------------------------------------------------------------
+What it does:
+  This is the glue script. It does NOT call any web API. It only reads
+  the files the three fetch scripts produced, plus your original
+  parsed_rows.json and the bithumb/upbit caches, and combines them all
+  into one big CSV file with one row per token.
+
+  At the very end, it automatically calls clean_enriched.py and removes
+  the raw intermediate. So when you run build_enriched.py you get
+  enriched_clean.csv directly, no extra step.
+
+Output:
+  enriched_clean.csv — the single source of truth for the analysis
+  clean_log.txt      — audit trail (what was dropped/fixed)
+
+------------------------------------------------------------------------------
+clean_enriched.py
+------------------------------------------------------------------------------
+What it does:
+  Reads the freshly joined enriched.csv and applies five cleaning rules
+  to produce enriched_clean.csv. Each rule is explained in section 6.
+
+  You generally don't need to run this directly — build_enriched.py
+  calls it. But you CAN run it standalone if you ever want to re-do the
+  cleaning without re-doing the join.
+
+------------------------------------------------------------------------------
+analysis.ipynb
+------------------------------------------------------------------------------
+What it is:
+  A Jupyter notebook — an interactive web page where you can run code
+  cells and see the output (charts, tables) below each cell. You don't
+  write code, you just click Cell -> Run All from the menu and scroll
+  down looking at the outputs.
+
+  It loads enriched_clean.csv and goes through seven sections:
+    1. Sanity checks — how many rows, how many missing values per column
+    2. Histograms of the key columns so you can see their distributions
+    3. CryptoRank vs RootData agreement check (sanity that the two data
+       sources roughly agree on funding info)
+    4. The correlation matrix — the headline visualization
+    5. Boxplots showing returns sliced by exchange-count and funding bucket
+    6. A simple regression to compare effect sizes
+    7. A markdown cell where you write your own takeaways
+
+
+==============================================================================
+5. The big spreadsheet — every column explained
+==============================================================================
+
+Open enriched_clean.csv in Excel. There are 38 columns. Here is what each
+one means in plain English.
+
+--- Identity columns ---
+  project              The cleaned-up project name (e.g. "Pudgy Penguins")
+  ticker               The ticker symbol (e.g. "PENGU")
+  binance_perp_date    The date Binance opened the perp (YYYY-MM-DD)
+  perp_symbol          The exact symbol Binance uses (e.g. "PENGUUSDT")
+  fdv_at_listing       The token's Fully Diluted Valuation in USD on launch
+                       day. Big number = big token. FDV means "what would
+                       the project be worth if ALL tokens were in circulation
+                       at the current price". E.g. $747,950,000 for PENGU.
+
+--- Exchange-footprint columns (the "before" facts) ---
+  n_exchanges_before
+                       Count from 0 to 6. How many of these other venues
+                       had ALREADY listed the token before the Binance perp
+                       went live:
+                         Binance spot, OKX perp, OKX spot,
+                         Coinbase spot, Bithumb, Upbit.
+                       If this is 4, the token was already trading on 4
+                       of those when Binance perps showed up.
+
+  n_exchanges_within_7d
+                       Count from 0 to 6. How many of those same venues
+                       listed it within plus/minus 7 days of the Binance perp.
+                       This captures "co-launches" — when multiple exchanges
+                       all open trading in the same week.
+
+  days_since_first_listing
+                       binance_perp_date minus the earliest of the other
+                       listing dates. A bigger number means "the token had
+                       been around on other exchanges for a long time before
+                       Binance picked it up for perps". For PENGU it's 28
+                       because Binance spot listed it 28 days before the perp.
+
+  had_binance_spot     True if Binance spot listed it within 7 days of perp
+  had_okx_perp         (similar) for OKX perp
+  had_okx_spot         for OKX spot
+  had_coinbase_spot    for Coinbase spot
+  had_bithumb          for Bithumb
+  had_upbit            for Upbit
+
+--- CryptoRank funding columns (free API) ---
+  cr_slug              CryptoRank's URL slug for the project (audit field)
+  cr_ico_raised_usd    Amount raised in their public ICO/IDO, if any. Almost
+                       always null — modern projects don't do public sales.
+  cr_has_funding_rounds True/False whether CR shows any rounds at all
+  cr_investor_count    Total number of investors CR shows (all tiers summed)
+  cr_tier1_count       Just the tier-1 investor count (top-tier VCs)
+  cr_lead_count        How many of those investors were "lead" investors
+  cr_fdv               CryptoRank's own FDV figure (lets you cross-check
+                       against our fdv_at_listing column)
+
+--- RootData funding columns (paid API, your key) ---
+  rd_project_id        RootData's internal project ID (audit field)
+  rd_total_funding_usd Total VC money raised, in USD, across all known
+                       rounds. This is the main "how well-funded was this
+                       project" number.
+  rd_investor_count    Total investor count per RootData
+  rd_lead_count        Number of lead investors per RootData
+  rd_rt_score          RootData's own ranking score for the project
+  rd_establishment_date Year the project was founded
+
+--- Funding cross-check columns ---
+  funding_match        "agree" | "cr_only" | "rd_only" | "disagree" | "none"
+                       Says which sources had funding data. "rd_only" is
+                       the most common because CR's free API doesn't expose
+                       round-level funding for most tokens.
+  funding_consensus_usd The funding number to use in plots — picks whichever
+                       source had data, or the larger if both did.
+
+--- Post-launch performance columns (the "after" facts) ---
+  ret_1d               Price return over the first day. 0.10 = +10%.
+  ret_7d               Price return over the first 7 days. -0.20 = -20%.
+  ret_30d              Price return over the first 30 days.
+  max_drawdown_30d     The worst peak-to-trough drop within the first 30
+                       days. -0.50 means at some point in those 30 days,
+                       the price fell 50% from its highest point.
+  vol_d1_usd           Day-1 trading volume in USD.
+  vol_avg_d2_7_usd     Average daily volume across days 2-7.
+  vol_avg_d8_30_usd    Average daily volume across days 8-30.
+  vol_decay_ratio      vol_avg_d8_30_usd / vol_d1_usd. If 1.0 the volume
+                       stayed flat. If 0.3 the volume fell to 30% of day-1.
+                       If 2.0 the volume DOUBLED from day-1 levels.
+                       THIS IS THE STAR COLUMN. It captures whether the
+                       perp had real ongoing demand or was just hype.
+  avg_funding_rate_30d Average funding rate over the first 30 days.
+                       Positive = longs paying shorts (bullish positioning).
+                       Negative = shorts paying longs (bearish positioning).
+
+
+==============================================================================
+6. The cleaning step — what was wrong and how we fixed it
+==============================================================================
+
+Your raw joined data had some problems. clean_enriched.py applies five rules
+to produce enriched_clean.csv. Every change is logged to clean_log.txt so
+you can audit each fix.
+
+--- Rule 1: Drop tokens with no kline data ---
+  Why: Some tokens have a Binance perp date in the sheet but the perp
+  either got delisted or never really started trading. They have nothing
+  to analyze.
+  Count: 3 tokens dropped (BONDEX, INFINIT, and one other with a date but
+  no actual price data).
+
+--- Rule 2: Drop tokens with day-1 USD volume below $100,000 ---
+  Why: A perp with $50k of day-1 volume isn't a real launch. The price
+  swings would be noise, not signal. Any "return" computed from such thin
+  trading would be meaningless.
+  Count: 0 — all surviving tokens cleared $100k on day 1.
+
+--- Rule 3: RootData total_funding == 0 -> null ---
+  Why: RootData often returns 0 to mean "unknown", not "zero dollars". If
+  we treat 0 as real, our "tokens with X dollars of funding had Y returns"
+  plots get contaminated by unknown-funding tokens.
+  Count: 0 — turned out RootData actually returns null (not 0) for
+  unknown in the data we pulled. So no rows needed this fix.
+
+--- Rule 4: CryptoRank mismatch detection ---
+  Why: When CR's search picks the wrong project, we'd be reading another
+  token's investor list. Cross-check the CR project's display name against
+  the input project name; if they're very different, null out all the CR
+  columns for that row.
+  Count: 0 — CR's display name almost always matched. (We initially
+  worried because MANTRA's slug was "mentra-new", but the display name
+  was still "MANTRA" so it was actually fine.)
+
+--- Rule 5: RootData mismatch detection ---
+  Why: This was the big one. RootData's search returned the wrong project
+  for some short or generic ticker symbols. Examples we caught:
+    - "USTC" matched RootData's iTrustCapital (totally different company)
+    - "OG" matched Ontology
+    - "FORM" matched BinaryX
+    - "JST" matched "Just a chill guy"
+    - "POL" matched Polyflow (not the ex-MATIC Polygon token)
+    - "B2" matched Capy Finance
+  How we fixed it: We use BOTH the name similarity AND the token_symbol
+  field. If the RootData token_symbol exactly equals the ticker, accept
+  the match (this saves cases like AI16Z->elizaOS where the name changed
+  but it's still the right project). Otherwise, only accept if the names
+  are at least 55% similar.
+  Count: 14 tokens had their RD columns nulled out as wrong matches.
+
+--- Bookkeeping fixes ---
+  - establishment_date with weird formats normalized to a 4-digit year
+    (4 rows fixed)
+  - vol_decay_ratio > 10 logged for manual review (1 row flagged but kept)
+
+The final clean file has 344 rows (started with 347, dropped 3 for no
+kline data), and 14 rows have null RD columns where they used to have
+wrong-project data.
+
+Did this change the conclusions? Almost not at all. The strongest
+correlation signals were unchanged. One signal (rd_investor_count vs
+vol_decay_ratio) got SLIGHTLY stronger after the cleaning, because
+removing wrong-project matches removes noise. This is exactly what you'd
+hope cleaning would do.
+
+
+==============================================================================
+7. What "correlation" really means in this context
+==============================================================================
+
+The method I used is called Spearman rank correlation. Here it is in full,
+in slow plain English.
+
+Pretend we have just 4 tokens (instead of 344) and we want to ask:
+  "Do tokens with more prior listings tend to have better volume retention?"
+
+Token  | n_exchanges_before | vol_decay_ratio
+-------|--------------------|----------------
+   A   |        0           |     0.2
+   B   |        2           |     0.5
+   C   |        4           |     0.8
+   D   |        6           |     1.1
+
+Step 1: Rank them by n_exchanges_before. A=1, B=2, C=3, D=4.
+Step 2: Rank them by vol_decay_ratio. A=1, B=2, C=3, D=4.
+Step 3: Compare the rankings. They're identical -> perfect agreement.
+        Spearman rho = +1.0
+
+If instead D had ranked 4th on the X column but 1st on the Y column, the
+two rankings would disagree somewhere and rho would be less than 1.
+
+If the rankings were random with respect to each other, rho would be
+around 0.
+
+If they were perfectly reversed (highest on X = lowest on Y), rho = -1.0.
+
+That's it. Spearman is just "do the rankings line up?"
+
+Why rankings instead of raw numbers (Pearson would use raw numbers):
+  - One outlier (say, a token with 50,000% returns) can't blow up the
+    result. In a ranking, it's just "rank #344", same as any other top
+    rank. Spearman is ROBUST to outliers.
+  - It also doesn't assume any particular shape (linear, exponential).
+    It just asks "are they in the same order".
+
+What the p-value means:
+  After computing rho, we ask: "If the two columns were actually
+  unrelated, how often would we see a rho this big by pure chance?"
+  - p < 0.05 means "less than 5% of the time" — probably real
+  - p < 0.01 means "less than 1% of the time" — pretty confident
+  - p < 0.001 means "less than 0.1% of the time" — very confident
+  Sample size matters: rho=0.1 on 1000 tokens is significant, but
+  rho=0.1 on 30 tokens is not. We had ~340 tokens so even small rhos
+  hit significance.
+
+What I read off the table:
+  For each pair of (before column, after column), I computed rho and p.
+  Then I sorted by |rho|. The biggest |rho| with a starry p-value is the
+  strongest signal. The bullets in the bottom-line summary are literally
+  the top few rows of that sorted table.
+
+
+==============================================================================
+8. The findings, slowly
+==============================================================================
+
+After cleaning, here are the meaningful relationships, restated very
+slowly. Spearman rho values; *** = very confident, ** = pretty confident,
+* = probably real.
+
+--- Volume sustain (does the perp keep trading volume after launch?) ---
+
+  n_exchanges_before vs vol_decay_ratio   rho = +0.22 ***
+    Tokens that were already listed on more CEXes BEFORE Binance perps
+    went live tend to keep their volume better in days 8-30. Read: if a
+    token was already actively traded somewhere, Binance perp launches
+    just give it a new venue, and the trading carries on. Whereas if
+    Binance perp is the token's first big stage, the volume is more
+    likely to spike on day 1 and then fade.
+    Translation for a strategy: "Old tokens getting their first Binance
+    perp tend to retain real demand. Brand-new tokens with no prior
+    venues are more often hype-and-fade."
+
+  n_exchanges_within_7d vs vol_decay_ratio   rho = -0.17 **
+    Tokens that get co-listed across multiple venues in the same week as
+    the Binance perp fade FASTER, not slower. Sounds backwards but it
+    isn't: when 4 exchanges all light up at once, day-1 volume is
+    artificially huge (everyone front-running each other), then the
+    excitement compresses fast. Classic sell-the-news pattern.
+
+  rd_investor_count vs vol_decay_ratio   rho = -0.16 **
+    More VC investors -> slightly faster volume decay. Speculation: the
+    more VCs are involved, the more potential token unlocks the market
+    has to worry about, and traders take profit faster. Or simpler: more
+    investors usually means more publicity at launch, which artificially
+    inflates day-1 volume relative to baseline. Either way, real.
+
+--- 30-day price return (was the perp up or down 30 days in?) ---
+
+  fdv_at_listing vs ret_30d   rho = +0.19 ***
+    Bigger FDV at launch -> better 30-day return. The expensive-looking
+    big-cap perp launches actually outperformed the cheap small-caps.
+    This goes against the intuition that "big FDV = overpriced". On
+    Binance perps, big FDV seems to signal "real liquid market", which
+    holds up better.
+
+  n_exchanges_within_7d vs ret_30d   rho = -0.14 *
+    Co-launches hurt the 30-day return for the same reason they hurt
+    volume sustain — sell-the-news.
+
+  Funding totals vs ret_30d
+    No significant relationship. How much VC money the project raised
+    doesn't predict whether the perp price goes up or down over 30 days.
+    This is interesting: people often assume well-funded projects do
+    better, but at the perp-launch horizon the funding background just
+    isn't predictive of price direction.
+
+--- 7-day price return ---
+
+  cr_investor_count vs ret_7d   rho = -0.14 **
+    More CryptoRank-listed investors -> slightly worse 7-day return.
+    Possibly the same mechanism as the volume-decay finding: heavily
+    backed projects get hyped at launch and then sold by traders.
+
+  fdv_at_listing vs ret_7d   rho = +0.11 *
+    Bigger FDV -> slightly better 7-day return. Weaker version of the
+    30-day result.
+
+  n_exchanges_within_7d vs ret_7d   rho = -0.11 *
+    Co-launches hurt 7-day return too. Consistent across horizons.
+
+--- Things we expected to matter but didn't ---
+
+  rd_total_funding_usd vs anything  -> essentially 0
+    Funding USD doesn't predict price OR volume outcomes. The investor
+    COUNT matters (more investors = more day-1 hype = faster decay), but
+    the dollar amount doesn't.
+
+  days_since_first_listing vs anything -> weak
+    How long the token had existed before the perp launch doesn't matter
+    much for outcomes, except as captured by n_exchanges_before.
+
+  Specific exchange flags (had_coinbase_spot, etc.) -> mixed
+    Look at section 5c of the notebook — having Coinbase or OKX spot
+    listed beforehand correlates with slightly better volume retention,
+    but the median differences are small (~0.27 vs 0.30).
+
+
+==============================================================================
+9. How to verify any finding for yourself, with no coding
+==============================================================================
+
+You don't have to trust the math. You can eyeball every finding directly
+in Excel.
+
+Open enriched_clean.csv in Excel.
+
+To check "n_exchanges_before -> better volume sustain":
+  1. Click the column letter for n_exchanges_before.
+  2. Data -> Sort A to Z (ascending). The whole spreadsheet sorts by it.
+  3. Look at vol_decay_ratio for the top 50 rows (tokens with 0 or 1 prior
+     listings). Note the average — should be smaller (more decay).
+  4. Now look at vol_decay_ratio for rows where n_exchanges_before is 4, 5,
+     or 6 (sort the other way or filter). Note the average — should be
+     bigger (less decay).
+  5. The difference between those two averages is what the rho is
+     measuring.
+
+To check "bigger FDV -> better 30-day returns":
+  1. Sort by fdv_at_listing ascending.
+  2. Look at ret_30d for the top 50 (smallest tokens) vs the bottom 50
+     (biggest tokens). The biggest tokens should have less negative (or
+     more positive) returns on average.
+
+To check "co-launches hurt volume":
+  1. Filter for n_exchanges_within_7d >= 3 (lots of simultaneous listings).
+  2. Look at average vol_decay_ratio. Should be lower than the overall
+     average.
+
+If any of these eyeball checks DOESN'T match the finding, tell me — that
+would mean something's wrong with the data or the math.
+
+
+==============================================================================
+10. A worked example: PENGU
+==============================================================================
+
+PENGU is one row in enriched_clean.csv. Let's read it out loud.
+
+  project              Pudgy Penguins
+  ticker               PENGU
+  binance_perp_date    2025-01-14
+  perp_symbol          PENGUUSDT
+  fdv_at_listing       747,950,000   ($748M — biggish launch)
+
+  n_exchanges_before   2
+    Binance spot listed PENGU on 2024-12-17 (28 days before the perp).
+    OKX perp listed PENGU on 2024-12-17 too (same day as Binance spot).
+    So when Binance perps went live on Jan 14, PENGU had been actively
+    trading on 2 major venues for nearly a month.
+
+  n_exchanges_within_7d  0
+    No other venue listed PENGU within +/- 7 days of the Binance perp.
+    Not a co-launch.
+
+  days_since_first_listing  28
+    Binance perp was 28 days after the first listing on another venue.
+
+  ret_1d   +2.17%
+    Up a bit on day one.
+  ret_7d   -21.26%
+    Down 21% by the end of week one.
+  ret_30d  -66.31%
+    Down 66% by day 30. PENGU got brutalized in the first month.
+
+  vol_d1_usd          $223M
+  vol_avg_d8_30_usd   $234M
+  vol_decay_ratio     1.05
+    Even though price tanked 66%, daily trading volume on days 8-30 was
+    slightly HIGHER than day 1. That's strong sustained interest — PENGU
+    kept its trading audience even as price fell.
+
+  rd_total_funding_usd  9,000,000
+    Pudgy Penguins raised $9M in VC.
+  rd_investor_count    11
+  rd_lead_count        1
+
+So PENGU is an example of the strongest finding: a token that had been on
+multiple venues for ~a month before the Binance perp launch (n_exchanges_
+before = 2, days_since_first_listing = 28), and it RETAINED its volume
+beautifully (decay ratio > 1) even though the price did terribly. The
+volume-sustain finding is about whether the market keeps engaging with the
+perp, not about whether the price goes up.
+
+You can re-do this exercise with any row in the spreadsheet to develop
+intuition for the columns.
+
+Below are 10 more rows worked the same way, each chosen to illustrate
+a different pattern. Read these as flashcards — each one is a different
+"shape" of how a perp launch can go.
+
+
+------------------------------------------------------------------------------
+Example 2 — ANIME (Animecoin): textbook "prior footprint sustains volume"
+------------------------------------------------------------------------------
+  project              Animecoin
+  ticker               ANIME
+  binance_perp_date    2025-02-20
+  fdv_at_listing       $49.31M (small)
+
+  n_exchanges_before   4
+    Already listed on Binance spot, OKX perp, OKX spot, and Bithumb
+    BEFORE Binance perps went live. This is a token with a real prior
+    footprint.
+
+  ret_7d   +18.10%
+  ret_30d  -21.98%
+  vol_d1_usd        $25.6M
+  vol_avg_d8_30_usd $33.4M  -> bigger than day 1
+  vol_decay_ratio   1.31
+    Volume on days 8-30 was 31% HIGHER than day 1. The token was already
+    being traded heavily on 4 other venues, so Binance perps just opened
+    another door for that existing audience instead of creating one-day
+    hype.
+
+What this teaches you: this is the headline finding ("more prior listings
+-> better volume sustain") in its purest form. ANIME ranks high on
+n_exchanges_before AND high on vol_decay_ratio. Across the dataset, that
+pairing is common enough to produce rho = +0.22 with very high confidence.
+
+
+------------------------------------------------------------------------------
+Example 3 — DoubleZero (2Z): textbook sell-the-news co-launch
+------------------------------------------------------------------------------
+  project              DoubleZero
+  ticker               2Z
+  binance_perp_date    2025-10-02
+  fdv_at_listing       $1.04B
+
+  n_exchanges_before   0
+  n_exchanges_within_7d 3
+    Zero prior footprint. Then THREE other venues lit up within a week
+    of the Binance perp. A classic "coordinated launch everywhere".
+
+  rd_total_funding_usd $28M (29 investors)
+    Well-backed project, lots of VCs.
+
+  vol_d1_usd       $1.76 BILLION  (massive day 1)
+  vol_avg_d8_30   ~$62M           (collapsed)
+  vol_decay_ratio  0.035
+    Volume on days 8-30 was 3.5% of day 1. Volume essentially evaporated.
+
+  ret_7d   -56.41%
+  ret_30d  -80.86%
+    Price down 81% in a month. Brutal.
+
+What this teaches you: the co-launch effect is real and big. When four
+exchanges (Binance perp + 3 others) all open trading the same week, you
+get an enormous day-1 spike followed by an immediate collapse — the
+classic sell-the-news pattern. n_exchanges_within_7d correlates negatively
+with both volume sustain AND 30-day returns.
+
+
+------------------------------------------------------------------------------
+Example 4 — MANTRA: zero prior footprint, instant volume collapse
+------------------------------------------------------------------------------
+  project              MANTRA
+  ticker               OM (perp symbol differs)
+  binance_perp_date    2026-03-04
+  fdv_at_listing       $81.49M
+  n_exchanges_before   0
+
+  vol_d1_usd        $555M (big day 1)
+  vol_avg_d8_30_usd ~$13M
+  vol_decay_ratio   0.024
+    Volume fell to 2.4% of day-1 levels. Among the steepest decays in
+    the dataset.
+
+  ret_7d   +26.19%
+  ret_30d  -28.38%
+
+  rd_total_funding_usd $31M (21 investors)
+    Heavily backed but no prior venues.
+
+What this teaches you: when a well-funded project has its FIRST major
+listing on Binance perps, day-1 volume is huge because everyone is rushing
+in at once, but there's no existing trading base to support the perp
+afterwards. The "more investors -> faster volume fade" link (rho = -0.16)
+shows up here clearly.
+
+
+------------------------------------------------------------------------------
+Example 5 — MemeCore (M): a big-FDV winner that defies the volume rule
+------------------------------------------------------------------------------
+  project              MemeCore
+  ticker               M
+  binance_perp_date    2025-07-07
+  fdv_at_listing       $17.54 BILLION  (mega-cap)
+  n_exchanges_before   0
+
+  rd_total_funding_usd N/A (no investor info)
+  rd_investor_count    7
+
+  ret_7d   +278.25%
+  ret_30d  +228.31%
+    Up 228% in a month. A genuine breakout.
+
+  vol_d1_usd        $199M
+  vol_avg_d8_30_usd $119M
+  vol_decay_ratio   0.60
+    Volume did fade somewhat (60% of day 1), but the PRICE rocketed.
+
+What this teaches you: FDV at launch matters for price (rho = +0.19 with
+ret_30d). MemeCore had a $17.5B FDV — the kind of size that signals "real
+market" — and it outperformed dramatically. The volume-sustain finding
+and the price-return finding are separate stories. A token can fade on
+volume yet still appreciate on price (or vice versa, as PENGU showed).
+
+
+------------------------------------------------------------------------------
+Example 6 — Vaulta (A): $4 BILLION raised, still tanked
+------------------------------------------------------------------------------
+  project              Vaulta
+  ticker               A
+  binance_perp_date    2025-05-28
+  fdv_at_listing       $199.48M
+
+  rd_total_funding_usd $4,060,000,000  (yes, $4 billion)
+  rd_investor_count    1   (single mega-investor)
+  rd_lead_count        0
+
+  n_exchanges_before   0
+  n_exchanges_within_7d 3
+
+  ret_7d   -14.64%
+  ret_30d  -34.09%
+  vol_decay_ratio   0.29
+
+What this teaches you: dollars raised is NOT predictive of outcomes. The
+correlation between rd_total_funding_usd and ret_30d is essentially zero
+across the dataset (rho ~ 0.01). Vaulta has the largest funding number in
+our data and still lost a third of its value in a month. What matters
+isn't HOW MUCH money was raised; it's WHO and HOW MANY (which feeds into
+the launch hype and the eventual sell-off).
+
+
+------------------------------------------------------------------------------
+Example 7 — Monad (MON): 58 investors, classic over-hyped fade
+------------------------------------------------------------------------------
+  project              Monad
+  ticker               MON
+  binance_perp_date    2025-10-10
+  fdv_at_listing       $3.1B
+
+  rd_total_funding_usd $432M
+  rd_investor_count    58   (one of the most-backed projects in the dataset)
+  rd_lead_count        4
+
+  n_exchanges_before   0
+  n_exchanges_within_7d 1
+
+  ret_7d   -51.15%
+  ret_30d  -53.07%
+  vol_decay_ratio   0.11
+
+What this teaches you: rd_investor_count vs vol_decay_ratio has rho = -0.16
+across the dataset — more investors backing a project tends to mean
+faster volume fade post-launch. Monad illustrates the mechanism. With
+58 VCs publicly backing it, the launch generated maximum hype and
+maximum supply pressure (every backer eventually wants out), so day-1
+participation was high and subsequent decay was rapid.
+
+
+------------------------------------------------------------------------------
+Example 8 — Berachain (BERA): well-prepared launch, nothing happened
+------------------------------------------------------------------------------
+  project              Berachain
+  ticker               BERA
+  binance_perp_date    2025-02-20
+  fdv_at_listing       $223.36M
+
+  rd_total_funding_usd $142M
+  rd_investor_count    48
+  rd_lead_count        1
+
+  n_exchanges_before   5   (5 of the 6 tracked venues already listed it)
+  n_exchanges_within_7d 0
+
+  ret_7d   +11.99%
+  ret_30d  +1.62%   (basically flat)
+  vol_decay_ratio   0.14
+
+What this teaches you: contradictions exist. Berachain had the maximum
+prior footprint (5/6 venues) which the heatmap says should help volume
+sustain — yet its vol_decay was 0.14, far from sustained. AND it had 48
+investors (which usually predicts fast fade — matches here on volume,
+contradicts on price). Berachain reminds us that correlations describe
+AVERAGE TENDENCIES across many tokens. Individual tokens can sit anywhere
+in the distribution. rho = +0.22 doesn't mean "always", it means "more
+often than not".
+
+
+------------------------------------------------------------------------------
+Example 9 — Pump.fun (PUMP): the rare volume-grew counter-example
+------------------------------------------------------------------------------
+  project              Pump.fun
+  ticker               PUMP
+  binance_perp_date    2025-07-10
+  fdv_at_listing       $1.74B
+
+  rd_total_funding_usd $500M (huge raise)
+  rd_investor_count    0   (RootData lists no investor names — likely a
+                            self-funded/community launch despite the $500M)
+
+  n_exchanges_before   0
+  n_exchanges_within_7d 2
+
+  ret_7d   -1.36%
+  ret_30d  -43.23%
+  vol_d1_usd        $168M
+  vol_avg_d8_30    $668M  (volume nearly FOUR TIMES day-1)
+  vol_decay_ratio  3.98   (the volume sustain GREW)
+
+What this teaches you: the headline pattern says day-1 volume usually
+exceeds later volume (vol_decay_ratio < 1 is normal). PUMP is the
+opposite — day-1 was modest, then ongoing volume EXPLODED. This usually
+happens when the project gradually catches on after its launch (memecoin
+launchpad pump.fun had an organic user base that kept growing). A handful
+of these counter-examples exist in the data. They don't break the
+average; they just remind you that "rho = +0.22" leaves a LOT of
+variance unexplained (about 95%, actually — R-squared roughly 0.05).
+
+
+------------------------------------------------------------------------------
+Example 10 — Zerebro (ZEREBRO): small token, no prior, classic loser
+------------------------------------------------------------------------------
+  project              Zerebro
+  ticker               ZEREBRO
+  binance_perp_date    2025-01-14
+  fdv_at_listing       $36.74M  (small)
+
+  n_exchanges_before   0
+  n_exchanges_within_7d 0
+
+  rd_total_funding_usd N/A
+
+  ret_7d   -42.01%
+  ret_30d  -81.48%
+  vol_d1_usd        $188M
+  vol_avg_d8_30    $63M
+  vol_decay_ratio  0.34
+
+What this teaches you: the negative-case version of MemeCore. Small FDV
+($37M is in the bottom quartile), zero prior footprint, no significant
+backers. Both the price-return story (small FDV -> worse returns) and
+the volume-sustain story (no prior venues -> faster fade) work against
+this token. Zerebro lost 81% in 30 days. Tokens that score badly on
+multiple "before" features tend to compound bad outcomes.
+
+
+------------------------------------------------------------------------------
+Example 11 — Bancor Network (BNT): tiny day-1 volume, then it grew
+------------------------------------------------------------------------------
+  project              Bancor Network
+  ticker               BNT
+  binance_perp_date    2025-10-08
+  fdv_at_listing       $36.9M
+
+  n_exchanges_before   4   (BNT is an old DeFi token, was on many venues)
+  rd_total_funding_usd $153M (across many old funding rounds)
+  rd_investor_count    4
+  rd_lead_count        1
+
+  ret_7d   -8.61%
+  ret_30d  -27.03%
+  vol_d1_usd        $1.4M   (tiny — for an old token few traders cared)
+  vol_avg_d8_30    $1.7M
+  vol_decay_ratio  1.21
+
+What this teaches you: vol_decay_ratio > 1 with a tiny base is mostly
+noise — BNT's day-1 wasn't a real launch event (the token had been
+trading for years), so the "decay ratio" is comparing two roughly-equal
+small numbers. The clean_log.txt flags rows with vol_decay > 10 for this
+exact reason. When you see a high decay ratio, sanity-check vol_d1_usd:
+if it's tiny, the decay metric isn't meaningful. ANIME (Example 2) above
+is the LEGITIMATE version of "high decay ratio" — its day-1 was $25M,
+which IS a real launch event.
+
+
+--- Reading these 10 examples in aggregate ---
+
+If you read the 10 examples carefully, you'll notice a pattern: every
+correlation we report has clear exemplars AND clear counter-examples in
+the data. The headline finding (n_exchanges_before -> vol_decay_ratio)
+has ANIME (textbook positive) and Berachain (counter-example, lots of
+prior venues but volume still faded). That's how correlations work in
+the real world — not as deterministic rules, but as biases.
+
+If you want to gut-check any specific finding, open enriched_clean.csv
+in Excel, sort by the relevant column, and skim the values yourself.
+The data is right there.
+
+
+==============================================================================
+11. What I'd do next if we had more time
+==============================================================================
+
+If you want to extend this:
+
+  a) Better cleaning of the RD matches. There are still ~14 nulled RD rows
+     I could try to fix manually by looking each up on rootdata.com and
+     correcting the project_id. Right now they just go missing.
+
+  b) Add Bybit, Bitget, Gate, MEXC, KuCoin to the exchange-footprint
+     count. Right now we only have Binance/OKX/Coinbase/Bithumb/Upbit.
+     Adding the next tier would make n_exchanges_before more accurate
+     for many tokens.
+
+  c) Use 4-hour bars instead of 1-day bars for the early return
+     computation. Most of the action in a new perp happens in the first
+     few hours. A "ret_4h" column would probably correlate more strongly
+     with our features.
+
+  d) Compute open interest growth. We have the funding rates but not OI.
+     OI growth is arguably the cleanest "is this perp actually catching
+     on" signal.
+
+  e) Do a regression with FDV and exchange-footprint together, then look
+     at residuals. The signals we found are individually weak. A multi-
+     variable model might tease apart what's actually independent.
+
+  f) Add a "sector tag" (DeFi, AI, gaming, meme, L1, etc.) and see if
+     the patterns differ by sector. Meme launches might behave very
+     differently from L1 launches.
+
+None of these is essential. They're polish on top of an already-working
+pipeline.
+
+
+==============================================================================
+12. Glossary
+==============================================================================
+
+Backend / API: a server somewhere on the internet that answers data
+  requests. Binance's "fapi.binance.com" is its futures API server.
+
+Boxplot: a chart showing the median (middle line), the middle 50% of
+  values (the box), and the outliers (dots). Lets you compare distributions
+  across groups at a glance.
+
+Cache: a saved copy of something so we don't have to re-fetch it. Our
+  cache/ folder holds saved API responses.
+
+Correlation: a number between -1 and +1 describing how two columns move
+  together. We use Spearman, which uses rankings instead of raw values.
+
+CSV: comma-separated values. A spreadsheet file that any program (Excel,
+  Notepad, Python) can read.
+
+Drawdown: the percent drop from a peak to a subsequent trough. A token
+  whose price went 1.00 -> 1.50 -> 0.60 -> 1.00 had a 60% drawdown (1.50
+  down to 0.60).
+
+FDV: Fully Diluted Valuation. What the project would be worth if every
+  token that exists or will ever exist were trading at the current price.
+
+JSON: a text format for structured data, used to save API responses.
+  Looks like { "key": "value", "list": [1, 2, 3] }.
+
+Kline: an exchange's term for a single candlestick — one bar of OHLCV
+  data (open, high, low, close, volume) over a time interval.
+
+Notebook: short for Jupyter notebook. An interactive document combining
+  code, charts, and text. Opens in a browser tab.
+
+p-value: the probability that we'd see a result this strong by pure
+  chance if the two columns were actually unrelated. Smaller = stronger
+  evidence the relationship is real.
+
+Pearson vs Spearman: two ways to measure correlation. Pearson uses raw
+  values and assumes linear relationships. Spearman uses rankings and is
+  robust to outliers and non-linear-but-monotonic relationships. We use
+  Spearman.
+
+Rate-limit: APIs often cap how many requests you can make per second.
+  Our scripts wait 0.2-0.3 seconds between requests to stay under the
+  limit.
+
+Regression: a math procedure that fits a line/plane through the data and
+  spits out coefficients telling you "this column is worth X units of the
+  outcome per unit of itself, holding other columns constant".
+
+rho: the Greek letter we use for the Spearman correlation value. Pronounced
+  "row". Ranges from -1 (perfect inverse) to +1 (perfect agreement), with
+  0 meaning no relationship.
+
+Slug: the URL-friendly version of a name, e.g. "pudgy-penguins" instead
+  of "Pudgy Penguins". CryptoRank uses slugs as IDs.
+
+Spot: see section 2.
+
+Perp / perpetual: see section 2.
+
+Ticker: the short code for a token, e.g. PENGU for Pudgy Penguins.
+
+Tier-1 investor: top-tier VCs like a16z, Paradigm, Pantera, Sequoia.
+  CryptoRank ranks investors into tiers; tier-1 are the most prestigious.
+
+Token: a digital asset. In this project, each row of the spreadsheet is
+  about one token.
+
+Volume: how much trading happened. We measure it in USD (dollar volume),
+  not coins.
+
+==============================================================================
+End of explanation. If a section is unclear, point at it and I'll rewrite
+that specific part more slowly.
+==============================================================================

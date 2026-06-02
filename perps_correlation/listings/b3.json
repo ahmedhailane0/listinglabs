@@ -1,0 +1,86 @@
+{
+  "token": "B3",
+  "name": "B3",
+  "chain": "base",
+  "token_contract": "0xb3b32f9f8827d4634fe7d973fa1034ec9fddb3b3",
+  "gecko_pool": "0xb099c658e784b41ee435d48a8eb67e8f27285c93",
+  "fdv_usd": 76898181.45,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "b3",
+  "mcap_usd": 35705043.2,
+  "circulating_supply": 46431583333.0,
+  "total_supply": 100000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-02-09T18:00:00Z",
+  "window_end_utc": "2026-05-09T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-02-10T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-02-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-02-13T11:30:00Z"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-02-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-02-21T00:00:00Z"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-02-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2025-02-27T02:13:00Z",
+      "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2025-03-14T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2025-03-14T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-05-27T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-05-07T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,3208 @@
+[
+  {
+    "market": "KRW-BTC",
+    "ticker": "BTC",
+    "korean_name": "비트코인",
+    "english_name": "Bitcoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ETH",
+    "ticker": "ETH",
+    "korean_name": "이더리움",
+    "english_name": "Ethereum",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ETC",
+    "ticker": "ETC",
+    "korean_name": "이더리움클래식",
+    "english_name": "Ethereum Classic",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XRP",
+    "ticker": "XRP",
+    "korean_name": "엑스알피[리플]",
+    "english_name": "XRP",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BCH",
+    "ticker": "BCH",
+    "korean_name": "비트코인캐시",
+    "english_name": "Bitcoin Cash",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-QTUM",
+    "ticker": "QTUM",
+    "korean_name": "퀀텀",
+    "english_name": "Qtum",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-A",
+    "ticker": "A",
+    "korean_name": "볼타",
+    "english_name": "Vaulta",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ICX",
+    "ticker": "ICX",
+    "korean_name": "아이콘",
+    "english_name": "ICON",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TRX",
+    "ticker": "TRX",
+    "korean_name": "트론",
+    "english_name": "TRON",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ELF",
+    "ticker": "ELF",
+    "korean_name": "엘프",
+    "english_name": "aelf",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KNC",
+    "ticker": "KNC",
+    "korean_name": "카이버네트워크",
+    "english_name": "Kyber Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GLM",
+    "ticker": "GLM",
+    "korean_name": "골렘",
+    "english_name": "Golem",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZIL",
+    "ticker": "ZIL",
+    "korean_name": "질리카",
+    "english_name": "Zilliqa",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WAXP",
+    "ticker": "WAXP",
+    "korean_name": "왁스",
+    "english_name": "WAXP",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POWR",
+    "ticker": "POWR",
+    "korean_name": "파워렛저",
+    "english_name": "Powerledger",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STEEM",
+    "ticker": "STEEM",
+    "korean_name": "스팀",
+    "english_name": "Steem",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZRX",
+    "ticker": "ZRX",
+    "korean_name": "제로엑스",
+    "english_name": "0x",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SNT",
+    "ticker": "SNT",
+    "korean_name": "스테이터스네트워크토큰",
+    "english_name": "Status Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ADA",
+    "ticker": "ADA",
+    "korean_name": "에이다",
+    "english_name": "Cardano",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BAT",
+    "ticker": "BAT",
+    "korean_name": "베이직어텐션토큰",
+    "english_name": "Basic Attention Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-THETA",
+    "ticker": "THETA",
+    "korean_name": "쎄타토큰",
+    "english_name": "Theta Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CVC",
+    "ticker": "CVC",
+    "korean_name": "시빅",
+    "english_name": "Civic",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WAVES",
+    "ticker": "WAVES",
+    "korean_name": "웨이브",
+    "english_name": "Waves",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LINK",
+    "ticker": "LINK",
+    "korean_name": "체인링크",
+    "english_name": "ChainLink",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ENJ",
+    "ticker": "ENJ",
+    "korean_name": "엔진코인",
+    "english_name": "Enjin Coin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-VET",
+    "ticker": "VET",
+    "korean_name": "비체인",
+    "english_name": "VeChain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MTL",
+    "ticker": "MTL",
+    "korean_name": "메탈",
+    "english_name": "Metal",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IOST",
+    "ticker": "IOST",
+    "korean_name": "이오스트",
+    "english_name": "IOST",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AMO",
+    "ticker": "AMO",
+    "korean_name": "아모코인",
+    "english_name": "AMO Coin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BSV",
+    "ticker": "BSV",
+    "korean_name": "비트코인에스브이",
+    "english_name": "BITCOINSV",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ORBS",
+    "ticker": "ORBS",
+    "korean_name": "오브스",
+    "english_name": "Orbs",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TFUEL",
+    "ticker": "TFUEL",
+    "korean_name": "쎄타퓨엘",
+    "english_name": "TFUEL",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ANKR",
+    "ticker": "ANKR",
+    "korean_name": "앵커",
+    "english_name": "Ankr Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CRO",
+    "ticker": "CRO",
+    "korean_name": "크로노스",
+    "english_name": "Cronos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CHR",
+    "ticker": "CHR",
+    "korean_name": "크로미아",
+    "english_name": "Chromia",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MBL",
+    "ticker": "MBL",
+    "korean_name": "무비블록",
+    "english_name": "MovieBloc",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FCT2",
+    "ticker": "FCT2",
+    "korean_name": "피르마체인",
+    "english_name": "Firmachain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MEV",
+    "ticker": "MEV",
+    "korean_name": "미버스",
+    "english_name": "MEVerse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-COS",
+    "ticker": "COS",
+    "korean_name": "콘텐토스",
+    "english_name": "Contentos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EL",
+    "ticker": "EL",
+    "korean_name": "엘리시아",
+    "english_name": "ELYSIA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HIVE",
+    "ticker": "HIVE",
+    "korean_name": "하이브",
+    "english_name": "Hive",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XPR",
+    "ticker": "XPR",
+    "korean_name": "엑스피알네트워크",
+    "english_name": "XPR Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EGG",
+    "ticker": "EGG",
+    "korean_name": "네스트리",
+    "english_name": "Nestree",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BORA",
+    "ticker": "BORA",
+    "korean_name": "보라",
+    "english_name": "BORA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ARPA",
+    "ticker": "ARPA",
+    "korean_name": "알파",
+    "english_name": "ARPA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CTC",
+    "ticker": "CTC",
+    "korean_name": "크레딧코인",
+    "english_name": "Creditcoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CKB",
+    "ticker": "CKB",
+    "korean_name": "너보스",
+    "english_name": "Nervos Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AERGO",
+    "ticker": "AERGO",
+    "korean_name": "아르고",
+    "english_name": "Aergo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-UNI",
+    "ticker": "UNI",
+    "korean_name": "유니스왑",
+    "english_name": "Uniswap",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-YFI",
+    "ticker": "YFI",
+    "korean_name": "연파이낸스",
+    "english_name": "yearn.finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-UMA",
+    "ticker": "UMA",
+    "korean_name": "우마",
+    "english_name": "UMA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AAVE",
+    "ticker": "AAVE",
+    "korean_name": "에이브",
+    "english_name": "Aave",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-COMP",
+    "ticker": "COMP",
+    "korean_name": "컴파운드",
+    "english_name": "Compound",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RSR",
+    "ticker": "RSR",
+    "korean_name": "리저브라이트",
+    "english_name": "Reserve Rights",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NMR",
+    "ticker": "NMR",
+    "korean_name": "뉴메레르",
+    "english_name": "Numeraire",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RLC",
+    "ticker": "RLC",
+    "korean_name": "아이젝",
+    "english_name": "iExec RLC",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-UOS",
+    "ticker": "UOS",
+    "korean_name": "울트라",
+    "english_name": "Ultra",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SAND",
+    "ticker": "SAND",
+    "korean_name": "샌드박스",
+    "english_name": "The Sandbox",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AWE",
+    "ticker": "AWE",
+    "korean_name": "에이더블유이",
+    "english_name": "AWE Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BEL",
+    "ticker": "BEL",
+    "korean_name": "벨라프로토콜",
+    "english_name": "Bella Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OBSR",
+    "ticker": "OBSR",
+    "korean_name": "옵저버",
+    "english_name": "Observer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POLA",
+    "ticker": "POLA",
+    "korean_name": "폴라리스쉐어",
+    "english_name": "Polaris Share",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ADP",
+    "ticker": "ADP",
+    "korean_name": "어댑터토큰",
+    "english_name": "Adappter Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GHX",
+    "ticker": "GHX",
+    "korean_name": "게이머코인",
+    "english_name": "Gamercoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CBK",
+    "ticker": "CBK",
+    "korean_name": "코박토큰",
+    "english_name": "Cobak Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MVC",
+    "ticker": "MVC",
+    "korean_name": "마일벌스",
+    "english_name": "MileVerse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GRT",
+    "ticker": "GRT",
+    "korean_name": "더그래프",
+    "english_name": "The Graph",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BIOT",
+    "ticker": "BIOT",
+    "korean_name": "바이오패스포트",
+    "english_name": "BioPassport",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SNX",
+    "ticker": "SNX",
+    "korean_name": "신세틱스",
+    "english_name": "Synthetix Network Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GRACY",
+    "ticker": "GRACY",
+    "korean_name": "그레이시",
+    "english_name": "Gracy",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-OXT",
+    "ticker": "OXT",
+    "korean_name": "오키드",
+    "english_name": "Orchid",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-MAPO",
+    "ticker": "MAPO",
+    "korean_name": "맵프로토콜",
+    "english_name": "MAP Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AQT",
+    "ticker": "AQT",
+    "korean_name": "알파쿼크",
+    "english_name": "Alpha Quark Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WIKEN",
+    "ticker": "WIKEN",
+    "korean_name": "위드",
+    "english_name": "Project WITH",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-CTSI",
+    "ticker": "CTSI",
+    "korean_name": "카르테시",
+    "english_name": "Cartesi",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MANA",
+    "ticker": "MANA",
+    "korean_name": "디센트럴랜드",
+    "english_name": "Decentraland",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LPT",
+    "ticker": "LPT",
+    "korean_name": "라이브피어",
+    "english_name": "Livepeer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SUSHI",
+    "ticker": "SUSHI",
+    "korean_name": "스시스왑",
+    "english_name": "Sushiswap",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PUNDIX",
+    "ticker": "PUNDIX",
+    "korean_name": "펀디엑스",
+    "english_name": "Pundi X",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CELR",
+    "ticker": "CELR",
+    "korean_name": "셀러네트워크",
+    "english_name": "Celer Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BFC",
+    "ticker": "BFC",
+    "korean_name": "바이프로스트",
+    "english_name": "Bifrost",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ALICE",
+    "ticker": "ALICE",
+    "korean_name": "마이네이버앨리스",
+    "english_name": "MyNeighborAlice",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OGN",
+    "ticker": "OGN",
+    "korean_name": "오리진프로토콜",
+    "english_name": "Origin Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-COTI",
+    "ticker": "COTI",
+    "korean_name": "코티",
+    "english_name": "COTI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CAKE",
+    "ticker": "CAKE",
+    "korean_name": "팬케이크스왑",
+    "english_name": "PancakeSwap",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BNT",
+    "ticker": "BNT",
+    "korean_name": "뱅코르",
+    "english_name": "Bancor",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XVS",
+    "ticker": "XVS",
+    "korean_name": "비너스",
+    "english_name": "Venus",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SWAP",
+    "ticker": "SWAP",
+    "korean_name": "트러스트스왑",
+    "english_name": "TrustSwap",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CHZ",
+    "ticker": "CHZ",
+    "korean_name": "칠리즈",
+    "english_name": "Chiliz",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AXS",
+    "ticker": "AXS",
+    "korean_name": "엑시인피니티",
+    "english_name": "Axie Infinity",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DAO",
+    "ticker": "DAO",
+    "korean_name": "다오메이커",
+    "english_name": "DAO Maker",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SIX",
+    "ticker": "SIX",
+    "korean_name": "식스",
+    "english_name": "SIX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-USDS",
+    "ticker": "USDS",
+    "korean_name": "유에스디에스",
+    "english_name": "USDS",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SHIB",
+    "ticker": "SHIB",
+    "korean_name": "시바이누",
+    "english_name": "SHIBA INU",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POL",
+    "ticker": "POL",
+    "korean_name": "폴리곤에코시스템토큰",
+    "english_name": "Polygon Ecosystem Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WOO",
+    "ticker": "WOO",
+    "korean_name": "우",
+    "english_name": "WOO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ACH",
+    "ticker": "ACH",
+    "korean_name": "알케미페이",
+    "english_name": "Alchemy Pay",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XLM",
+    "ticker": "XLM",
+    "korean_name": "스텔라루멘",
+    "english_name": "Stellar Lumens",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ONT",
+    "ticker": "ONT",
+    "korean_name": "온톨로지",
+    "english_name": "Ontology",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-META",
+    "ticker": "META",
+    "korean_name": "메타디움",
+    "english_name": "Metadium",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KAIA",
+    "ticker": "KAIA",
+    "korean_name": "카이아",
+    "english_name": "Kaia",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ONG",
+    "ticker": "ONG",
+    "korean_name": "온톨로지가스",
+    "english_name": "Ontology Gas",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ALGO",
+    "ticker": "ALGO",
+    "korean_name": "알고랜드",
+    "english_name": "Algorand",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-JST",
+    "ticker": "JST",
+    "korean_name": "저스트",
+    "english_name": "JUST",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XTZ",
+    "ticker": "XTZ",
+    "korean_name": "테조스",
+    "english_name": "Tezos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MLK",
+    "ticker": "MLK",
+    "korean_name": "밀크",
+    "english_name": "MiL.k",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DOT",
+    "ticker": "DOT",
+    "korean_name": "폴카닷",
+    "english_name": "Polkadot",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ATOM",
+    "ticker": "ATOM",
+    "korean_name": "코스모스",
+    "english_name": "Cosmos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TEMCO",
+    "ticker": "TEMCO",
+    "korean_name": "템코",
+    "english_name": "TEMCO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DOGE",
+    "ticker": "DOGE",
+    "korean_name": "도지코인",
+    "english_name": "Dogecoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KSM",
+    "ticker": "KSM",
+    "korean_name": "쿠사마",
+    "english_name": "Kusama",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CTK",
+    "ticker": "CTK",
+    "korean_name": "셴투",
+    "english_name": "Shentu",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BNB",
+    "ticker": "BNB",
+    "korean_name": "비앤비",
+    "english_name": "BNB",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NFT",
+    "ticker": "NFT",
+    "korean_name": "에이아이앤에프티",
+    "english_name": "AINFT",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SUN",
+    "ticker": "SUN",
+    "korean_name": "썬",
+    "english_name": "SUN",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XEC",
+    "ticker": "XEC",
+    "korean_name": "이캐시",
+    "english_name": "eCash",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SOL",
+    "ticker": "SOL",
+    "korean_name": "솔라나",
+    "english_name": "Solana",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EGLD",
+    "ticker": "EGLD",
+    "korean_name": "멀티버스엑스",
+    "english_name": "MultiversX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MASK",
+    "ticker": "MASK",
+    "korean_name": "마스크네트워크",
+    "english_name": "Mask Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-C98",
+    "ticker": "C98",
+    "korean_name": "코인98",
+    "english_name": "Coin98",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MED",
+    "ticker": "MED",
+    "korean_name": "메디블록",
+    "english_name": "MediBloc",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-1INCH",
+    "ticker": "1INCH",
+    "korean_name": "1인치",
+    "english_name": "1inch",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CRV",
+    "ticker": "CRV",
+    "korean_name": "커브",
+    "english_name": "Curve DAO Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BOBA",
+    "ticker": "BOBA",
+    "korean_name": "보바토큰",
+    "english_name": "Boba Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DYDX",
+    "ticker": "DYDX",
+    "korean_name": "디와이디엑스",
+    "english_name": "dYdX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MINA",
+    "ticker": "MINA",
+    "korean_name": "미나",
+    "english_name": "Mina",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-JOE",
+    "ticker": "JOE",
+    "korean_name": "트레이더조",
+    "english_name": "JOE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GALA",
+    "ticker": "GALA",
+    "korean_name": "갈라",
+    "english_name": "Gala",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ENS",
+    "ticker": "ENS",
+    "korean_name": "이더리움네임서비스",
+    "english_name": "Ethereum Name Service",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BTT",
+    "ticker": "BTT",
+    "korean_name": "비트토렌트",
+    "english_name": "BitTorrent",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-JASMY",
+    "ticker": "JASMY",
+    "korean_name": "재스미코인",
+    "english_name": "JasmyCoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-REQ",
+    "ticker": "REQ",
+    "korean_name": "리퀘스트",
+    "english_name": "Request",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CSPR",
+    "ticker": "CSPR",
+    "korean_name": "캐스퍼",
+    "english_name": "Casper",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AVAX",
+    "ticker": "AVAX",
+    "korean_name": "아발란체",
+    "english_name": "Avalanche",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TDROP",
+    "ticker": "TDROP",
+    "korean_name": "티드랍",
+    "english_name": "ThetaDrop",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HBAR",
+    "ticker": "HBAR",
+    "korean_name": "헤데라",
+    "english_name": "Hedera",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FANC",
+    "ticker": "FANC",
+    "korean_name": "팬시",
+    "english_name": "fanC",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MAY",
+    "ticker": "MAY",
+    "korean_name": "메이플라워",
+    "english_name": "Mayflower",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-REI",
+    "ticker": "REI",
+    "korean_name": "레이",
+    "english_name": "REI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-T",
+    "ticker": "T",
+    "korean_name": "쓰레스홀드",
+    "english_name": "Threshold",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MBX",
+    "ticker": "MBX",
+    "korean_name": "마브렉스",
+    "english_name": "Marblex",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GMT",
+    "ticker": "GMT",
+    "korean_name": "스테픈",
+    "english_name": "STEPN",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TAVA",
+    "ticker": "TAVA",
+    "korean_name": "알타바",
+    "english_name": "ALTAVA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-D",
+    "ticker": "D",
+    "korean_name": "달오픈네트워크",
+    "english_name": "DAR Open Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-APE",
+    "ticker": "APE",
+    "korean_name": "에이프코인",
+    "english_name": "ApeCoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WNCG",
+    "ticker": "WNCG",
+    "korean_name": "랩트나인크로니클골드",
+    "english_name": "Wrapped NCG",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AL",
+    "ticker": "AL",
+    "korean_name": "아치루트",
+    "english_name": "ArchLoot",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XCN",
+    "ticker": "XCN",
+    "korean_name": "오닉스코인",
+    "english_name": "Onyxcoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AZIT",
+    "ticker": "AZIT",
+    "korean_name": "아지트",
+    "english_name": "Azit",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FLR",
+    "ticker": "FLR",
+    "korean_name": "플레어",
+    "english_name": "Flare",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SFP",
+    "ticker": "SFP",
+    "korean_name": "세이프팔",
+    "english_name": "Safepal",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FITFI",
+    "ticker": "FITFI",
+    "korean_name": "스텝앱",
+    "english_name": "Step App",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-STAT",
+    "ticker": "STAT",
+    "korean_name": "스탯",
+    "english_name": "STAT",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CRTS",
+    "ticker": "CRTS",
+    "korean_name": "크라토스",
+    "english_name": "Cratos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LM",
+    "ticker": "LM",
+    "korean_name": "레저메타",
+    "english_name": "LeisureMeta",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GRND",
+    "ticker": "GRND",
+    "korean_name": "슈퍼워크",
+    "english_name": "Superwalk",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-APT",
+    "ticker": "APT",
+    "korean_name": "앱토스",
+    "english_name": "Aptos",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BLUR",
+    "ticker": "BLUR",
+    "korean_name": "블러",
+    "english_name": "Blur",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HOOK",
+    "ticker": "HOOK",
+    "korean_name": "훅트프로토콜",
+    "english_name": "Hooked Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LWA",
+    "ticker": "LWA",
+    "korean_name": "루미웨이브",
+    "english_name": "Lumiwave",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OP",
+    "ticker": "OP",
+    "korean_name": "옵티미즘",
+    "english_name": "Optimism",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ROA",
+    "ticker": "ROA",
+    "korean_name": "로아코어",
+    "english_name": "ROA CORE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GMX",
+    "ticker": "GMX",
+    "korean_name": "지엠엑스",
+    "english_name": "GMX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STX",
+    "ticker": "STX",
+    "korean_name": "스택스",
+    "english_name": "Stacks",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XPLA",
+    "ticker": "XPLA",
+    "korean_name": "콘엑스",
+    "english_name": "CONX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AHT",
+    "ticker": "AHT",
+    "korean_name": "아하토큰",
+    "english_name": "AhaToken",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ARB",
+    "ticker": "ARB",
+    "korean_name": "아비트럼",
+    "english_name": "Arbitrum",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-INJ",
+    "ticker": "INJ",
+    "korean_name": "인젝티브",
+    "english_name": "Injective",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HFT",
+    "ticker": "HFT",
+    "korean_name": "해시플로우",
+    "english_name": "Hashflow",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RPL",
+    "ticker": "RPL",
+    "korean_name": "로켓풀",
+    "english_name": "Rocket Pool",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IMX",
+    "ticker": "IMX",
+    "korean_name": "이뮤터블엑스",
+    "english_name": "Immutable X",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CFX",
+    "ticker": "CFX",
+    "korean_name": "콘플럭스",
+    "english_name": "Conflux Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ACS",
+    "ticker": "ACS",
+    "korean_name": "액세스프로토콜",
+    "english_name": "Access Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FRAX",
+    "ticker": "FRAX",
+    "korean_name": "프랙스",
+    "english_name": "Frax",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CELO",
+    "ticker": "CELO",
+    "korean_name": "셀로",
+    "english_name": "Celo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LDO",
+    "ticker": "LDO",
+    "korean_name": "리도다오",
+    "english_name": "Lido DAO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-S",
+    "ticker": "S",
+    "korean_name": "소닉",
+    "english_name": "Sonic",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FET",
+    "ticker": "FET",
+    "korean_name": "페치",
+    "english_name": "Fetch.ai",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SUI",
+    "ticker": "SUI",
+    "korean_name": "수이",
+    "english_name": "SUI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NCT",
+    "ticker": "NCT",
+    "korean_name": "폴리스웜",
+    "english_name": "Polyswarm",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FLOKI",
+    "ticker": "FLOKI",
+    "korean_name": "플로키",
+    "english_name": "FLOKI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ID",
+    "ticker": "ID",
+    "korean_name": "스페이스아이디",
+    "english_name": "SPACE ID",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RENDER",
+    "ticker": "RENDER",
+    "korean_name": "렌더토큰",
+    "english_name": "Render Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OSMO",
+    "ticker": "OSMO",
+    "korean_name": "오스모시스",
+    "english_name": "Osmosis",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FIL",
+    "ticker": "FIL",
+    "korean_name": "파일코인",
+    "english_name": "Filecoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ILV",
+    "ticker": "ILV",
+    "korean_name": "일루비움",
+    "english_name": "Illuvium",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MAV",
+    "ticker": "MAV",
+    "korean_name": "매버릭프로토콜",
+    "english_name": "Maverick Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RSS3",
+    "ticker": "RSS3",
+    "korean_name": "알에스에스쓰리",
+    "english_name": "RSS3",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AUDIO",
+    "ticker": "AUDIO",
+    "korean_name": "오디우스",
+    "english_name": "Audius",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AGI",
+    "ticker": "AGI",
+    "korean_name": "델리시움",
+    "english_name": "Delysium",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ASTR",
+    "ticker": "ASTR",
+    "korean_name": "아스타",
+    "english_name": "Astar",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WLD",
+    "ticker": "WLD",
+    "korean_name": "월드코인",
+    "english_name": "Worldcoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FLUX",
+    "ticker": "FLUX",
+    "korean_name": "플럭스",
+    "english_name": "Flux",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AGLD",
+    "ticker": "AGLD",
+    "korean_name": "어드벤처골드",
+    "english_name": "Adventure Gold",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AR",
+    "ticker": "AR",
+    "korean_name": "알위브",
+    "english_name": "Arweave",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RVN",
+    "ticker": "RVN",
+    "korean_name": "레이븐코인",
+    "english_name": "Ravencoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EDU",
+    "ticker": "EDU",
+    "korean_name": "오픈캠퍼스",
+    "english_name": "Open Campus",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SEI",
+    "ticker": "SEI",
+    "korean_name": "세이",
+    "english_name": "Sei",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WAXL",
+    "ticker": "WAXL",
+    "korean_name": "엑셀라",
+    "english_name": "Axelar",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MOC",
+    "ticker": "MOC",
+    "korean_name": "모스코인",
+    "english_name": "Moss Coin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PEPE",
+    "ticker": "PEPE",
+    "korean_name": "페페",
+    "english_name": "PEPE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CYBER",
+    "ticker": "CYBER",
+    "korean_name": "사이버",
+    "english_name": "Cyber",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ARKM",
+    "ticker": "ARKM",
+    "korean_name": "아캄",
+    "english_name": "Arkham",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PYR",
+    "ticker": "PYR",
+    "korean_name": "불칸포지드",
+    "english_name": "Vulcan Forged",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IOTX",
+    "ticker": "IOTX",
+    "korean_name": "아이오텍스",
+    "english_name": "IoTeX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HIGH",
+    "ticker": "HIGH",
+    "korean_name": "하이스트리트",
+    "english_name": "Highstreet",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PENDLE",
+    "ticker": "PENDLE",
+    "korean_name": "펜들",
+    "english_name": "Pendle",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BICO",
+    "ticker": "BICO",
+    "korean_name": "바이코노미",
+    "english_name": "Biconomy",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STORJ",
+    "ticker": "STORJ",
+    "korean_name": "스토리지",
+    "english_name": "Storj",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-API3",
+    "ticker": "API3",
+    "korean_name": "에이피아이쓰리",
+    "english_name": "API3",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZTX",
+    "ticker": "ZTX",
+    "korean_name": "지티엑스",
+    "english_name": "ZTX",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-MNT",
+    "ticker": "MNT",
+    "korean_name": "맨틀",
+    "english_name": "Mantle",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GTC",
+    "ticker": "GTC",
+    "korean_name": "깃코인",
+    "english_name": "Gitcoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-METIS",
+    "ticker": "METIS",
+    "korean_name": "메티스다오",
+    "english_name": "MetisDAO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TIA",
+    "ticker": "TIA",
+    "korean_name": "셀레스티아",
+    "english_name": "Celestia",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ICP",
+    "ticker": "ICP",
+    "korean_name": "인터넷컴퓨터",
+    "english_name": "Internet Computer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SPURS",
+    "ticker": "SPURS",
+    "korean_name": "토트넘홋스퍼",
+    "english_name": "Tottenham Hotspur Fan Token",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-NEO",
+    "ticker": "NEO",
+    "korean_name": "네오",
+    "english_name": "Neo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GAS",
+    "ticker": "GAS",
+    "korean_name": "가스",
+    "english_name": "Gas",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BIGTIME",
+    "ticker": "BIGTIME",
+    "korean_name": "빅타임",
+    "english_name": "Big Time",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZETA",
+    "ticker": "ZETA",
+    "korean_name": "제타체인",
+    "english_name": "ZetaChain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ARK",
+    "ticker": "ARK",
+    "korean_name": "아크",
+    "english_name": "Ark",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-YGG",
+    "ticker": "YGG",
+    "korean_name": "일드길드게임즈",
+    "english_name": "Yield Guild Games",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HUNT",
+    "ticker": "HUNT",
+    "korean_name": "헌트",
+    "english_name": "Hunt Town",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KAVA",
+    "ticker": "KAVA",
+    "korean_name": "카바",
+    "english_name": "Kava",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MAGIC",
+    "ticker": "MAGIC",
+    "korean_name": "매직",
+    "english_name": "Magic",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AUCTION",
+    "ticker": "AUCTION",
+    "korean_name": "바운스토큰",
+    "english_name": "Bounce Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-USDT",
+    "ticker": "USDT",
+    "korean_name": "테더",
+    "english_name": "Tether USDt",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-USDC",
+    "ticker": "USDC",
+    "korean_name": "유에스디코인",
+    "english_name": "USD Coin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RAD",
+    "ticker": "RAD",
+    "korean_name": "래드웍스",
+    "english_name": "Radworks",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LSK",
+    "ticker": "LSK",
+    "korean_name": "리스크",
+    "english_name": "Lisk",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TT",
+    "ticker": "TT",
+    "korean_name": "썬더코어",
+    "english_name": "ThunderCore",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ACE",
+    "ticker": "ACE",
+    "korean_name": "퓨저니스트",
+    "english_name": "Fusionist",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SKL",
+    "ticker": "SKL",
+    "korean_name": "스케일",
+    "english_name": "SKALE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IQ",
+    "ticker": "IQ",
+    "korean_name": "아이큐",
+    "english_name": "IQ",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PYTH",
+    "ticker": "PYTH",
+    "korean_name": "피스네트워크",
+    "english_name": "Pyth Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MANTA",
+    "ticker": "MANTA",
+    "korean_name": "만타네트워크",
+    "english_name": "Manta Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AKT",
+    "ticker": "AKT",
+    "korean_name": "아카시네트워크",
+    "english_name": "Akash Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BEAM",
+    "ticker": "BEAM",
+    "korean_name": "빔",
+    "english_name": "Beam",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PHA",
+    "ticker": "PHA",
+    "korean_name": "팔라네트워크",
+    "english_name": "Phala Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-JTO",
+    "ticker": "JTO",
+    "korean_name": "지토",
+    "english_name": "Jito",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-JUP",
+    "ticker": "JUP",
+    "korean_name": "주피터",
+    "english_name": "Jupiter",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STRK",
+    "ticker": "STRK",
+    "korean_name": "스타크넷",
+    "english_name": "Starknet",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SC",
+    "ticker": "SC",
+    "korean_name": "시아코인",
+    "english_name": "Siacoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TRAC",
+    "ticker": "TRAC",
+    "korean_name": "오리진트레일",
+    "english_name": "OriginTrail",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BONK",
+    "ticker": "BONK",
+    "korean_name": "봉크",
+    "english_name": "Bonk",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TOKAMAK",
+    "ticker": "TOKAMAK",
+    "korean_name": "토카막네트워크",
+    "english_name": "Tokamak Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AIOZ",
+    "ticker": "AIOZ",
+    "korean_name": "아이오즈네트워크",
+    "english_name": "AIOZ Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZK",
+    "ticker": "ZK",
+    "korean_name": "지케이싱크",
+    "english_name": "zkSync",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ONDO",
+    "ticker": "ONDO",
+    "korean_name": "온도파이낸스",
+    "english_name": "Ondo Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ALT",
+    "ticker": "ALT",
+    "korean_name": "알트레이어",
+    "english_name": "AltLayer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TAO",
+    "ticker": "TAO",
+    "korean_name": "비트텐서",
+    "english_name": "Bittensor",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NEAR",
+    "ticker": "NEAR",
+    "korean_name": "니어프로토콜",
+    "english_name": "NEAR Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RON",
+    "ticker": "RON",
+    "korean_name": "로닌",
+    "english_name": "Ronin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STRAX",
+    "ticker": "STRAX",
+    "korean_name": "저트라",
+    "english_name": "Xertra",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XAI",
+    "ticker": "XAI",
+    "korean_name": "자이",
+    "english_name": "Xai",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-W",
+    "ticker": "W",
+    "korean_name": "웜홀",
+    "english_name": "Wormhole",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POLYX",
+    "ticker": "POLYX",
+    "korean_name": "폴리매쉬",
+    "english_name": "Polymesh",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CORE",
+    "ticker": "CORE",
+    "korean_name": "코어",
+    "english_name": "Core",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BB",
+    "ticker": "BB",
+    "korean_name": "바운스빗",
+    "english_name": "BounceBit",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POKT",
+    "ticker": "POKT",
+    "korean_name": "포켓네트워크",
+    "english_name": "Pocket Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-REZ",
+    "ticker": "REZ",
+    "korean_name": "렌조",
+    "english_name": "Renzo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ENA",
+    "ticker": "ENA",
+    "korean_name": "에테나",
+    "english_name": "Ethena",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MOCA",
+    "ticker": "MOCA",
+    "korean_name": "모카네트워크",
+    "english_name": "Moca Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ETHFI",
+    "ticker": "ETHFI",
+    "korean_name": "이더파이",
+    "english_name": "ether.fi",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MEW",
+    "ticker": "MEW",
+    "korean_name": "캣인어독스월드",
+    "english_name": "cat in a dogs world",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZRO",
+    "ticker": "ZRO",
+    "korean_name": "레이어제로",
+    "english_name": "LayerZero",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IO",
+    "ticker": "IO",
+    "korean_name": "아이오넷",
+    "english_name": "io.net",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BLAST",
+    "ticker": "BLAST",
+    "korean_name": "블라스트",
+    "english_name": "Blast",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TAIKO",
+    "ticker": "TAIKO",
+    "korean_name": "타이코",
+    "english_name": "Taiko",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BRETT",
+    "ticker": "BRETT",
+    "korean_name": "브렛",
+    "english_name": "Brett",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ATH",
+    "ticker": "ATH",
+    "korean_name": "에이셔",
+    "english_name": "Aethir",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PCI",
+    "ticker": "PCI",
+    "korean_name": "페이코인",
+    "english_name": "Paycoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AVAIL",
+    "ticker": "AVAIL",
+    "korean_name": "어베일",
+    "english_name": "Avail",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TON",
+    "ticker": "TON",
+    "korean_name": "톤코인",
+    "english_name": "Toncoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-G",
+    "ticker": "G",
+    "korean_name": "그래비티",
+    "english_name": "Gravity",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LISTA",
+    "ticker": "LISTA",
+    "korean_name": "리스타다오",
+    "english_name": "Lista DAO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PEAQ",
+    "ticker": "PEAQ",
+    "korean_name": "피크",
+    "english_name": "peaq",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EIGEN",
+    "ticker": "EIGEN",
+    "korean_name": "아이겐클라우드",
+    "english_name": "EigenCloud",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CFG",
+    "ticker": "CFG",
+    "korean_name": "센트리퓨즈",
+    "english_name": "Centrifuge",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XION",
+    "ticker": "XION",
+    "korean_name": "자이온",
+    "english_name": "XION",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ORDER",
+    "ticker": "ORDER",
+    "korean_name": "오덜리네트워크",
+    "english_name": "Orderly Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MERL",
+    "ticker": "MERL",
+    "korean_name": "멀린체인",
+    "english_name": "Merlin Chain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SCR",
+    "ticker": "SCR",
+    "korean_name": "스크롤",
+    "english_name": "Scroll",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SWELL",
+    "ticker": "SWELL",
+    "korean_name": "스웰네트워크",
+    "english_name": "Swell Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SKY",
+    "ticker": "SKY",
+    "korean_name": "스카이프로토콜",
+    "english_name": "Sky Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PONKE",
+    "ticker": "PONKE",
+    "korean_name": "폰케",
+    "english_name": "Ponke",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MVL",
+    "ticker": "MVL",
+    "korean_name": "엠블",
+    "english_name": "MVL",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CARV",
+    "ticker": "CARV",
+    "korean_name": "카브",
+    "english_name": "CARV",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PUFFER",
+    "ticker": "PUFFER",
+    "korean_name": "퍼퍼",
+    "english_name": "Puffer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SUNDOG",
+    "ticker": "SUNDOG",
+    "korean_name": "썬도그",
+    "english_name": "Sundog",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TURBO",
+    "ticker": "TURBO",
+    "korean_name": "터보",
+    "english_name": "Turbo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RAY",
+    "ticker": "RAY",
+    "korean_name": "레이디움",
+    "english_name": "Raydium",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SAFE",
+    "ticker": "SAFE",
+    "korean_name": "세이프",
+    "english_name": "Safe",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-VIRTUAL",
+    "ticker": "VIRTUAL",
+    "korean_name": "버추얼프로토콜",
+    "english_name": "Virtuals Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DRIFT",
+    "ticker": "DRIFT",
+    "korean_name": "드리프트",
+    "english_name": "Drift",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-MOVE",
+    "ticker": "MOVE",
+    "korean_name": "무브먼트",
+    "english_name": "Movement",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-F",
+    "ticker": "F",
+    "korean_name": "신퓨처스",
+    "english_name": "Synfutures",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DEEP",
+    "ticker": "DEEP",
+    "korean_name": "딥북",
+    "english_name": "DeepBook",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MORPHO",
+    "ticker": "MORPHO",
+    "korean_name": "모포",
+    "english_name": "Morpho",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MOODENG",
+    "ticker": "MOODENG",
+    "korean_name": "무뎅",
+    "english_name": "Moo Deng",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DBR",
+    "ticker": "DBR",
+    "korean_name": "디브릿지",
+    "english_name": "deBridge",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NIL",
+    "ticker": "NIL",
+    "korean_name": "닐리온",
+    "english_name": "Nillion",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ME",
+    "ticker": "ME",
+    "korean_name": "매직에덴",
+    "english_name": "Magic Eden",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-INIT",
+    "ticker": "INIT",
+    "korean_name": "이니시아",
+    "english_name": "Initia",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZRC",
+    "ticker": "ZRC",
+    "korean_name": "저킷",
+    "english_name": "Zircuit",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IOTA",
+    "ticker": "IOTA",
+    "korean_name": "아이오타",
+    "english_name": "IOTA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PENGU",
+    "ticker": "PENGU",
+    "korean_name": "펏지펭귄",
+    "english_name": "Pudgy Penguins",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ACX",
+    "ticker": "ACX",
+    "korean_name": "어크로스프로토콜",
+    "english_name": "Across Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AERO",
+    "ticker": "AERO",
+    "korean_name": "에어로드롬파이낸스",
+    "english_name": "Aerodrome Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-THE",
+    "ticker": "THE",
+    "korean_name": "테나",
+    "english_name": "THENA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AMP",
+    "ticker": "AMP",
+    "korean_name": "앰프",
+    "english_name": "Amp",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-VANA",
+    "ticker": "VANA",
+    "korean_name": "바나",
+    "english_name": "Vana",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XYO",
+    "ticker": "XYO",
+    "korean_name": "엑스와이오",
+    "english_name": "XYO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-A8",
+    "ticker": "A8",
+    "korean_name": "에인션트8",
+    "english_name": "Ancient8",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SONIC",
+    "ticker": "SONIC",
+    "korean_name": "소닉에스브이엠",
+    "english_name": "Sonic SVM",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WIF",
+    "ticker": "WIF",
+    "korean_name": "도그위프햇",
+    "english_name": "dogwifhat",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CPOOL",
+    "ticker": "CPOOL",
+    "korean_name": "클리어풀",
+    "english_name": "Clearpool",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IP",
+    "ticker": "IP",
+    "korean_name": "스토리",
+    "english_name": "Story",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DKA",
+    "ticker": "DKA",
+    "korean_name": "디카르고",
+    "english_name": "dKargo",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SOLV",
+    "ticker": "SOLV",
+    "korean_name": "솔브프로토콜",
+    "english_name": "Solv Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BLUE",
+    "ticker": "BLUE",
+    "korean_name": "블루핀",
+    "english_name": "Bluefin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-QKC",
+    "ticker": "QKC",
+    "korean_name": "쿼크체인",
+    "english_name": "QuarkChain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HP",
+    "ticker": "HP",
+    "korean_name": "히포프로토콜",
+    "english_name": "Hippo Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GAME2",
+    "ticker": "GAME2",
+    "korean_name": "게임빌드",
+    "english_name": "GameBuild",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ERA",
+    "ticker": "ERA",
+    "korean_name": "칼데라",
+    "english_name": "Caldera",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ARDR",
+    "ticker": "ARDR",
+    "korean_name": "아더",
+    "english_name": "Ardor",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BOUNTY",
+    "ticker": "BOUNTY",
+    "korean_name": "체인바운티",
+    "english_name": "Chainbounty",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SHELL",
+    "ticker": "SHELL",
+    "korean_name": "마이쉘",
+    "english_name": "MyShell",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BERA",
+    "ticker": "BERA",
+    "korean_name": "베라체인",
+    "english_name": "Berachain",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BIO",
+    "ticker": "BIO",
+    "korean_name": "바이오프로토콜",
+    "english_name": "Bio Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PLUME",
+    "ticker": "PLUME",
+    "korean_name": "플룸",
+    "english_name": "Plume",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OBT",
+    "ticker": "OBT",
+    "korean_name": "오비터파이낸스",
+    "english_name": "Orbiter Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TRUMP",
+    "ticker": "TRUMP",
+    "korean_name": "오피셜트럼프",
+    "english_name": "OFFICIAL TRUMP",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KERNEL",
+    "ticker": "KERNEL",
+    "korean_name": "커널다오",
+    "english_name": "Kernel DAO",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-COOKIE",
+    "ticker": "COOKIE",
+    "korean_name": "쿠키다오",
+    "english_name": "Cookie DAO",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GNO",
+    "ticker": "GNO",
+    "korean_name": "노시스",
+    "english_name": "Gnosis",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-VTHO",
+    "ticker": "VTHO",
+    "korean_name": "비토르토큰",
+    "english_name": "VeThor Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ANIME",
+    "ticker": "ANIME",
+    "korean_name": "애니메코인",
+    "english_name": "Animecoin",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RED",
+    "ticker": "RED",
+    "korean_name": "레드스톤",
+    "english_name": "RedStone",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LAYER",
+    "ticker": "LAYER",
+    "korean_name": "솔레이어",
+    "english_name": "Solayer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GPS",
+    "ticker": "GPS",
+    "korean_name": "고플러스",
+    "english_name": "GoPlus",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WCT",
+    "ticker": "WCT",
+    "korean_name": "월렛커넥트",
+    "english_name": "WalletConnect",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FLOCK",
+    "ticker": "FLOCK",
+    "korean_name": "플록",
+    "english_name": "FLock.io",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KAITO",
+    "ticker": "KAITO",
+    "korean_name": "카이토",
+    "english_name": "Kaito",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BMT",
+    "ticker": "BMT",
+    "korean_name": "버블맵스",
+    "english_name": "Bubblemaps",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-C",
+    "ticker": "C",
+    "korean_name": "체인베이스토큰",
+    "english_name": "Chainbase Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SOON",
+    "ticker": "SOON",
+    "korean_name": "쑨",
+    "english_name": "SOON",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PAXG",
+    "ticker": "PAXG",
+    "korean_name": "팍스골드",
+    "english_name": "PAX Gold",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XAUT",
+    "ticker": "XAUT",
+    "korean_name": "테더골드",
+    "english_name": "Tether Gold",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AVL",
+    "ticker": "AVL",
+    "korean_name": "아발론",
+    "english_name": "Avalon",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-B3",
+    "ticker": "B3",
+    "korean_name": "비쓰리",
+    "english_name": "B3",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-COW",
+    "ticker": "COW",
+    "korean_name": "카우프로토콜",
+    "english_name": "CoW Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WAL",
+    "ticker": "WAL",
+    "korean_name": "월러스",
+    "english_name": "Walrus",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BABY",
+    "ticker": "BABY",
+    "korean_name": "바빌론",
+    "english_name": "Babylon",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ES",
+    "ticker": "ES",
+    "korean_name": "이클립스",
+    "english_name": "Eclipse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XTER",
+    "ticker": "XTER",
+    "korean_name": "엑스테리오",
+    "english_name": "Xterio",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NXPC",
+    "ticker": "NXPC",
+    "korean_name": "넥스페이스",
+    "english_name": "NEXPACE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-0G",
+    "ticker": "0G",
+    "korean_name": "제로지",
+    "english_name": "0G",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GRASS",
+    "ticker": "GRASS",
+    "korean_name": "그래스",
+    "english_name": "Grass",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ORCA",
+    "ticker": "ORCA",
+    "korean_name": "오르카",
+    "english_name": "Orca",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KMNO",
+    "ticker": "KMNO",
+    "korean_name": "카미노파이낸스",
+    "english_name": "Kamino Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PUMPBTC",
+    "ticker": "PUMPBTC",
+    "korean_name": "펌프",
+    "english_name": "PUMP",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EPT",
+    "ticker": "EPT",
+    "korean_name": "밸런스",
+    "english_name": "Balance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HAEDAL",
+    "ticker": "HAEDAL",
+    "korean_name": "해달프로토콜",
+    "english_name": "Haedal Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PARTI",
+    "ticker": "PARTI",
+    "korean_name": "파티클네트워크",
+    "english_name": "Particle Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SXT",
+    "ticker": "SXT",
+    "korean_name": "스페이스앤드타임",
+    "english_name": "Space and Time",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PROMPT",
+    "ticker": "PROMPT",
+    "korean_name": "웨이파인더",
+    "english_name": "Wayfinder",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SIGN",
+    "ticker": "SIGN",
+    "korean_name": "사인",
+    "english_name": "Sign",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BTR",
+    "ticker": "BTR",
+    "korean_name": "비트레이어",
+    "english_name": "Bitlayer",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SAHARA",
+    "ticker": "SAHARA",
+    "korean_name": "사하라에이아이",
+    "english_name": "Sahara AI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HEMI",
+    "ticker": "HEMI",
+    "korean_name": "헤미",
+    "english_name": "Hemi",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-H",
+    "ticker": "H",
+    "korean_name": "휴머니티",
+    "english_name": "Humanity",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HOME",
+    "ticker": "HOME",
+    "korean_name": "디파이앱",
+    "english_name": "Defi App",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LA",
+    "ticker": "LA",
+    "korean_name": "라그랑주",
+    "english_name": "Lagrange",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SOPH",
+    "ticker": "SOPH",
+    "korean_name": "소폰",
+    "english_name": "Sophon",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HYPER",
+    "ticker": "HYPER",
+    "korean_name": "하이퍼레인",
+    "english_name": "Hyperlane",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PROVE",
+    "ticker": "PROVE",
+    "korean_name": "석싱트",
+    "english_name": "Succinct",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CUDIS",
+    "ticker": "CUDIS",
+    "korean_name": "쿠디스",
+    "english_name": "CUDIS",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FORT",
+    "ticker": "FORT",
+    "korean_name": "포르타",
+    "english_name": "Forta",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TOSHI",
+    "ticker": "TOSHI",
+    "korean_name": "토시",
+    "english_name": "Toshi",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HUMA",
+    "ticker": "HUMA",
+    "korean_name": "후마파이낸스",
+    "english_name": "Huma Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SPK",
+    "ticker": "SPK",
+    "korean_name": "스파크",
+    "english_name": "Spark",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-USD1",
+    "ticker": "USD1",
+    "korean_name": "월드리버티파이낸셜유에스디",
+    "english_name": "World Liberty Financial USD",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BOB",
+    "ticker": "BOB",
+    "korean_name": "비오비",
+    "english_name": "BOB",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SYRUP",
+    "ticker": "SYRUP",
+    "korean_name": "메이플파이낸스",
+    "english_name": "Maple Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-NEWT",
+    "ticker": "NEWT",
+    "korean_name": "뉴턴프로토콜",
+    "english_name": "Newton Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RESOLV",
+    "ticker": "RESOLV",
+    "korean_name": "리졸브",
+    "english_name": "Resolv",
+    "market_warning": "CAUTION"
+  },
+  {
+    "market": "KRW-ALLO",
+    "ticker": "ALLO",
+    "korean_name": "알로라",
+    "english_name": "Allora",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DOOD",
+    "ticker": "DOOD",
+    "korean_name": "두들즈",
+    "english_name": "Doodles",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TREE",
+    "ticker": "TREE",
+    "korean_name": "트리하우스",
+    "english_name": "Treehouse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EUL",
+    "ticker": "EUL",
+    "korean_name": "오일러",
+    "english_name": "Euler",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AVNT",
+    "ticker": "AVNT",
+    "korean_name": "아반티스",
+    "english_name": "Avantis",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-OPEN",
+    "ticker": "OPEN",
+    "korean_name": "오픈렛저",
+    "english_name": "OpenLedger",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PUMP",
+    "ticker": "PUMP",
+    "korean_name": "펌프닷펀",
+    "english_name": "pump.fun",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IRYS",
+    "ticker": "IRYS",
+    "korean_name": "아이리스",
+    "english_name": "Irys",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-DEXE",
+    "ticker": "DEXE",
+    "korean_name": "딕시",
+    "english_name": "DeXe",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SD",
+    "ticker": "SD",
+    "korean_name": "스테이더",
+    "english_name": "Stader",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BARD",
+    "ticker": "BARD",
+    "korean_name": "롬바드",
+    "english_name": "Lombard",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TOWNS",
+    "ticker": "TOWNS",
+    "korean_name": "타운즈",
+    "english_name": "Towns",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MIRA",
+    "ticker": "MIRA",
+    "korean_name": "미라",
+    "english_name": "Mira",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CAMP",
+    "ticker": "CAMP",
+    "korean_name": "캠프네트워크",
+    "english_name": "Camp Network",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XAN",
+    "ticker": "XAN",
+    "korean_name": "아노마",
+    "english_name": "Anoma",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-THQ",
+    "ticker": "THQ",
+    "korean_name": "테오릭",
+    "english_name": "Theoriq",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-POPCAT",
+    "ticker": "POPCAT",
+    "korean_name": "팝캣",
+    "english_name": "Popcat",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WLFI",
+    "ticker": "WLFI",
+    "korean_name": "월드리버티파이낸셜",
+    "english_name": "World Liberty Financial",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-2Z",
+    "ticker": "2Z",
+    "korean_name": "더블제로",
+    "english_name": "DoubleZero",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LINEA",
+    "ticker": "LINEA",
+    "korean_name": "리네아",
+    "english_name": "Linea",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SAPIEN",
+    "ticker": "SAPIEN",
+    "korean_name": "사피엔",
+    "english_name": "Sapien",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-HOLO",
+    "ticker": "HOLO",
+    "korean_name": "홀로월드에이아이",
+    "english_name": "Holoworld AI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZKC",
+    "ticker": "ZKC",
+    "korean_name": "바운드리스",
+    "english_name": "Boundless",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ASTER",
+    "ticker": "ASTER",
+    "korean_name": "아스터",
+    "english_name": "Aster",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-XPL",
+    "ticker": "XPL",
+    "korean_name": "플라즈마",
+    "english_name": "Plasma",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FF",
+    "ticker": "FF",
+    "korean_name": "팔콘파이낸스",
+    "english_name": "Falcon Finance",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SOMI",
+    "ticker": "SOMI",
+    "korean_name": "솜니아",
+    "english_name": "Somnia",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MON",
+    "ticker": "MON",
+    "korean_name": "모나드",
+    "english_name": "Monad",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-FLUID",
+    "ticker": "FLUID",
+    "korean_name": "플루이드",
+    "english_name": "Fluid",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SUPER",
+    "ticker": "SUPER",
+    "korean_name": "슈퍼버스",
+    "english_name": "SuperVerse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-IN",
+    "ticker": "IN",
+    "korean_name": "인피닛",
+    "english_name": "Infinit",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EDEN",
+    "ticker": "EDEN",
+    "korean_name": "오픈에덴",
+    "english_name": "OpenEden",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-RECALL",
+    "ticker": "RECALL",
+    "korean_name": "리콜",
+    "english_name": "Recall",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-USDE",
+    "ticker": "USDE",
+    "korean_name": "유에스디이",
+    "english_name": "Ethena USDe",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ENSO",
+    "ticker": "ENSO",
+    "korean_name": "엔소",
+    "english_name": "Enso",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-YB",
+    "ticker": "YB",
+    "korean_name": "일드베이시스",
+    "english_name": "YieldBasis",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-STABLE",
+    "ticker": "STABLE",
+    "korean_name": "스테이블",
+    "english_name": "Stable",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZBT",
+    "ticker": "ZBT",
+    "korean_name": "제로베이스",
+    "english_name": "ZEROBASE",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZORA",
+    "ticker": "ZORA",
+    "korean_name": "조라",
+    "english_name": "Zora",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SENT",
+    "ticker": "SENT",
+    "korean_name": "센티언트",
+    "english_name": "Sentient",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MMT",
+    "ticker": "MMT",
+    "korean_name": "모멘텀",
+    "english_name": "Momentum",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MET",
+    "ticker": "MET",
+    "korean_name": "메테오라",
+    "english_name": "Meteora",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KITE",
+    "ticker": "KITE",
+    "korean_name": "카이트",
+    "english_name": "Kite",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-TRUST",
+    "ticker": "TRUST",
+    "korean_name": "인튜이션",
+    "english_name": "Intuition",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ESP",
+    "ticker": "ESP",
+    "korean_name": "에스프레소",
+    "english_name": "Espresso",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PIEVERSE",
+    "ticker": "PIEVERSE",
+    "korean_name": "파이버스",
+    "english_name": "Pieverse",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CYS",
+    "ticker": "CYS",
+    "korean_name": "싸이식",
+    "english_name": "Cysic",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EDGE",
+    "ticker": "EDGE",
+    "korean_name": "디피니티브",
+    "english_name": "Definitive",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-WET",
+    "ticker": "WET",
+    "korean_name": "휴미디파이",
+    "english_name": "HumidiFi",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BREV",
+    "ticker": "BREV",
+    "korean_name": "브레비스",
+    "english_name": "Brevis",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-KAT",
+    "ticker": "KAT",
+    "korean_name": "카타나",
+    "english_name": "Katana",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZKP",
+    "ticker": "ZKP",
+    "korean_name": "지케이패스",
+    "english_name": "zkPass",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ZAMA",
+    "ticker": "ZAMA",
+    "korean_name": "자마",
+    "english_name": "Zama",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-GWEI",
+    "ticker": "GWEI",
+    "korean_name": "이더가스",
+    "english_name": "ETHGas",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-SKR",
+    "ticker": "SKR",
+    "korean_name": "시커",
+    "english_name": "Seeker",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-UP",
+    "ticker": "UP",
+    "korean_name": "슈퍼폼",
+    "english_name": "Superform",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-LIT",
+    "ticker": "LIT",
+    "korean_name": "라이터",
+    "english_name": "Lighter",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ELSA",
+    "ticker": "ELSA",
+    "korean_name": "헤이엘사",
+    "english_name": "HeyElsa",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BIRB",
+    "ticker": "BIRB",
+    "korean_name": "문버드",
+    "english_name": "Moonbirds",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-AZTEC",
+    "ticker": "AZTEC",
+    "korean_name": "아즈텍",
+    "english_name": "Aztec",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-ROBO",
+    "ticker": "ROBO",
+    "korean_name": "패브릭프로토콜",
+    "english_name": "Fabric Protocol",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BLEND",
+    "ticker": "BLEND",
+    "korean_name": "플루언트",
+    "english_name": "Fluent",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MANTRA",
+    "ticker": "MANTRA",
+    "korean_name": "만트라",
+    "english_name": "MANTRA",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-MEGA",
+    "ticker": "MEGA",
+    "korean_name": "메가이더",
+    "english_name": "MegaETH",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-VVV",
+    "ticker": "VVV",
+    "korean_name": "베니스토큰",
+    "english_name": "Venice Token",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-BASED",
+    "ticker": "BASED",
+    "korean_name": "베이스드",
+    "english_name": "Based",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-CHIP",
+    "ticker": "CHIP",
+    "korean_name": "유에스디에이아이",
+    "english_name": "USD.AI",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-EDGEX",
+    "ticker": "EDGEX",
+    "korean_name": "엣지엑스",
+    "english_name": "edgeX",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PRL",
+    "ticker": "PRL",
+    "korean_name": "펄",
+    "english_name": "Perle",
+    "market_warning": "NONE"
+  },
+  {
+    "market": "KRW-PROS",
+    "ticker": "PROS",
+    "korean_name": "파로스",
+    "english_name": "Pharos",
+    "market_warning": "NONE"
+  }
+]

@@ -1,0 +1,36 @@
+# ── ListingLabs deploy repo — SECURITY-FIRST WHITELIST ───────────────────────
+# The repo root is the `verifysheet` folder, but ONLY the folders the site build
+# needs are tracked. Everything else here stays private and is NEVER uploaded.
+# This whitelist is the guard: nothing outside the paths re-included below can be
+# committed by accident, even if you run `git add .`.
+
+# 1) Ignore EVERYTHING at the repo root first...
+/*
+
+# 2) ...then re-include only what the build needs.
+#    (No trailing slash on the negations — that form reliably re-includes the
+#     directory AND its contents across git versions.)
+!/perps_correlation
+!/cache
+!/.github
+!/.gitignore
+!/README.md
+
+# 3) Inside those folders, still drop noise and anything secret-shaped
+#    (defense in depth — secrets live outside the repo, but never take chances).
+**/__pycache__/
+**/*.pyc
+**/.ipynb_checkpoints/
+**/*.env
+**/secrets*
+**/*.key
+**/*.pem
+**/*credential*
+
+# 4) Drop heavy / regenerated artifacts the live site doesn't need. Excluding the
+#    logs + notebooks also shrinks the surface where a stray key could hide.
+perps_correlation/Listinglabs.zip
+perps_correlation/*.log
+perps_correlation/**/*.log
+perps_correlation/*.ipynb
+perps_correlation/*.docx

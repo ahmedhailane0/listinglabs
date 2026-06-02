@@ -1,0 +1,81 @@
+{
+  "token": "IRYS",
+  "name": "Irys",
+  "chain": "bsc",
+  "token_contract": "0x91152b4ef635403efbae860edd0f8c321d7c035d",
+  "gecko_pool": "0x63fff184ea44fdb427021163ab5ac4cb9d715179de0261b63e515d03af08432b",
+  "fdv_usd": 245226943.42,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "irys",
+  "mcap_usd": 62945174.6,
+  "circulating_supply": 2566813162.0,
+  "total_supply": 10000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-11-24T18:00:00Z",
+  "window_end_utc": "2026-05-17T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-11-25T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-11-25T00:00:00Z"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-11-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-11-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-11-26T00:00:00Z"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-11-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-11-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-11-26T16:00:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-11-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-05-15T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2026-05-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2026-05-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-05-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,56 @@
+{
+  "token": "SLX",
+  "name": "Solstice",
+  "chain": "bsc",
+  "token_contract": "0x02bcc4c181b83a8c0a342bc003389cbecb4bc54d",
+  "gecko_pool": "0x1a96f5b1dc28fd3c9e3772c255e5541b8635c20db1c88f0f5156c5be94ad58cb",
+  "fdv_usd": 184360593,
+  "fdv_source": "CoinMarketCap v2 quotes (id 40047 solstice), 2026-05-26",
+  "category": "",
+  "cmc_slug": "solstice",
+  "mcap_usd": 55742062,
+  "circulating_supply": 242854223,
+  "total_supply": 1000000000,
+  "mcap_source": "CoinMarketCap quotes/latest, 2026-05-29 (current, not at-listing)",
+  "window_start_utc": "2026-05-25T11:00:00Z",
+  "window_end_utc": "2026-05-29T15:30:00Z",
+  "events": [
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-05-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-05-25T12:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1779710400000, contract on BSC)."
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-05-25T20:56:00Z",
+      "note": "SLXUSDT first Bitget v2 1m candle. Announcement: https://www.bitget.com/en/support/articles/12560603884389"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-05-25T21:00:00Z",
+      "note": "SLXUSD first 60m candle on Kraken public OHLC (1m history truncated)."
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-05-26T04:05:00Z",
+      "note": "SLX_USDT first 5m candle on Gate.io USDT-M futures (16h after Alpha)."
+    }
+  ],
+  "not_listed": [
+    "Binance main spot",
+    "Binance USDT-M perp",
+    "OKX spot+perp",
+    "Bybit spot+perp",
+    "KuCoin spot+perp",
+    "Coinbase spot+INTX",
+    "Bitget perp",
+    "Gate.io spot",
+    "Upbit",
+    "Bithumb"
+  ]
+}

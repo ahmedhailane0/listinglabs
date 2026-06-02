@@ -1,0 +1,86 @@
+{
+  "token": "WET",
+  "name": "Humidifi",
+  "chain": "solana",
+  "token_contract": "WETZjtprkDMCcUxPi9PfWnowMRZkiGGHDb9rABuRZ2U",
+  "gecko_pool": "A8dNMVhgTyA4fPEJnH1ZEUjXXgd7rcn8iCPbV4Wp4qtx",
+  "fdv_usd": 74062133.75,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "humidifi",
+  "mcap_usd": 17034290.76,
+  "circulating_supply": 230000000.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-12-08T18:00:00Z",
+  "window_end_utc": "2026-03-12T07:00:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-12-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-12-09T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-12-09T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-12-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-12-10T07:00:00Z"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2025-12-11T00:51:00Z",
+      "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-12-14T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2025-12-15T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,83 @@
+{
+  "token": "SPX",
+  "name": "SPX6900",
+  "chain": "ethereum",
+  "token_contract": "0xe0f63a424a4439cbe457d80e4f4b51ad25b2c56c",
+  "gecko_pool": "0x52c77b0cb827afbad022e6d6caf2c44452edbc39",
+  "fdv_usd": 334606592.3,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "spx6900",
+  "mcap_usd": 311516425.33,
+  "circulating_supply": 930993090.07,
+  "total_supply": 930993090.07,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2024-12-10T06:45:00Z",
+  "window_end_utc": "2025-09-11T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2024-11-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2024-11-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2024-12-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2024-12-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2024-12-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2024-12-10T12:45:00Z"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2024-12-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2024-12-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2024-12-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-07-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-09-09T00:00:00Z"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2026-01-08T01:33:00Z",
+      "note": "first Coinone KRW candle"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

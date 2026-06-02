@@ -1,0 +1,86 @@
+{
+  "token": "FLOCK",
+  "name": "FLock.io",
+  "chain": "base",
+  "token_contract": "0x5ab3d4c385b400f3abb49e80de2faf6a88a7b691",
+  "gecko_pool": "0x4910c78a1c75e36548f1f2f1f4dcb71a4f69fc07",
+  "fdv_usd": 56361390.38,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "flock-io",
+  "mcap_usd": 21507170.1,
+  "circulating_supply": 381594030.1733456,
+  "total_supply": 386935418.68868446,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-09-08T18:00:00Z",
+  "window_end_utc": "2025-12-10T06:45:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-05-29T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-06-04T00:00:00Z"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-06-06T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-08-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2025-09-03T01:22:00Z",
+      "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-09-09T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2025-09-09T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-09-09T06:45:00Z"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-01-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,101 @@
+{
+  "token": "BARD",
+  "name": "Lombard",
+  "chain": "bsc",
+  "token_contract": "0xd23a186a78c0b3b805505e5f8ea4083295ef9f3a",
+  "gecko_pool": null,
+  "fdv_usd": 192845573.7,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "lombard",
+  "mcap_usd": 62192697.52,
+  "circulating_supply": 322500000.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-09-17T18:00:00Z",
+  "window_end_utc": "2025-12-19T11:00:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-09-16T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-09-17T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-09-18T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-09-18T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2025-09-18T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-09-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-09-18T11:00:00Z"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2025-09-18T11:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2025-09-19T00:51:00Z",
+      "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-09-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2025-10-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

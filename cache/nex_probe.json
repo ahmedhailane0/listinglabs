@@ -1,0 +1,24 @@
+{
+  "NEX": {
+    "coinbase": {
+      "label": "Coinbase Spot",
+      "iso": "2026-05-20T15:26:00Z"
+    },
+    "kucoin": {
+      "label": "KuCoin Spot",
+      "iso": "2026-05-26T13:00:00Z"
+    },
+    "bitget_spot": {
+      "label": "Bitget Spot",
+      "iso": "2026-05-26T21:21:00Z"
+    },
+    "bybit_linear": {
+      "label": "Bybit Perp",
+      "iso": "2026-05-21T08:00:00Z"
+    },
+    "kucoin_futures": {
+      "label": "KuCoin Futures",
+      "iso": "2026-05-21T03:00:00Z"
+    }
+  }
+}

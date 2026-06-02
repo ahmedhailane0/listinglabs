@@ -1,0 +1,87 @@
+{
+  "token": "KMNO",
+  "name": "Kamino",
+  "chain": "solana",
+  "token_contract": "KMNo3nJsBXfcpJTVhZcXLW7RmTwTt4GVFE7suUBo9sS",
+  "gecko_pool": "3ndjN1nJVUKGrJBc1hhVpER6kWTZKHdyDrPyCJyX3CXK",
+  "fdv_usd": 188000997.65,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "kamino-finance",
+  "mcap_usd": 88849791.57,
+  "circulating_supply": 4726027663.75,
+  "total_supply": 9999958235.004217,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2024-12-20T13:00:00Z",
+  "window_end_utc": "2025-09-20T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2024-11-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2024-11-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2024-11-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2024-11-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2024-11-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2024-11-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2024-12-20T19:00:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-02-13T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2025-05-06T15:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2025-05-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-05-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-08-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-09-11T00:00:00Z"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-09-18T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

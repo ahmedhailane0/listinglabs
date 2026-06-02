@@ -1,0 +1,86 @@
+{
+  "token": "ZKC",
+  "name": "Boundless",
+  "chain": "bsc",
+  "token_contract": "0x15247e6e23d3923a853ccf15940a20ccdf16e94a",
+  "gecko_pool": "0x61a6f9e817174be19b734934573ae5219e724425",
+  "fdv_usd": 67105864.6,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "boundless",
+  "mcap_usd": 19158869.38,
+  "circulating_supply": 299638637.0,
+  "total_supply": 1049514426.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-09-14T18:00:00Z",
+  "window_end_utc": "2025-12-16T14:00:00Z",
+  "events": [
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-09-14T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-09-15T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-09-15T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2025-09-15T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-09-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-09-15T14:00:00Z"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2025-09-15T14:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2025-09-16T00:44:00Z",
+      "note": "first Coinone KRW candle"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

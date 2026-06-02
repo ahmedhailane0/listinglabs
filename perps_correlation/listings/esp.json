@@ -1,0 +1,91 @@
+{
+  "token": "ESP",
+  "name": "Espresso",
+  "chain": "arbitrum",
+  "token_contract": "0x3b8db18e69d6686ad9371a423afe3dd1065c94f1",
+  "gecko_pool": "0x15eb51a325cbce6c1cc8202a6f8a76224c5b7540",
+  "fdv_usd": 234604830.76,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "espresso",
+  "mcap_usd": 34017700.46,
+  "circulating_supply": 520550000.0,
+  "total_supply": 3590000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2026-02-10T02:10:00Z",
+  "window_end_utc": "2026-05-15T00:00:00Z",
+  "events": [
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2026-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-02-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-02-10T08:10:00Z"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-02-12T00:00:00Z"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-02-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-02-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-02-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2026-02-12T13:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-02-13T00:00:00Z"
+    },
+    {
+      "exchange": "Coinone",
+      "iso_time_utc": "2026-02-13T01:05:00Z",
+      "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-02-23T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-02-24T00:00:00Z"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2026-02-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

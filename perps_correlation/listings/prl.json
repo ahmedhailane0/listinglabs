@@ -1,0 +1,71 @@
+{
+  "token": "PRL",
+  "name": "Perle",
+  "chain": "bsc",
+  "token_contract": "0xd20fb09a49a8e75fef536a2dbc68222900287bac",
+  "gecko_pool": "0xb0bab780d44ca5245a4b6da9ea8fd79e04e7a92850cfc2b52a33c4d82463726b",
+  "fdv_usd": 205200958.64,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "perle",
+  "mcap_usd": 35910167.76,
+  "circulating_supply": 175000000.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2026-03-24T18:00:00Z",
+  "window_end_utc": "2026-05-30T20:51:49.426498Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-03-25T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-03-25T00:00:00Z"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-03-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-03-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-03-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-03-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-03-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-03-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-04-01T10:30:00Z"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-04-26T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-04-27T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

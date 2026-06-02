@@ -1,0 +1,24 @@
+{
+  "token": "QAIT",
+  "name": "QAIT",
+  "chain": "bsc",
+  "token_contract": "0x4d41a5d412f4ef44a35b9f53b06db65ede249493",
+  "gecko_pool": "0x3b28d5c18b2dcebeae0abc9ca358d96d9b623f7683c46abfdc8e1f0cc5c9ede6",
+  "fdv_usd": 198719681,
+  "fdv_source": "CoinMarketCap v2 quotes (id 40073 qait), 2026-05-29",
+  "category": "SEALCOIN settlement token (autonomous machine economy)",
+  "cmc_slug": "qait",
+  "mcap_usd": 9935984,
+  "circulating_supply": 500000000,
+  "total_supply": 10000000000,
+  "mcap_source": "CoinMarketCap quotes/latest, 2026-05-29 (current, not at-listing)",
+  "window_start_utc": "2026-05-28T14:00:00Z",
+  "window_end_utc": "2026-05-29T19:00:00Z",
+  "events": [
+    {"exchange": "Binance Alpha", "iso_time_utc": "2026-05-28T15:00:00Z", "note": "Trading start per Binance Alpha listings API (ALPHA_980, listingTime=1779980400000, contract on BSC). Featured Alpha airdrop for Alpha Points holders."},
+    {"exchange": "Gate.io Spot", "iso_time_utc": "2026-05-28T15:20:00Z", "note": "QAIT_USDT first 1m candle on Gate.io spot (~20min after Alpha open; confirmed via 1h+1m probe)."},
+    {"exchange": "KuCoin Spot", "iso_time_utc": "2026-05-29T10:00:00Z", "note": "QAIT/USDT first 1m candle on KuCoin spot (World Premiere; ~19h after Alpha, confirmed real start via 1h probe = 9 candles, not a cap artifact)."}
+  ],
+  "not_listed": ["Binance main spot", "Binance USDT-M perp", "OKX spot+perp", "Bybit spot+perp", "Bitget spot+perp", "Gate.io perp", "KuCoin futures", "Kraken spot+futures", "Coinbase spot+INTX", "Upbit", "Bithumb"],
+  "note_dropped_venues": "Also trades on MEXC (per launch news) but MEXC/BitMart/HTX/LBank/XT/BingX are excluded from this report's venue allowlist."
+}

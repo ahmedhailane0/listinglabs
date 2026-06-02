@@ -1,0 +1,71 @@
+{
+  "token": "FLUID",
+  "name": "Fluid",
+  "chain": "ethereum",
+  "token_contract": "0x6f40d4a6237c257fff2db00fa0510deeecd303eb",
+  "gecko_pool": "0xc800b0e15c40a1ff0539218100c86f4c1bac8d9c",
+  "fdv_usd": 137272509.3,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "instadapp",
+  "mcap_usd": 106999798.46,
+  "circulating_supply": 77946996.82034639,
+  "total_supply": 100000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-09-24T04:15:00Z",
+  "window_end_utc": "2025-12-25T10:15:00Z",
+  "events": [
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-01-22T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-02-21T00:00:00Z"
+    },
+    {
+      "exchange": "OKX Spot",
+      "iso_time_utc": "2025-03-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-03-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2025-09-24T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-09-24T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-09-24T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-09-24T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-09-24T10:15:00Z"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-09-25T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-11-25T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,71 @@
+{
+  "token": "ELSA",
+  "name": "HeyElsa",
+  "chain": "base",
+  "token_contract": "0x29cc30f9d113b356ce408667aa6433589cecbdca",
+  "gecko_pool": "0x83f3aca29bc79b048b99c56013475570acc97ccf",
+  "fdv_usd": 62818891.2,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "heyelsa",
+  "mcap_usd": 16059439.34,
+  "circulating_supply": 255646654.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2026-01-19T18:00:00Z",
+  "window_end_utc": "2026-04-24T07:25:00Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-01-20T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-01-20T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2026-01-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-01-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-01-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-01-22T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-01-22T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-01-22T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-01-22T07:25:00Z"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-01-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-01-28T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

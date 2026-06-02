@@ -1,0 +1,77 @@
+{
+  "token": "OPG",
+  "name": "OpenGradient",
+  "chain": "bsc",
+  "token_contract": "0x5feccd17c393caf1001d18164236a37e731fcb9d",
+  "gecko_pool": "0x0636066cec43597b2eb9e743a7c0e82c58c6bffaba22dae7bc5b012d37d6c751",
+  "fdv_usd": 163021613.11,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "opengradient",
+  "mcap_usd": 30974106.49,
+  "circulating_supply": 190000000.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2026-04-20T18:00:00Z",
+  "window_end_utc": "2026-05-30T20:51:49.747812Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-04-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-04-22T15:30:00Z"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2026-04-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-04-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-04-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-04-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-05-21T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2026-05-22T12:00:00Z",
+      "note": "first Binance spot candle"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

@@ -1,0 +1,82 @@
+{
+  "token": "SAPIEN",
+  "name": "Sapien",
+  "chain": "base",
+  "token_contract": "0xc729777d0470f30612b1564fd96e8dd26f5814e3",
+  "gecko_pool": "0x80cc08712aa61ce9dc7604f9ce7560a25094b862",
+  "fdv_usd": 99686258.63,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "sapien-io",
+  "mcap_usd": 24921564.66,
+  "circulating_supply": 250000000.0,
+  "total_supply": 1000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-08-19T18:00:00Z",
+  "window_end_utc": "2025-12-06T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-08-20T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-08-20T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-08-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-08-20T17:30:00Z"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-09-02T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2025-11-06T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2025-11-06T10:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-12-04T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

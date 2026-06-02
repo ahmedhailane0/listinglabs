@@ -1,0 +1,82 @@
+{
+  "token": "SXT",
+  "name": "Space and Time",
+  "chain": "base",
+  "token_contract": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
+  "gecko_pool": null,
+  "fdv_usd": 59559423.02,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "space-and-time",
+  "mcap_usd": 16676638.44,
+  "circulating_supply": 1400000000.0,
+  "total_supply": 5000000000.0,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-05-02T02:30:00Z",
+  "window_end_utc": "2025-08-08T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-05-02T08:30:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-05-03T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-05-08T00:00:00Z"
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-05-08T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-05-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2025-05-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-05-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-05-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-05-08T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2025-05-08T13:00:00Z",
+      "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2025-05-12T00:00:00Z"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2025-05-23T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-08-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

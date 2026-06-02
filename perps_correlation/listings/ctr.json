@@ -1,0 +1,82 @@
+{
+  "token": "CTR",
+  "name": "Citrea",
+  "chain": "base",
+  "token_contract": "0x11030f79109269d796fd0fb956d6244e502757f7",
+  "gecko_pool": "0x0ab02e160f0df68dc049b012c514857306960eae",
+  "fdv_usd": 259286830,
+  "fdv_source": "CoinMarketCap v2 quotes (id 39916 citrea), 2026-05-26",
+  "category": "Bitcoin ZK rollup",
+  "cmc_slug": "citrea",
+  "mcap_usd": 19930124,
+  "circulating_supply": 1200000000,
+  "total_supply": 10000000000,
+  "mcap_source": "CoinMarketCap quotes/latest, 2026-05-29 (current, not at-listing)",
+  "window_start_utc": "2026-05-26T12:00:00Z",
+  "window_end_utc": "2026-05-29T15:30:00Z",
+  "events": [
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-05-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-05-26T13:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1779800400000, contract on Base)."
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-05-26T13:00:00Z",
+      "note": "CTR/USDT first 1m candle. Announcement: https://www.kucoin.com/announcement/en-world-premiere-citrea-ctr-listed-on-kucoin"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-05-26T13:05:00Z",
+      "note": "CTRUSD first 1m candle on Kraken public OHLC API."
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-05-26T13:15:00Z",
+      "note": "CTR_USDT first 5m candle on Gate.io USDT-M futures."
+    },
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2026-05-26T13:29:00Z",
+      "note": "CTR-USD/USDC first 1m candle on Coinbase Exchange. Announcement: https://x.com/CoinbaseMarkets/status/2059237090253054452"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-05-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-05-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-05-28T09:30:00Z",
+      "note": "CTRUSDT USDT-M perp first 1m candle on Binance fapi (verified earliest = 09:30Z, high vol). Listed ~2d after Alpha."
+    }
+  ],
+  "annotations": [
+    {
+      "label": "BN perp announce",
+      "iso_time_utc": "2026-05-28T08:16:00Z",
+      "note": "Binance Futures announcement 'Will Launch USDT-M CTRUSDT Perpetual' (releaseDate 08:16 UTC). On-chain Alpha price spiked +59% on the 08:15 candle, ~74min before the 09:30 contract open."
+    }
+  ],
+  "not_listed": [
+    "Binance main spot",
+    "OKX spot+perp",
+    "Bybit spot+perp",
+    "Bitget perp",
+    "KuCoin perp",
+    "Gate.io spot",
+    "Coinbase INTX perp",
+    "Upbit",
+    "Bithumb"
+  ]
+}

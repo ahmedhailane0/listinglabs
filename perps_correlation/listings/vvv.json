@@ -1,0 +1,81 @@
+{
+  "token": "VVV",
+  "name": "Venice Token",
+  "chain": "base",
+  "token_contract": "0xacfe6019ed1a7dc6f7b508c02d1b04ec88cc21bf",
+  "gecko_pool": "0x01784ef301d79e4b2df3a21ad9a536d4cf09a5ce",
+  "fdv_usd": 1346742304.27,
+  "fdv_source": "CMC/GeckoTerminal (current)",
+  "category": "",
+  "cmc_slug": "venice-token",
+  "mcap_usd": 780492231.36,
+  "circulating_supply": 46456202.95164327,
+  "total_supply": 80160354.32168142,
+  "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
+  "window_start_utc": "2025-01-27T18:00:00Z",
+  "window_end_utc": "2026-05-14T00:00:00Z",
+  "events": [
+    {
+      "exchange": "Coinbase Spot",
+      "iso_time_utc": "2025-01-28T00:00:00Z"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-01-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-01-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-01-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-01-28T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-01-29T08:15:00Z"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2025-02-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-02-14T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-02-21T00:00:00Z"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2025-02-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Spot",
+      "iso_time_utc": "2025-03-21T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-03-31T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-05-12T00:00:00Z"
+    }
+  ],
+  "not_listed": [],
+  "funnel": true
+}

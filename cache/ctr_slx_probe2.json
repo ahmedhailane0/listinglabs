@@ -1,0 +1,38 @@
+{
+  "CTR": {
+    "Binance Perp": {
+      "iso": "2026-05-28T09:30:00Z",
+      "variant": "CTRUSDT"
+    },
+    "Gate.io Perp": {
+      "iso": "2026-05-26T13:15:00Z",
+      "variant": "CTR_USDT"
+    },
+    "LBank Spot": {
+      "iso": "2026-05-26T12:55:00Z",
+      "variant": null
+    },
+    "XT Spot": {
+      "iso": "2026-05-26T13:00:00Z",
+      "variant": null
+    }
+  },
+  "SLX": {
+    "Gate.io Perp": {
+      "iso": "2026-05-26T04:05:00Z",
+      "variant": "SLX_USDT"
+    },
+    "BingX Perp": {
+      "iso": "2026-05-25T13:00:00Z",
+      "variant": null
+    },
+    "LBank Spot": {
+      "iso": "2026-05-25T13:55:00Z",
+      "variant": null
+    },
+    "XT Spot": {
+      "iso": "2026-05-24T00:00:00Z",
+      "variant": null
+    }
+  }
+}

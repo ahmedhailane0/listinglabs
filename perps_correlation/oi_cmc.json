@@ -1,0 +1,2940 @@
+{
+  "fetched_utc": "2026-05-31T16:36:00Z",
+  "source": "CoinMarketCap web data-api (perpetual market pairs, summed openInterestUsd)",
+  "note": "CURRENT/live OI snapshot, not OI-at-listing",
+  "tokens": {
+    "2Z": {
+      "oi_usd": 50058050.27989349,
+      "n_pairs": 44,
+      "num_market_pairs": 44,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "2Z/USDT",
+          "oi_usd": 31285432.17064645
+        },
+        {
+          "exchange": "MEXC",
+          "pair": "2Z/USDT",
+          "oi_usd": 2658956.023057699
+        },
+        {
+          "exchange": "Binance",
+          "pair": "2Z/USDT",
+          "oi_usd": 2425388.2077
+        },
+        {
+          "exchange": "BingX",
+          "pair": "2Z/USDT",
+          "oi_usd": 2416628.527962346
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "2Z/USDT",
+          "oi_usd": 1567891.0466
+        }
+      ],
+      "slug": "doublezero",
+      "fetched_utc": "2026-05-31T16:32:41Z",
+      "mcap_now_usd": 313403050.3,
+      "fdv_now_usd": 902810020.12,
+      "oi_pct_mcap": 15.972419614925965
+    },
+    "AERO": {
+      "oi_usd": 52850916.45361608,
+      "n_pairs": 51,
+      "num_market_pairs": 51,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "AERO/USDT",
+          "oi_usd": 8408711.437912598
+        },
+        {
+          "exchange": "Binance",
+          "pair": "AERO/USDT",
+          "oi_usd": 8353713.36834
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "AERO/USDT",
+          "oi_usd": 3820893.2483120514
+        },
+        {
+          "exchange": "Hyperliquid",
+          "pair": "AERO/USD",
+          "oi_usd": 3283785.8136
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "AERO/USDT",
+          "oi_usd": 3142549.699840504
+        }
+      ],
+      "slug": "aerodrome-finance",
+      "fetched_utc": "2026-05-31T16:32:44Z",
+      "mcap_now_usd": 386118836.84,
+      "fdv_now_usd": 780041315.48,
+      "oi_pct_mcap": 13.687733260088644
+    },
+    "ALLO": {
+      "oi_usd": 374510433.2435089,
+      "n_pairs": 39,
+      "num_market_pairs": 39,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "ALLO/USDT",
+          "oi_usd": 93039436.18239164
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "ALLO/USDT",
+          "oi_usd": 90524460.86368893
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "ALLO/USDT",
+          "oi_usd": 43903924.4083
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ALLO/USDT",
+          "oi_usd": 23449234.38564
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ALLO/USDT",
+          "oi_usd": 19122794.66363058
+        }
+      ],
+      "slug": "allora",
+      "fetched_utc": "2026-05-31T16:32:46Z",
+      "mcap_now_usd": 57689933.6,
+      "fdv_now_usd": 287730342.14,
+      "oi_pct_mcap": 649.1781319081097
+    },
+    "ASTER": {
+      "oi_usd": 762456764.5330209,
+      "n_pairs": 96,
+      "num_market_pairs": 96,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "ASTER/USDT",
+          "oi_usd": 97672914.9603
+        },
+        {
+          "exchange": "Aster",
+          "pair": "ASTER/USDT",
+          "oi_usd": 84053821.78657429
+        },
+        {
+          "exchange": "XT.COM",
+          "pair": "ASTER/USDT",
+          "oi_usd": 73408169.91799097
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "ASTER/USDT",
+          "oi_usd": 39800808.8936
+        },
+        {
+          "exchange": "BVOX",
+          "pair": "ASTER/USDT",
+          "oi_usd": 38201977.2884742
+        }
+      ],
+      "slug": "aster",
+      "fetched_utc": "2026-05-31T16:32:49Z",
+      "mcap_now_usd": 1873706456.75,
+      "fdv_now_usd": 5764272784.94,
+      "oi_pct_mcap": 40.69243406758201
+    },
+    "ATH": {
+      "oi_usd": 35411044.8800962,
+      "n_pairs": 45,
+      "num_market_pairs": 45,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "WOO X Pro",
+          "pair": "ATH/USDT",
+          "oi_usd": 11040765.068947794
+        },
+        {
+          "exchange": "Echobit",
+          "pair": "ATH/USDT",
+          "oi_usd": 6345187.146753065
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ATH/USDT",
+          "oi_usd": 3972036.418305
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "ATH/USDT",
+          "oi_usd": 1804327.3044650198
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "ATH/USDT",
+          "oi_usd": 1608288.5406175384
+        }
+      ],
+      "slug": "aethir",
+      "fetched_utc": "2026-05-31T16:32:51Z",
+      "mcap_now_usd": 115621718.43,
+      "fdv_now_usd": 241252370.54,
+      "oi_pct_mcap": 30.626637764024274
+    },
+    "AVNT": {
+      "oi_usd": 47734386.96727922,
+      "n_pairs": 65,
+      "num_market_pairs": 65,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "OrangeX",
+          "pair": "AVNT/USDT",
+          "oi_usd": 6262913.186067376
+        },
+        {
+          "exchange": "BingX",
+          "pair": "AVNT/USDT",
+          "oi_usd": 4877102.02777887
+        },
+        {
+          "exchange": "Binance",
+          "pair": "AVNT/USDT",
+          "oi_usd": 4868706.4862
+        },
+        {
+          "exchange": "B2Z Exchange",
+          "pair": "AVNT/USD",
+          "oi_usd": 3435795.51
+        },
+        {
+          "exchange": "BITmarkets",
+          "pair": "AVNT/USDT",
+          "oi_usd": 3430933.8638984365
+        }
+      ],
+      "slug": "avantis",
+      "fetched_utc": "2026-05-31T16:32:54Z",
+      "mcap_now_usd": 44909407.98,
+      "fdv_now_usd": 138700496.58,
+      "oi_pct_mcap": 106.29039462853152
+    },
+    "B3": {
+      "oi_usd": 1421038.3690162278,
+      "n_pairs": 13,
+      "num_market_pairs": 13,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Bybit",
+          "pair": "B3/USDT",
+          "oi_usd": 536990.194749002
+        },
+        {
+          "exchange": "ASTX",
+          "pair": "B3/USDT",
+          "oi_usd": 263301.04478550557
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "B3/USDT",
+          "oi_usd": 203278.41341334468
+        },
+        {
+          "exchange": "Zoomex",
+          "pair": "B3/USDT",
+          "oi_usd": 107306.87788764988
+        },
+        {
+          "exchange": "LBank",
+          "pair": "B3/USDT",
+          "oi_usd": 75180.35306275
+        }
+      ],
+      "slug": "b3",
+      "fetched_utc": "2026-05-31T16:32:56Z",
+      "mcap_now_usd": 35627308.08,
+      "fdv_now_usd": 76730762.81,
+      "oi_pct_mcap": 3.9886212166951567
+    },
+    "BARD": {
+      "oi_usd": 31697941.11084589,
+      "n_pairs": 43,
+      "num_market_pairs": 43,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "BARD/USDT",
+          "oi_usd": 4751620.6076
+        },
+        {
+          "exchange": "BingX",
+          "pair": "BARD/USDT",
+          "oi_usd": 4737780.711433285
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "BARD/USDT",
+          "oi_usd": 4027983.64759
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "BARD/USDT",
+          "oi_usd": 2441799.263452023
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "BARD/USDT",
+          "oi_usd": 2047884.608178908
+        }
+      ],
+      "slug": "lombard",
+      "fetched_utc": "2026-05-31T16:32:59Z",
+      "mcap_now_usd": 61097392.82,
+      "fdv_now_usd": 189449280.07,
+      "oi_pct_mcap": 51.88100448775563
+    },
+    "BIGTIME": {
+      "oi_usd": 14952022.998452837,
+      "n_pairs": 56,
+      "num_market_pairs": 56,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Coincall",
+          "pair": "BIGTIME/USD",
+          "oi_usd": 3046509.03735288
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "BIGTIME/USDT",
+          "oi_usd": 1319974.4651929713
+        },
+        {
+          "exchange": "Binance",
+          "pair": "BIGTIME/USDT",
+          "oi_usd": 1316722.37256
+        },
+        {
+          "exchange": "BingX",
+          "pair": "BIGTIME/USDT",
+          "oi_usd": 1314083.505521408
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "BIGTIME/USDT",
+          "oi_usd": 1096670.9647883747
+        }
+      ],
+      "slug": "big-time",
+      "fetched_utc": "2026-05-31T16:33:01Z",
+      "mcap_now_usd": 27570610.66,
+      "fdv_now_usd": 56666306.78,
+      "oi_pct_mcap": 54.23174402207034
+    },
+    "BILL": {
+      "oi_usd": 795254457.3801385,
+      "n_pairs": 45,
+      "num_market_pairs": 45,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "LBank",
+          "pair": "BILL/USDT",
+          "oi_usd": 743141684.314967
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "BILL/USDT",
+          "oi_usd": 8841880.5707
+        },
+        {
+          "exchange": "Binance",
+          "pair": "BILL/USDT",
+          "oi_usd": 7392071.5336
+        },
+        {
+          "exchange": "OKX",
+          "pair": "BILL/USDT",
+          "oi_usd": 5589352.309124044
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "BILL/USDT",
+          "oi_usd": 3975195.430273965
+        }
+      ],
+      "slug": "billions-network",
+      "fetched_utc": "2026-05-31T16:33:04Z",
+      "mcap_now_usd": 194205733.93,
+      "fdv_now_usd": 799794820.42,
+      "oi_pct_mcap": 409.49071960294543
+    },
+    "BIRB": {
+      "oi_usd": 87360079.37127724,
+      "n_pairs": 38,
+      "num_market_pairs": 38,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "BIRB/USDT",
+          "oi_usd": 77740397.75920396
+        },
+        {
+          "exchange": "Binance",
+          "pair": "BIRB/USDT",
+          "oi_usd": 1308254.66884
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "BIRB/USDT",
+          "oi_usd": 1081700.7241656391
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "BIRB/USDT",
+          "oi_usd": 1003947.4593441167
+        },
+        {
+          "exchange": "BitMart",
+          "pair": "BIRB/USDT",
+          "oi_usd": 823742.1650610832
+        }
+      ],
+      "slug": "moonbirds",
+      "fetched_utc": "2026-05-31T16:33:06Z",
+      "mcap_now_usd": 27166619.07,
+      "fdv_now_usd": 95321470.41,
+      "oi_pct_mcap": 321.5714077124476
+    },
+    "BREV": {
+      "oi_usd": 24738262.172005773,
+      "n_pairs": 42,
+      "num_market_pairs": 42,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "BREV/USDT",
+          "oi_usd": 11897939.255172059
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "BREV/USDT",
+          "oi_usd": 1711390.48041
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "BREV/USDT",
+          "oi_usd": 1685837.676
+        },
+        {
+          "exchange": "Binance",
+          "pair": "BREV/USDT",
+          "oi_usd": 1371018.0308
+        },
+        {
+          "exchange": "BingX",
+          "pair": "BREV/USDT",
+          "oi_usd": 1369368.5467614045
+        }
+      ],
+      "slug": "brevis",
+      "fetched_utc": "2026-05-31T16:33:09Z",
+      "mcap_now_usd": 25322306.78,
+      "fdv_now_usd": 101289227.13,
+      "oi_pct_mcap": 97.69355685851055
+    },
+    "CFG": {
+      "oi_usd": 86709291.14267391,
+      "n_pairs": 37,
+      "num_market_pairs": 37,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "CFG/USDT",
+          "oi_usd": 66904747.46383319
+        },
+        {
+          "exchange": "Binance",
+          "pair": "CFG/USDT",
+          "oi_usd": 3846757.5098
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "CFG/USDT",
+          "oi_usd": 2115165.6759369024
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "CFG/USDT",
+          "oi_usd": 1672881.4094681276
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "CFG/USDT",
+          "oi_usd": 1367045.7087333768
+        }
+      ],
+      "slug": "centrifuge",
+      "fetched_utc": "2026-05-31T16:33:11Z",
+      "mcap_now_usd": 150184960.72,
+      "fdv_now_usd": 176946524.58,
+      "oi_pct_mcap": 57.735002710645524
+    },
+    "CHIP": {
+      "oi_usd": 61125606.00804276,
+      "n_pairs": 52,
+      "num_market_pairs": 52,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "CHIP/USDT",
+          "oi_usd": 11113359.9187
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "CHIP/USDT",
+          "oi_usd": 5793306.894
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "CHIP/USDT",
+          "oi_usd": 5751719.590695579
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "CHIP/USDT",
+          "oi_usd": 4921746.5877326345
+        },
+        {
+          "exchange": "Hyperliquid",
+          "pair": "CHIP/USD",
+          "oi_usd": 2711300.04615
+        }
+      ],
+      "slug": "usd-ai",
+      "fetched_utc": "2026-05-31T16:33:14Z",
+      "mcap_now_usd": 76109556.39,
+      "fdv_now_usd": 380547781.95,
+      "oi_pct_mcap": 80.31265573908144
+    },
+    "CTR": {
+      "oi_usd": 6906287.829316719,
+      "n_pairs": 27,
+      "num_market_pairs": 27,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "CTR/USDT",
+          "oi_usd": 1696709.9472
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "CTR/USDT",
+          "oi_usd": 1329060.224
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "CTR/USDT",
+          "oi_usd": 671667.8264961978
+        },
+        {
+          "exchange": "BingX",
+          "pair": "CITREA/USDT",
+          "oi_usd": 618279.8166151769
+        },
+        {
+          "exchange": "Gate",
+          "pair": "CTR/USDT",
+          "oi_usd": 528832.656
+        }
+      ],
+      "slug": "citrea",
+      "fetched_utc": "2026-05-31T16:33:17Z",
+      "mcap_now_usd": 20268945.02,
+      "fdv_now_usd": 168907875.13,
+      "oi_pct_mcap": 34.07324763327381
+    },
+    "DOOD": {
+      "oi_usd": 6845703.467185284,
+      "n_pairs": 38,
+      "num_market_pairs": 38,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Phemex",
+          "pair": "DOOD/USDT",
+          "oi_usd": 1462568.5514433766
+        },
+        {
+          "exchange": "Binance",
+          "pair": "DOOD/USDT",
+          "oi_usd": 805402.611468
+        },
+        {
+          "exchange": "BingX",
+          "pair": "DOOD/USDT",
+          "oi_usd": 800907.9471434657
+        },
+        {
+          "exchange": "OKX",
+          "pair": "DOOD/USDT",
+          "oi_usd": 405661.424536645
+        },
+        {
+          "exchange": "Deepcoin",
+          "pair": "DOOD/USDT",
+          "oi_usd": 332922.92
+        }
+      ],
+      "slug": "doodles",
+      "fetched_utc": "2026-05-31T16:33:19Z",
+      "mcap_now_usd": 16674146.62,
+      "fdv_now_usd": 21377111.05,
+      "oi_pct_mcap": 41.05579507723726
+    },
+    "DRIFT": {
+      "oi_usd": 21162475.508820817,
+      "n_pairs": 34,
+      "num_market_pairs": 34,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "DRIFT/USDT",
+          "oi_usd": 3064770.33438816
+        },
+        {
+          "exchange": "Binance",
+          "pair": "DRIFT/USDT",
+          "oi_usd": 3059761.74749
+        },
+        {
+          "exchange": "BingX",
+          "pair": "DRIFT/USDT",
+          "oi_usd": 3052841.4149825806
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "DRIFT/USDT",
+          "oi_usd": 2268996.65364
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "DRIFT/USDT",
+          "oi_usd": 1371059.5339210725
+        }
+      ],
+      "slug": "drift",
+      "fetched_utc": "2026-05-31T16:33:22Z",
+      "mcap_now_usd": 15714275.82,
+      "fdv_now_usd": 25697251.33,
+      "oi_pct_mcap": 134.67038348586667
+    },
+    "EDGE": {
+      "oi_usd": 104787743.99212705,
+      "n_pairs": 39,
+      "num_market_pairs": 39,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "EDGE/USDT",
+          "oi_usd": 22813909.3112
+        },
+        {
+          "exchange": "EdgeX",
+          "pair": "EDGE/USD",
+          "oi_usd": 22505823.76166
+        },
+        {
+          "exchange": "BITmarkets",
+          "pair": "EDGE/USDT",
+          "oi_usd": 8990672.315820549
+        },
+        {
+          "exchange": "B2Z Exchange",
+          "pair": "EDGE/USD",
+          "oi_usd": 8990247.16
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "EDGE/USDT",
+          "oi_usd": 6254923.58237962
+        }
+      ],
+      "slug": "edgex",
+      "fetched_utc": "2026-05-31T16:33:24Z",
+      "mcap_now_usd": 449545119.19,
+      "fdv_now_usd": 1284414626.26,
+      "oi_pct_mcap": 23.309727882472806
+    },
+    "ELSA": {
+      "oi_usd": 5774377.49431111,
+      "n_pairs": 29,
+      "num_market_pairs": 29,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Phemex",
+          "pair": "ELSA/USDT",
+          "oi_usd": 1276513.0563742816
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ELSA/USDT",
+          "oi_usd": 943793.0656
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "ELSA/USDT",
+          "oi_usd": 473957.92335
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "ELSA/USDT",
+          "oi_usd": 422444.7317382949
+        },
+        {
+          "exchange": "BlockFin",
+          "pair": "ELSA/USDT",
+          "oi_usd": 303619.78749596304
+        }
+      ],
+      "slug": "heyelsa",
+      "fetched_utc": "2026-05-31T16:33:27Z",
+      "mcap_now_usd": 15713860.91,
+      "fdv_now_usd": 61467109.65,
+      "oi_pct_mcap": 36.7470319826772
+    },
+    "ERA": {
+      "oi_usd": 92066458.12882994,
+      "n_pairs": 40,
+      "num_market_pairs": 40,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "ERA/USDT",
+          "oi_usd": 72106621.86569056
+        },
+        {
+          "exchange": "Batonex",
+          "pair": "ERA/USDT",
+          "oi_usd": 2721782.461927559
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "ERA/USDT",
+          "oi_usd": 2340232.1166
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ERA/USDT",
+          "oi_usd": 2223354.692
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ERA/USDT",
+          "oi_usd": 2219813.441242086
+        }
+      ],
+      "slug": "caldera",
+      "fetched_utc": "2026-05-31T16:33:29Z",
+      "mcap_now_usd": 18341820.16,
+      "fdv_now_usd": 123513940.48,
+      "oi_pct_mcap": 501.9483198816292
+    },
+    "ESP": {
+      "oi_usd": 17827935.980482332,
+      "n_pairs": 40,
+      "num_market_pairs": 40,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "AlphaX",
+          "pair": "ESP/USDT",
+          "oi_usd": 2601482.3004807965
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "ESP/USDT",
+          "oi_usd": 2333928.4594879407
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ESP/USDT",
+          "oi_usd": 2025603.36062
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "ESP/USDT",
+          "oi_usd": 1527683.445242
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ESP/USDT",
+          "oi_usd": 936823.1649896153
+        }
+      ],
+      "slug": "espresso",
+      "fetched_utc": "2026-05-31T16:33:32Z",
+      "mcap_now_usd": 32659760.02,
+      "fdv_now_usd": 225239724.29,
+      "oi_pct_mcap": 54.586855413404635
+    },
+    "EUL": {
+      "oi_usd": 13188230.370577274,
+      "n_pairs": 31,
+      "num_market_pairs": 31,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "EUL/USDT",
+          "oi_usd": 3882044.5156
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "EUL/USDT",
+          "oi_usd": 1413426.164413312
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "EUL/USDT",
+          "oi_usd": 1291872.3530606416
+        },
+        {
+          "exchange": "Deepcoin",
+          "pair": "EUL/USDT",
+          "oi_usd": 1018256
+        },
+        {
+          "exchange": "BlockFin",
+          "pair": "EUL/USDT",
+          "oi_usd": 968546.0018036055
+        }
+      ],
+      "slug": "euler-finance",
+      "fetched_utc": "2026-05-31T16:33:34Z",
+      "mcap_now_usd": 30035912.57,
+      "fdv_now_usd": 33786444.99,
+      "oi_pct_mcap": 43.90820601785123
+    },
+    "FLOCK": {
+      "oi_usd": 8321267.997510031,
+      "n_pairs": 29,
+      "num_market_pairs": 29,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "FLOCK/USDT",
+          "oi_usd": 1198330.1919143267
+        },
+        {
+          "exchange": "Binance",
+          "pair": "FLOCK/USDT",
+          "oi_usd": 1197180.10952
+        },
+        {
+          "exchange": "BingX",
+          "pair": "FLOCK/USDT",
+          "oi_usd": 1194579.1409520134
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "FLOCK/USDT",
+          "oi_usd": 1036549.9048853724
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "FLOCK/USDT",
+          "oi_usd": 525087.0500203634
+        }
+      ],
+      "slug": "flock-io",
+      "fetched_utc": "2026-05-31T16:33:37Z",
+      "mcap_now_usd": 21050511.86,
+      "fdv_now_usd": 55127030.19,
+      "oi_pct_mcap": 39.53000313176248
+    },
+    "FLUID": {
+      "oi_usd": 7847590.233103222,
+      "n_pairs": 29,
+      "num_market_pairs": 29,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Phemex",
+          "pair": "FLUID/USDT",
+          "oi_usd": 1151159.1694435463
+        },
+        {
+          "exchange": "Binance",
+          "pair": "FLUID/USDT",
+          "oi_usd": 1023625.5723
+        },
+        {
+          "exchange": "BingX",
+          "pair": "FLUID/USDT",
+          "oi_usd": 1015097.5162971666
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "FLUID/USDT",
+          "oi_usd": 747515.2308183003
+        },
+        {
+          "exchange": "BlockFin",
+          "pair": "FLUID/USDT",
+          "oi_usd": 518267.7118100071
+        }
+      ],
+      "slug": "instadapp",
+      "fetched_utc": "2026-05-31T16:33:40Z",
+      "mcap_now_usd": 105774680.42,
+      "fdv_now_usd": 135700777.12,
+      "oi_pct_mcap": 7.419157592292182
+    },
+    "G": {
+      "oi_usd": null,
+      "n_pairs": 0,
+      "num_market_pairs": null,
+      "complete": true,
+      "top": [],
+      "slug": "giants-protocol",
+      "fetched_utc": "2026-05-31T16:33:42Z",
+      "mcap_now_usd": null,
+      "fdv_now_usd": 564467.75,
+      "oi_pct_mcap": null
+    },
+    "GWEI": {
+      "oi_usd": 53236510.13972408,
+      "n_pairs": 27,
+      "num_market_pairs": 27,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "GWEI/USDT",
+          "oi_usd": 11756191.46552
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "GWEI/USDT",
+          "oi_usd": 10994022.4
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "GWEI/USDT",
+          "oi_usd": 10296635.301307764
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "GWEI/USDT",
+          "oi_usd": 6700478.958784416
+        },
+        {
+          "exchange": "Bitget",
+          "pair": "GWEI/USDT",
+          "oi_usd": 3353875.3339
+        }
+      ],
+      "slug": "eth-gas",
+      "fetched_utc": "2026-05-31T16:33:45Z",
+      "mcap_now_usd": 180028337.62,
+      "fdv_now_usd": 1028733357.83,
+      "oi_pct_mcap": 29.571183538946283
+    },
+    "HOME": {
+      "oi_usd": 56655475.190335274,
+      "n_pairs": 28,
+      "num_market_pairs": 28,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "HOME/USDT",
+          "oi_usd": 15790231.854124
+        },
+        {
+          "exchange": "BingX",
+          "pair": "HOME/USDT",
+          "oi_usd": 6715007.025511756
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "HOME/USDT",
+          "oi_usd": 6320343.073941293
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "HOME/USDT",
+          "oi_usd": 2994408.565888607
+        },
+        {
+          "exchange": "WhiteBIT",
+          "pair": "HOME/USDT",
+          "oi_usd": 2932205.45
+        }
+      ],
+      "slug": "defi-app",
+      "fetched_utc": "2026-05-31T16:33:47Z",
+      "mcap_now_usd": 129697974.87,
+      "fdv_now_usd": 338195501.62,
+      "oi_pct_mcap": 43.682621295454055
+    },
+    "HYPER": {
+      "oi_usd": 19627170.196011316,
+      "n_pairs": 40,
+      "num_market_pairs": 40,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Phemex",
+          "pair": "HYPER/USDT",
+          "oi_usd": 2598534.358562662
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "HYPER/USDT",
+          "oi_usd": 2394751.657
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "HYPER/USDT",
+          "oi_usd": 2389128.144316704
+        },
+        {
+          "exchange": "Binance",
+          "pair": "HYPER/USDT",
+          "oi_usd": 2239789.552
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "HYPER/USDT",
+          "oi_usd": 1182199.4968294047
+        }
+      ],
+      "slug": "hyperlane",
+      "fetched_utc": "2026-05-31T16:33:50Z",
+      "mcap_now_usd": 29735231.21,
+      "fdv_now_usd": 87928787.2,
+      "oi_pct_mcap": 66.00644890701463
+    },
+    "IP": {
+      "oi_usd": 60284119.81136715,
+      "n_pairs": 80,
+      "num_market_pairs": 80,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "IP/USDT",
+          "oi_usd": 6582031.325878707
+        },
+        {
+          "exchange": "Binance",
+          "pair": "IP/USDT",
+          "oi_usd": 6574988.57746
+        },
+        {
+          "exchange": "BingX",
+          "pair": "IP/USDT",
+          "oi_usd": 5651905.2737492975
+        },
+        {
+          "exchange": "OKX",
+          "pair": "IP/USDT",
+          "oi_usd": 4983571.608499139
+        },
+        {
+          "exchange": "BitMart",
+          "pair": "IP/USDT",
+          "oi_usd": 4506376.072288151
+        }
+      ],
+      "slug": "story-protocol",
+      "fetched_utc": "2026-05-31T16:33:52Z",
+      "mcap_now_usd": 151238386.21,
+      "fdv_now_usd": 438154520.47,
+      "oi_pct_mcap": 39.86032998769271
+    },
+    "IRYS": {
+      "oi_usd": 64274697.06999467,
+      "n_pairs": 40,
+      "num_market_pairs": 40,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "IRYS/USDT",
+          "oi_usd": 32208025.89333435
+        },
+        {
+          "exchange": "ASTX",
+          "pair": "IRYS/USDT",
+          "oi_usd": 13800682.73601139
+        },
+        {
+          "exchange": "Binance",
+          "pair": "IRYS/USDT",
+          "oi_usd": 2358991.60692
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "IRYS/USDT",
+          "oi_usd": 1972935.6393787437
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "IRYS/USDT",
+          "oi_usd": 1927101.4766
+        }
+      ],
+      "slug": "irys",
+      "fetched_utc": "2026-05-31T16:33:55Z",
+      "mcap_now_usd": 59577574.97,
+      "fdv_now_usd": 232107174.19,
+      "oi_pct_mcap": 107.88404379057035
+    },
+    "KAT": {
+      "oi_usd": 15200582.19937088,
+      "n_pairs": 41,
+      "num_market_pairs": 41,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "KAT/USDT",
+          "oi_usd": 3409184.84446
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "KAT/USDT",
+          "oi_usd": 1386309.9718062563
+        },
+        {
+          "exchange": "OKX",
+          "pair": "KAT/USDT",
+          "oi_usd": 1301536.1768992625
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "KAT/USDT",
+          "oi_usd": 1210271.372367811
+        },
+        {
+          "exchange": "BingX",
+          "pair": "KAT/USDT",
+          "oi_usd": 939517.8676566972
+        }
+      ],
+      "slug": "katana-network",
+      "fetched_utc": "2026-05-31T16:33:58Z",
+      "mcap_now_usd": 16688584.4,
+      "fdv_now_usd": 71257832.63,
+      "oi_pct_mcap": 91.08371228521264
+    },
+    "KITE": {
+      "oi_usd": 168636381.3282352,
+      "n_pairs": 50,
+      "num_market_pairs": 50,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "CoinW",
+          "pair": "KITE/USDT",
+          "oi_usd": 49560390.09023594
+        },
+        {
+          "exchange": "Binance",
+          "pair": "KITE/USDT",
+          "oi_usd": 34882763.4762
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "KITE/USDT",
+          "oi_usd": 15580800.6579
+        },
+        {
+          "exchange": "WhiteBIT",
+          "pair": "KITE/USDT",
+          "oi_usd": 6971813.39
+        },
+        {
+          "exchange": "BingX",
+          "pair": "KITE/USDT",
+          "oi_usd": 5739970.60175542
+        }
+      ],
+      "slug": "kite",
+      "fetched_utc": "2026-05-31T16:34:00Z",
+      "mcap_now_usd": 370881228.5,
+      "fdv_now_usd": 2060451269.47,
+      "oi_pct_mcap": 45.46910664912102
+    },
+    "KMNO": {
+      "oi_usd": 7952761.99841538,
+      "n_pairs": 39,
+      "num_market_pairs": 39,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "KMNO/USDT",
+          "oi_usd": 1796920.6136
+        },
+        {
+          "exchange": "Echobit",
+          "pair": "KMNO/USDT",
+          "oi_usd": 755527.231654856
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "KMNO/USDT",
+          "oi_usd": 663516.9433075185
+        },
+        {
+          "exchange": "MEXC",
+          "pair": "KMNO/USDT",
+          "oi_usd": 451380.07579449867
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "KMNO/USDT",
+          "oi_usd": 402140.17308996664
+        }
+      ],
+      "slug": "kamino-finance",
+      "fetched_utc": "2026-05-31T16:34:03Z",
+      "mcap_now_usd": 87534089.41,
+      "fdv_now_usd": 184922244.71,
+      "oi_pct_mcap": 9.085331271529567
+    },
+    "LA": {
+      "oi_usd": 31162345.32512034,
+      "n_pairs": 46,
+      "num_market_pairs": 46,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "OrangeX",
+          "pair": "LA/USDT",
+          "oi_usd": 9515749.089822605
+        },
+        {
+          "exchange": "BingX",
+          "pair": "LA/USDT",
+          "oi_usd": 3281508.700584877
+        },
+        {
+          "exchange": "Binance",
+          "pair": "LA/USDT",
+          "oi_usd": 3263191.30116
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "LA/USDT",
+          "oi_usd": 1859815.2164538556
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "LA/USDT",
+          "oi_usd": 1803585.3896
+        }
+      ],
+      "slug": "lagrange",
+      "fetched_utc": "2026-05-31T16:34:05Z",
+      "mcap_now_usd": 20837051.8,
+      "fdv_now_usd": 107963998.98,
+      "oi_pct_mcap": 149.55256446173607
+    },
+    "LINEA": {
+      "oi_usd": 31066678.60707216,
+      "n_pairs": 60,
+      "num_market_pairs": 60,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Toobit",
+          "pair": "LINEA/USDT",
+          "oi_usd": 6302672.76978795
+        },
+        {
+          "exchange": "BingX",
+          "pair": "LINEA/USDT",
+          "oi_usd": 3928115.780679718
+        },
+        {
+          "exchange": "Binance",
+          "pair": "LINEA/USDT",
+          "oi_usd": 3903543.420425
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "LINEA/USDT",
+          "oi_usd": 1410565.3828810083
+        },
+        {
+          "exchange": "BlockFin",
+          "pair": "LINEA/USDT",
+          "oi_usd": 1289817.037384227
+        }
+      ],
+      "slug": "linea",
+      "fetched_utc": "2026-05-31T16:34:08Z",
+      "mcap_now_usd": 46966286.51,
+      "fdv_now_usd": 218447844.25,
+      "oi_pct_mcap": 66.14676380781667
+    },
+    "MET": {
+      "oi_usd": 17137951.001949634,
+      "n_pairs": 51,
+      "num_market_pairs": 51,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "MET/USDT",
+          "oi_usd": 2815557.4816
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "MET/USDT",
+          "oi_usd": 1317663.3669
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "MET/USDT",
+          "oi_usd": 1172726.8397955613
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "MET/USDT",
+          "oi_usd": 1073215.4108277815
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "MET/USDT",
+          "oi_usd": 1005725.2283136065
+        }
+      ],
+      "slug": "meteora",
+      "fetched_utc": "2026-05-31T16:34:10Z",
+      "mcap_now_usd": 65907321.59,
+      "fdv_now_usd": 127008032.77,
+      "oi_pct_mcap": 26.003106466019617
+    },
+    "MOG": {
+      "oi_usd": 3314174.9446522635,
+      "n_pairs": 19,
+      "num_market_pairs": 19,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "KuCoin",
+          "pair": "1000000MOG/USDT",
+          "oi_usd": 824068.5831
+        },
+        {
+          "exchange": "Binance",
+          "pair": "1000000MOG/USDT",
+          "oi_usd": 717813.04185
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "1000000MOG/USDT",
+          "oi_usd": 623828.0676544798
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "1000000MOG/USDT",
+          "oi_usd": 257814.58871235928
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "MOG/USDT",
+          "oi_usd": 190190.1836701016
+        }
+      ],
+      "slug": "mog-coin",
+      "fetched_utc": "2026-05-31T16:34:13Z",
+      "mcap_now_usd": 50681289.46,
+      "fdv_now_usd": 54590077.83,
+      "oi_pct_mcap": 6.5392474815937005
+    },
+    "MOODENG": {
+      "oi_usd": 63474506.46835308,
+      "n_pairs": 60,
+      "num_market_pairs": 60,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "ASTX",
+          "pair": "MOODENG/USDT",
+          "oi_usd": 12267578.873842217
+        },
+        {
+          "exchange": "Coincall",
+          "pair": "MOODENG/USD",
+          "oi_usd": 11545322.39970618
+        },
+        {
+          "exchange": "Ekbit",
+          "pair": "MOODENG/USDT",
+          "oi_usd": 7250778.136619379
+        },
+        {
+          "exchange": "BitMart",
+          "pair": "MOODENG/USDT",
+          "oi_usd": 5386681.434421285
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "MOODENG/USDT",
+          "oi_usd": 2452743.0963120563
+        }
+      ],
+      "slug": "moo-deng-solana",
+      "fetched_utc": "2026-05-31T16:34:16Z",
+      "mcap_now_usd": 48378219.55,
+      "fdv_now_usd": 48378219.55,
+      "oi_pct_mcap": 131.20471786430818
+    },
+    "MORPHO": {
+      "oi_usd": 522049904.8026522,
+      "n_pairs": 55,
+      "num_market_pairs": 55,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Ekbit",
+          "pair": "MORPHO/USDT",
+          "oi_usd": 430680254.20387757
+        },
+        {
+          "exchange": "Coincall",
+          "pair": "MORPHO/USD",
+          "oi_usd": 18407860.310385
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "MORPHO/USDT",
+          "oi_usd": 10329637.347947536
+        },
+        {
+          "exchange": "Binance",
+          "pair": "MORPHO/USDT",
+          "oi_usd": 10297855.24654
+        },
+        {
+          "exchange": "AEGET",
+          "pair": "MORPHO/USDT",
+          "oi_usd": 8152690.113627663
+        }
+      ],
+      "slug": "morpho",
+      "fetched_utc": "2026-05-31T16:34:19Z",
+      "mcap_now_usd": 1042806896.07,
+      "fdv_now_usd": 2115798081.91,
+      "oi_pct_mcap": 50.06199199200623
+    },
+    "NEWT": {
+      "oi_usd": 93521447.6147849,
+      "n_pairs": 33,
+      "num_market_pairs": 33,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "NEWT/USDT",
+          "oi_usd": 79153053.54610263
+        },
+        {
+          "exchange": "Batonex",
+          "pair": "NEWT/USDT",
+          "oi_usd": 3652648.6029948993
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "NEWT/USDT",
+          "oi_usd": 2640698.6970715593
+        },
+        {
+          "exchange": "Binance",
+          "pair": "NEWT/USDT",
+          "oi_usd": 1398484.63448
+        },
+        {
+          "exchange": "Deepcoin",
+          "pair": "NEWT/USDT",
+          "oi_usd": 1199615.68
+        }
+      ],
+      "slug": "newton-protocol",
+      "fetched_utc": "2026-05-31T16:34:22Z",
+      "mcap_now_usd": 16318652.8,
+      "fdv_now_usd": 67570493.68,
+      "oi_pct_mcap": 573.0953943378518
+    },
+    "NEX": {
+      "oi_usd": 3617971.86976028,
+      "n_pairs": 10,
+      "num_market_pairs": 10,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "MEXC",
+          "pair": "NEX/USDT",
+          "oi_usd": 1037542.0749230667
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "NEX/USDT",
+          "oi_usd": 870366.906
+        },
+        {
+          "exchange": "BingX",
+          "pair": "NEX/USDT",
+          "oi_usd": 804149.936371179
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "10000NEX/USDT",
+          "oi_usd": 521546.72612844396
+        },
+        {
+          "exchange": "Bitget",
+          "pair": "10000NEX/USDT",
+          "oi_usd": 158384.27374
+        }
+      ],
+      "slug": "nexus-labs",
+      "fetched_utc": "2026-05-31T16:34:24Z",
+      "mcap_now_usd": 202513012.08,
+      "fdv_now_usd": 337521686.8,
+      "oi_pct_mcap": 1.7865379772886145
+    },
+    "ONDO": {
+      "oi_usd": 625504023.5916684,
+      "n_pairs": 107,
+      "num_market_pairs": 107,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Echobit",
+          "pair": "ONDO/USDT",
+          "oi_usd": 164771514.15470803
+        },
+        {
+          "exchange": "Coincall",
+          "pair": "ONDO/USD",
+          "oi_usd": 50052594.20405
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "ONDO/USDT",
+          "oi_usd": 49229673.53437223
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "ONDO/USDT",
+          "oi_usd": 43196366.82630375
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ONDO/USDT",
+          "oi_usd": 43017606.68076
+        }
+      ],
+      "slug": "ondo-finance",
+      "fetched_utc": "2026-05-31T16:34:27Z",
+      "mcap_now_usd": 1731483456.74,
+      "fdv_now_usd": 3555896245.83,
+      "oi_pct_mcap": 36.12532485694977
+    },
+    "OPG": {
+      "oi_usd": 48584127.8659726,
+      "n_pairs": 35,
+      "num_market_pairs": 35,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "OrangeX",
+          "pair": "OPG/USDT",
+          "oi_usd": 10553614.622516464
+        },
+        {
+          "exchange": "XT.COM",
+          "pair": "OPG/USDT",
+          "oi_usd": 7806863.908331385
+        },
+        {
+          "exchange": "Binance",
+          "pair": "OPG/USDT",
+          "oi_usd": 7209063.8578
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "OPG/USDT",
+          "oi_usd": 2410418.996726728
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "OPG/USDT",
+          "oi_usd": 1961239.3408041769
+        }
+      ],
+      "slug": "opengradient",
+      "fetched_utc": "2026-05-31T16:34:29Z",
+      "mcap_now_usd": 31627153.52,
+      "fdv_now_usd": 166458702.72,
+      "oi_pct_mcap": 153.6152402562866
+    },
+    "PEPE": {
+      "oi_usd": 644024518.0004213,
+      "n_pairs": 73,
+      "num_market_pairs": 73,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Coincall",
+          "pair": "1000PEPE/USD",
+          "oi_usd": 278200880.7085547
+        },
+        {
+          "exchange": "Binance",
+          "pair": "1000PEPE/USDT",
+          "oi_usd": 60440831.5360176
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "PEPE/USDT",
+          "oi_usd": 33733122.73135032
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "PEPE/USDT",
+          "oi_usd": 33590184.45692
+        },
+        {
+          "exchange": "OKX",
+          "pair": "PEPE/USDT",
+          "oi_usd": 25396326.00412257
+        }
+      ],
+      "slug": "pepe",
+      "fetched_utc": "2026-05-31T16:34:32Z",
+      "mcap_now_usd": 1392932405.48,
+      "fdv_now_usd": 1392932405.48,
+      "oi_pct_mcap": 46.23515939946078
+    },
+    "PLUME": {
+      "oi_usd": 36997887.45083361,
+      "n_pairs": 44,
+      "num_market_pairs": 44,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "PLUME/USDT",
+          "oi_usd": 5603138.034191286
+        },
+        {
+          "exchange": "Binance",
+          "pair": "PLUME/USDT",
+          "oi_usd": 5470506.99156
+        },
+        {
+          "exchange": "BingX",
+          "pair": "PLUME/USDT",
+          "oi_usd": 5456873.780552046
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "PLUME/USDT",
+          "oi_usd": 2419210.4104483845
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "PLUME/USDT",
+          "oi_usd": 1914952.6749526535
+        }
+      ],
+      "slug": "plume",
+      "fetched_utc": "2026-05-31T16:34:34Z",
+      "mcap_now_usd": 72269676.65,
+      "fdv_now_usd": 125518794.73,
+      "oi_pct_mcap": 51.194206430469215
+    },
+    "POPCAT": {
+      "oi_usd": 39968340.9726756,
+      "n_pairs": 68,
+      "num_market_pairs": 68,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Coincall",
+          "pair": "POPCAT/USD",
+          "oi_usd": 8930885.872
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "POPCAT/USDT",
+          "oi_usd": 4040507.548737109
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "POPCAT/USDT",
+          "oi_usd": 2589815.66207
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "POPCAT/USDT",
+          "oi_usd": 2568258.697357625
+        },
+        {
+          "exchange": "BingX",
+          "pair": "POPCAT/USDT",
+          "oi_usd": 2393991.6193697113
+        }
+      ],
+      "slug": "popcat-sol",
+      "fetched_utc": "2026-05-31T16:34:37Z",
+      "mcap_now_usd": 49942235.95,
+      "fdv_now_usd": 49944084.03,
+      "oi_pct_mcap": 80.02913808803068
+    },
+    "PRL": {
+      "oi_usd": 35163017.40566763,
+      "n_pairs": 36,
+      "num_market_pairs": 36,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "OrangeX",
+          "pair": "PRL/USDT",
+          "oi_usd": 6723372.593015579
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "PRL/USDT",
+          "oi_usd": 4879104.048
+        },
+        {
+          "exchange": "Binance",
+          "pair": "PRL/USDT",
+          "oi_usd": 4456327.5498
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "PRL/USDT",
+          "oi_usd": 2167348.374156817
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "PRL/USDT",
+          "oi_usd": 1938380.6882844404
+        }
+      ],
+      "slug": "perle",
+      "fetched_utc": "2026-05-31T16:34:40Z",
+      "mcap_now_usd": 36044696.09,
+      "fdv_now_usd": 205969691.96,
+      "oi_pct_mcap": 97.55392948207717
+    },
+    "PROMPT": {
+      "oi_usd": 8507329.878522648,
+      "n_pairs": 40,
+      "num_market_pairs": 40,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "PROMPT/USDT",
+          "oi_usd": 1230103.3688108546
+        },
+        {
+          "exchange": "Binance",
+          "pair": "PROMPT/USDT",
+          "oi_usd": 1229325.513
+        },
+        {
+          "exchange": "Echobit",
+          "pair": "PROMPT/USDT",
+          "oi_usd": 792022.3112645514
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "PROMPT/USDT",
+          "oi_usd": 686511.438
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "PROMPT/USDT",
+          "oi_usd": 560805.3914107281
+        }
+      ],
+      "slug": "wayfinder",
+      "fetched_utc": "2026-05-31T16:34:42Z",
+      "mcap_now_usd": 14709335.54,
+      "fdv_now_usd": 31812625.55,
+      "oi_pct_mcap": 57.8362622525548
+    },
+    "PROVE": {
+      "oi_usd": 38139633.066631824,
+      "n_pairs": 48,
+      "num_market_pairs": 48,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "KuCoin",
+          "pair": "PROVE/USDT",
+          "oi_usd": 6853632.32088
+        },
+        {
+          "exchange": "BingX",
+          "pair": "PROVE/USDT",
+          "oi_usd": 4553305.927195978
+        },
+        {
+          "exchange": "Binance",
+          "pair": "PROVE/USDT",
+          "oi_usd": 4552879.6944
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "PROVE/USDT",
+          "oi_usd": 3955924.23724
+        },
+        {
+          "exchange": "Batonex",
+          "pair": "PROVE/USDT",
+          "oi_usd": 2978051.0017409273
+        }
+      ],
+      "slug": "succinct",
+      "fetched_utc": "2026-05-31T16:34:45Z",
+      "mcap_now_usd": 44978333.49,
+      "fdv_now_usd": 230658120.45,
+      "oi_pct_mcap": 84.79556734824641
+    },
+    "PUMP": {
+      "oi_usd": 282536353.116618,
+      "n_pairs": 84,
+      "num_market_pairs": 84,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "PUMP/USDT",
+          "oi_usd": 55909427.64713061
+        },
+        {
+          "exchange": "Binance",
+          "pair": "PUMP/USDT",
+          "oi_usd": 50363402.494806
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "PUMP/USDT",
+          "oi_usd": 18485660.928749997
+        },
+        {
+          "exchange": "Hyperliquid",
+          "pair": "PUMP/USD",
+          "oi_usd": 17717565.764507
+        },
+        {
+          "exchange": "Bitbase",
+          "pair": "PUMP/USDT",
+          "oi_usd": 12475551.870162066
+        }
+      ],
+      "slug": "pump-fun",
+      "fetched_utc": "2026-05-31T16:34:47Z",
+      "mcap_now_usd": 614573148.06,
+      "fdv_now_usd": 1747073133.94,
+      "oi_pct_mcap": 45.97277866898186
+    },
+    "QAIT": {
+      "oi_usd": 660194.0094739416,
+      "n_pairs": 4,
+      "num_market_pairs": 4,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "QAIT/USDT",
+          "oi_usd": 637143.1241026887
+        },
+        {
+          "exchange": "Ourbit",
+          "pair": "QAIT/USDT",
+          "oi_usd": 12302.263989106406
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "QAIT/USDT",
+          "oi_usd": 7551.68758062733
+        },
+        {
+          "exchange": "BitMart",
+          "pair": "QAIT/USDT",
+          "oi_usd": 3196.9338015191383
+        }
+      ],
+      "slug": "qait",
+      "fetched_utc": "2026-05-31T16:34:50Z",
+      "mcap_now_usd": 10757317.93,
+      "fdv_now_usd": 215146358.55,
+      "oi_pct_mcap": 6.137161825744623
+    },
+    "RECALL": {
+      "oi_usd": 10326984.560846593,
+      "n_pairs": 30,
+      "num_market_pairs": 30,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "KuCoin",
+          "pair": "RECALL/USDT",
+          "oi_usd": 1546152.782
+        },
+        {
+          "exchange": "Binance",
+          "pair": "RECALL/USDT",
+          "oi_usd": 1290956.42698
+        },
+        {
+          "exchange": "BingX",
+          "pair": "RECALL/USDT",
+          "oi_usd": 1289710.840526688
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "RECALL/USDT",
+          "oi_usd": 1092762.7730785464
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "RECALL/USDT",
+          "oi_usd": 1077927.6026519802
+        }
+      ],
+      "slug": "recall-network",
+      "fetched_utc": "2026-05-31T16:34:52Z",
+      "mcap_now_usd": 12616193.49,
+      "fdv_now_usd": 48728321.84,
+      "oi_pct_mcap": 81.85499508256665
+    },
+    "ROBO": {
+      "oi_usd": 19724883.861292012,
+      "n_pairs": 38,
+      "num_market_pairs": 38,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "ROBO/USDT",
+          "oi_usd": 5448884.8743
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "ROBO/USDT",
+          "oi_usd": 1690251.056
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "ROBO/USDT",
+          "oi_usd": 1432665.7952714437
+        },
+        {
+          "exchange": "WhiteBIT",
+          "pair": "ROBO/USDT",
+          "oi_usd": 1191424.83
+        },
+        {
+          "exchange": "BlockFin",
+          "pair": "ROBO/USDT",
+          "oi_usd": 991704.006683684
+        }
+      ],
+      "slug": "fabric-foundation",
+      "fetched_utc": "2026-05-31T16:34:55Z",
+      "mcap_now_usd": 42205378.94,
+      "fdv_now_usd": 189176956.26,
+      "oi_pct_mcap": 46.73547390566804
+    },
+    "SAFE": {
+      "oi_usd": 30719988.50256017,
+      "n_pairs": 30,
+      "num_market_pairs": 30,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "WOO X Pro",
+          "pair": "SAFE/USDT",
+          "oi_usd": 12004204.736352112
+        },
+        {
+          "exchange": "Echobit",
+          "pair": "SAFE/USDT",
+          "oi_usd": 10891032.352394026
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "SAFE/USDT",
+          "oi_usd": 2602234.369819302
+        },
+        {
+          "exchange": "BingX",
+          "pair": "SAFE/USDT",
+          "oi_usd": 896627.2701243982
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SAFE/USDT",
+          "oi_usd": 894987.3528
+        }
+      ],
+      "slug": "safe1",
+      "fetched_utc": "2026-05-31T16:34:57Z",
+      "mcap_now_usd": 92837195.06,
+      "fdv_now_usd": 123812185.06,
+      "oi_pct_mcap": 33.09017305262838
+    },
+    "SAPIEN": {
+      "oi_usd": 17534182.014718283,
+      "n_pairs": 42,
+      "num_market_pairs": 42,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "SAPIEN/USDT",
+          "oi_usd": 2048039.7862506108
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SAPIEN/USDT",
+          "oi_usd": 2029410.523
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "SAPIEN/USDT",
+          "oi_usd": 1459227.5302366752
+        },
+        {
+          "exchange": "Deepcoin",
+          "pair": "SAPIEN/USDT",
+          "oi_usd": 1373848
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "SAPIEN/USDT",
+          "oi_usd": 1322734.3393931782
+        }
+      ],
+      "slug": "sapien-io",
+      "fetched_utc": "2026-05-31T16:35:01Z",
+      "mcap_now_usd": 23500990.88,
+      "fdv_now_usd": 94003963.54,
+      "oi_pct_mcap": 74.61039453294015
+    },
+    "SENT": {
+      "oi_usd": 60048750.71772761,
+      "n_pairs": 43,
+      "num_market_pairs": 43,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "SENT/USDT",
+          "oi_usd": 36845158.78915967
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "SENT/USDT",
+          "oi_usd": 5620044.674088
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SENT/USDT",
+          "oi_usd": 4996321.74228
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "SENT/USDT",
+          "oi_usd": 1530138.6384794808
+        },
+        {
+          "exchange": "OKX",
+          "pair": "SENT/USDT",
+          "oi_usd": 1375689.590699291
+        }
+      ],
+      "slug": "sentient",
+      "fetched_utc": "2026-05-31T16:35:04Z",
+      "mcap_now_usd": 107033208.76,
+      "fdv_now_usd": 508109227.45,
+      "oi_pct_mcap": 56.10291554686976
+    },
+    "SIGN": {
+      "oi_usd": 46387560.09248767,
+      "n_pairs": 43,
+      "num_market_pairs": 43,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "OrangeX",
+          "pair": "SIGN/USDT",
+          "oi_usd": 8152842.366893648
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "SIGN/USDT",
+          "oi_usd": 4971405.33201593
+        },
+        {
+          "exchange": "BingX",
+          "pair": "SIGN/USDT",
+          "oi_usd": 4928692.975064473
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SIGN/USDT",
+          "oi_usd": 4927854.24
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "SIGN/USDT",
+          "oi_usd": 4149279.352
+        }
+      ],
+      "slug": "sign",
+      "fetched_utc": "2026-05-31T16:35:06Z",
+      "mcap_now_usd": 26713442.47,
+      "fdv_now_usd": 115977319.0,
+      "oi_pct_mcap": 173.6487543474874
+    },
+    "SKR": {
+      "oi_usd": 15142772.256427087,
+      "n_pairs": 41,
+      "num_market_pairs": 41,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "WEEX",
+          "pair": "SKR/USDT",
+          "oi_usd": 1689781.697766564
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SKR/USDT",
+          "oi_usd": 1679909.470032
+        },
+        {
+          "exchange": "BingX",
+          "pair": "SKR/USDT",
+          "oi_usd": 1667443.1044241784
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "SKR/USDT",
+          "oi_usd": 1292855.6707361091
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "SKR/USDT",
+          "oi_usd": 1150792.8449538946
+        }
+      ],
+      "slug": "solana-mobile-seeker",
+      "fetched_utc": "2026-05-31T16:35:09Z",
+      "mcap_now_usd": 72211665.68,
+      "fdv_now_usd": 138901533.05,
+      "oi_pct_mcap": 20.969980561771035
+    },
+    "SLX": {
+      "oi_usd": 1386622.3193003926,
+      "n_pairs": 10,
+      "num_market_pairs": 10,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "SLX/USDT",
+          "oi_usd": 633419.3777993233
+        },
+        {
+          "exchange": "Gate",
+          "pair": "SLX/USDT",
+          "oi_usd": 330885.5472
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "SLX/USDT",
+          "oi_usd": 134649.41191297767
+        },
+        {
+          "exchange": "MEXC",
+          "pair": "SLX/USDT",
+          "oi_usd": 81736.04112930162
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "SLX/USDT",
+          "oi_usd": 75076.02953556806
+        }
+      ],
+      "slug": "solstice",
+      "fetched_utc": "2026-05-31T16:35:12Z",
+      "mcap_now_usd": 44464913.13,
+      "fdv_now_usd": 183093020.08,
+      "oi_pct_mcap": 3.1184640240865633
+    },
+    "SPK": {
+      "oi_usd": 39812243.05190941,
+      "n_pairs": 56,
+      "num_market_pairs": 56,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "SPK/USDT",
+          "oi_usd": 5004226.589509837
+        },
+        {
+          "exchange": "BingX",
+          "pair": "SPK/USDT",
+          "oi_usd": 4980889.5221883
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SPK/USDT",
+          "oi_usd": 4977097.71735
+        },
+        {
+          "exchange": "Batonex",
+          "pair": "SPK/USDT",
+          "oi_usd": 4705878.363299248
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "SPK/USDT",
+          "oi_usd": 3128585.556
+        }
+      ],
+      "slug": "spark",
+      "fetched_utc": "2026-05-31T16:35:14Z",
+      "mcap_now_usd": 64594122.83,
+      "fdv_now_usd": 234405663.99,
+      "oi_pct_mcap": 61.634466585587056
+    },
+    "SPX": {
+      "oi_usd": 46293861.10849464,
+      "n_pairs": 65,
+      "num_market_pairs": 65,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "KuCoin",
+          "pair": "SPX/USDT",
+          "oi_usd": 4118278.8073
+        },
+        {
+          "exchange": "BitMart",
+          "pair": "SPX/USDT",
+          "oi_usd": 3703433.832135591
+        },
+        {
+          "exchange": "B2Z Exchange",
+          "pair": "SPX/USD",
+          "oi_usd": 3144626.04
+        },
+        {
+          "exchange": "BITmarkets",
+          "pair": "SPX/USDT",
+          "oi_usd": 3139164.4478965793
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "SPX/USDT",
+          "oi_usd": 2980162.651820462
+        }
+      ],
+      "slug": "spx6900",
+      "fetched_utc": "2026-05-31T16:35:17Z",
+      "mcap_now_usd": 303038941.99,
+      "fdv_now_usd": 325500742.4,
+      "oi_pct_mcap": 15.276538653577498
+    },
+    "SXT": {
+      "oi_usd": 10774853.976717899,
+      "n_pairs": 33,
+      "num_market_pairs": 33,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "SXT/USDT",
+          "oi_usd": 1713713.3963424684
+        },
+        {
+          "exchange": "Binance",
+          "pair": "SXT/USDT",
+          "oi_usd": 1711087.97277
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "SXT/USDT",
+          "oi_usd": 1388893.2820317135
+        },
+        {
+          "exchange": "Deepcoin",
+          "pair": "SXT/USDT",
+          "oi_usd": 1304095.04
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "SXT/USDT",
+          "oi_usd": 924919.1116
+        }
+      ],
+      "slug": "space-and-time",
+      "fetched_utc": "2026-05-31T16:35:19Z",
+      "mcap_now_usd": 15891001.56,
+      "fdv_now_usd": 56753576.99,
+      "oi_pct_mcap": 67.80475060703411
+    },
+    "TOSHI": {
+      "oi_usd": 7148527.380026427,
+      "n_pairs": 31,
+      "num_market_pairs": 31,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BTCC",
+          "pair": "TOSHI/USDT",
+          "oi_usd": 791762.2013702365
+        },
+        {
+          "exchange": "BingX",
+          "pair": "TOSHI/USDT",
+          "oi_usd": 788183.7040480428
+        },
+        {
+          "exchange": "Binance",
+          "pair": "TOSHI/USDT",
+          "oi_usd": 787715.4203349
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "TOSHI/USDT",
+          "oi_usd": 721543.3763169969
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "TOSHI/USDT",
+          "oi_usd": 485183.66044707847
+        }
+      ],
+      "slug": "toshithecat",
+      "fetched_utc": "2026-05-31T16:35:22Z",
+      "mcap_now_usd": 61491988.03,
+      "fdv_now_usd": 61495001.37,
+      "oi_pct_mcap": 11.625136231632137
+    },
+    "TOWNS": {
+      "oi_usd": 11946142.734142235,
+      "n_pairs": 37,
+      "num_market_pairs": 37,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "TOWNS/USDT",
+          "oi_usd": 1831869.1521393978
+        },
+        {
+          "exchange": "Binance",
+          "pair": "TOWNS/USDT",
+          "oi_usd": 1824911.906698
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "TOWNS/USDT",
+          "oi_usd": 1413391.6087441845
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "TOWNS/USDT",
+          "oi_usd": 942395.7935692953
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "TOWNS/USDT",
+          "oi_usd": 634801.374438
+        }
+      ],
+      "slug": "towns",
+      "fetched_utc": "2026-05-31T16:35:24Z",
+      "mcap_now_usd": 9233303.51,
+      "fdv_now_usd": 32287744.44,
+      "oi_pct_mcap": 129.38102512501763
+    },
+    "TREE": {
+      "oi_usd": 29010167.597633183,
+      "n_pairs": 37,
+      "num_market_pairs": 37,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Aivora Exchange",
+          "pair": "TREE/USDT",
+          "oi_usd": 8843016.318785178
+        },
+        {
+          "exchange": "Bitbaby",
+          "pair": "TREE/USDT",
+          "oi_usd": 8753058.434762714
+        },
+        {
+          "exchange": "Binance",
+          "pair": "TREE/USDT",
+          "oi_usd": 1560082.5222
+        },
+        {
+          "exchange": "BingX",
+          "pair": "TREE/USDT",
+          "oi_usd": 1559085.136660827
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "TREE/USDT",
+          "oi_usd": 1465424.4092889791
+        }
+      ],
+      "slug": "treehouse",
+      "fetched_utc": "2026-05-31T16:35:27Z",
+      "mcap_now_usd": 9617670.07,
+      "fdv_now_usd": 61603376.89,
+      "oi_pct_mcap": 301.63404843885627
+    },
+    "TRUST": {
+      "oi_usd": 7318807.233993754,
+      "n_pairs": 31,
+      "num_market_pairs": 31,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Phemex",
+          "pair": "TRUST/USDT",
+          "oi_usd": 1382500.0173552092
+        },
+        {
+          "exchange": "BingX",
+          "pair": "TRUST/USDT",
+          "oi_usd": 1113807.60545798
+        },
+        {
+          "exchange": "Binance",
+          "pair": "TRUST/USDT",
+          "oi_usd": 1092249.6717
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "TRUST/USDT",
+          "oi_usd": 539442.6833448828
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "TRUST/USDT",
+          "oi_usd": 335363.92700181337
+        }
+      ],
+      "slug": "intuition",
+      "fetched_utc": "2026-05-31T16:35:29Z",
+      "mcap_now_usd": 11562450.29,
+      "fdv_now_usd": 67146641.79,
+      "oi_pct_mcap": 63.298064427775834
+    },
+    "VIRTUAL": {
+      "oi_usd": 215352801.2246704,
+      "n_pairs": 84,
+      "num_market_pairs": 84,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Coincall",
+          "pair": "VIRTUAL/USD",
+          "oi_usd": 49618025.10219
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "VIRTUAL/USDT",
+          "oi_usd": 16676651.124323184
+        },
+        {
+          "exchange": "Binance",
+          "pair": "VIRTUAL/USDT",
+          "oi_usd": 16588923.61916
+        },
+        {
+          "exchange": "FameEX",
+          "pair": "VIRTUAL/USDT",
+          "oi_usd": 10605213.630306
+        },
+        {
+          "exchange": "Aivora Exchange",
+          "pair": "VIRTUAL/USDT",
+          "oi_usd": 8196976.95853252
+        }
+      ],
+      "slug": "virtual-protocol",
+      "fetched_utc": "2026-05-31T16:35:32Z",
+      "mcap_now_usd": 462651427.65,
+      "fdv_now_usd": 704202842.19,
+      "oi_pct_mcap": 46.547527653494406
+    },
+    "VVV": {
+      "oi_usd": 316394479.5884426,
+      "n_pairs": 53,
+      "num_market_pairs": 53,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "ASTX",
+          "pair": "VVV/USDT",
+          "oi_usd": 162212610.80336305
+        },
+        {
+          "exchange": "Binance",
+          "pair": "VVV/USDT",
+          "oi_usd": 26173619.2593
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "VVV/USDT",
+          "oi_usd": 20395495.140646197
+        },
+        {
+          "exchange": "Hyperliquid",
+          "pair": "VVV/USD",
+          "oi_usd": 19879570.2144
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "VVV/USDT",
+          "oi_usd": 15076605.057080552
+        }
+      ],
+      "slug": "venice-token",
+      "fetched_utc": "2026-05-31T16:35:34Z",
+      "mcap_now_usd": 822275320.25,
+      "fdv_now_usd": 1417567926.85,
+      "oi_pct_mcap": 38.47792482598746
+    },
+    "WAL": {
+      "oi_usd": 31520409.11500886,
+      "n_pairs": 42,
+      "num_market_pairs": 42,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "WOO X Pro",
+          "pair": "WAL/USDT",
+          "oi_usd": 12180325.5476833
+        },
+        {
+          "exchange": "Batonex",
+          "pair": "WAL/USDT",
+          "oi_usd": 2358689.225432014
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "WAL/USDT",
+          "oi_usd": 2234527.9552935474
+        },
+        {
+          "exchange": "Binance",
+          "pair": "WAL/USDT",
+          "oi_usd": 2031929.60625
+        },
+        {
+          "exchange": "BingX",
+          "pair": "WAL/USDT",
+          "oi_usd": 2022851.9534015614
+        }
+      ],
+      "slug": "walrus-xyz",
+      "fetched_utc": "2026-05-31T16:35:37Z",
+      "mcap_now_usd": 132382205.69,
+      "fdv_now_usd": 281714216.81,
+      "oi_pct_mcap": 23.810155564880333
+    },
+    "WET": {
+      "oi_usd": 14353868.769044856,
+      "n_pairs": 34,
+      "num_market_pairs": 34,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "WET/USDT",
+          "oi_usd": 1630781.6741708377
+        },
+        {
+          "exchange": "BingX",
+          "pair": "WET/USDT",
+          "oi_usd": 1438377.2456110679
+        },
+        {
+          "exchange": "Binance",
+          "pair": "WET/USDT",
+          "oi_usd": 1433707.8241
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "WET/USDT",
+          "oi_usd": 1391596.3081496723
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "WET/USDT",
+          "oi_usd": 1223203.8032
+        }
+      ],
+      "slug": "humidifi",
+      "fetched_utc": "2026-05-31T16:35:39Z",
+      "mcap_now_usd": 16307193.02,
+      "fdv_now_usd": 70900839.24,
+      "oi_pct_mcap": 88.0217015364969
+    },
+    "XAN": {
+      "oi_usd": 10527053.247961856,
+      "n_pairs": 29,
+      "num_market_pairs": 29,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "KuCoin",
+          "pair": "XAN/USDT",
+          "oi_usd": 2254234.78768
+        },
+        {
+          "exchange": "MEXC",
+          "pair": "XAN/USDT",
+          "oi_usd": 1671573.7385138029
+        },
+        {
+          "exchange": "Binance",
+          "pair": "XAN/USDT",
+          "oi_usd": 1267251.8043
+        },
+        {
+          "exchange": "WOO X Pro",
+          "pair": "XAN/USDT",
+          "oi_usd": 900171.1908846679
+        },
+        {
+          "exchange": "KCEX",
+          "pair": "XAN/USDT",
+          "oi_usd": 687089.2675118524
+        }
+      ],
+      "slug": "anoma",
+      "fetched_utc": "2026-05-31T16:35:42Z",
+      "mcap_now_usd": 24832452.81,
+      "fdv_now_usd": 99329811.26,
+      "oi_pct_mcap": 42.392321566086395
+    },
+    "XPL": {
+      "oi_usd": 157596083.0247547,
+      "n_pairs": 79,
+      "num_market_pairs": 79,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "XPL/USDT",
+          "oi_usd": 33643149.969
+        },
+        {
+          "exchange": "CoinW",
+          "pair": "XPL/USDT",
+          "oi_usd": 11587298.002579719
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "XPL/USDT",
+          "oi_usd": 10904978.077601327
+        },
+        {
+          "exchange": "Hyperliquid",
+          "pair": "XPL/USD",
+          "oi_usd": 9336942.707554
+        },
+        {
+          "exchange": "Cofinex",
+          "pair": "XPL/USDT",
+          "oi_usd": 8819170.39753071
+        }
+      ],
+      "slug": "plasma-xpl",
+      "fetched_utc": "2026-05-31T16:35:45Z",
+      "mcap_now_usd": 160345370.13,
+      "fdv_now_usd": 890807611.85,
+      "oi_pct_mcap": 98.28539663913195
+    },
+    "YB": {
+      "oi_usd": 12623514.669836415,
+      "n_pairs": 37,
+      "num_market_pairs": 37,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BingX",
+          "pair": "YB/USDT",
+          "oi_usd": 2111935.1522741443
+        },
+        {
+          "exchange": "Binance",
+          "pair": "YB/USDT",
+          "oi_usd": 2090355.1089
+        },
+        {
+          "exchange": "WEEX",
+          "pair": "YB/USDT",
+          "oi_usd": 1764038.7335877512
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "YB/USDT",
+          "oi_usd": 1312635.7716053731
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "YB/USDT",
+          "oi_usd": 636475.218295
+        }
+      ],
+      "slug": "yieldbasis",
+      "fetched_utc": "2026-05-31T16:35:47Z",
+      "mcap_now_usd": 11633404.17,
+      "fdv_now_usd": 97415766.02,
+      "oi_pct_mcap": 108.51092668463882
+    },
+    "ZAMA": {
+      "oi_usd": 26343844.04942106,
+      "n_pairs": 36,
+      "num_market_pairs": 36,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "Binance",
+          "pair": "ZAMA/USDT",
+          "oi_usd": 5998946.55176
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "ZAMA/USDT",
+          "oi_usd": 2957908.725255
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "ZAMA/USDT",
+          "oi_usd": 2775464.1660622065
+        },
+        {
+          "exchange": "OKX",
+          "pair": "ZAMA/USDT",
+          "oi_usd": 1613466.6935636683
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "ZAMA/USDT",
+          "oi_usd": 1572482.7343655669
+        }
+      ],
+      "slug": "zama",
+      "fetched_utc": "2026-05-31T16:35:50Z",
+      "mcap_now_usd": 76822820.55,
+      "fdv_now_usd": 384114102.74,
+      "oi_pct_mcap": 34.29169075128557
+    },
+    "ZETA": {
+      "oi_usd": 13553384.37598751,
+      "n_pairs": 45,
+      "num_market_pairs": 45,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "WOO X Pro",
+          "pair": "ZETA/USDT",
+          "oi_usd": 3061509.6147822607
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "ZETA/USDT",
+          "oi_usd": 1145472.2700899418
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ZETA/USDT",
+          "oi_usd": 1136822.0779671136
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ZETA/USDT",
+          "oi_usd": 1132718.13012
+        },
+        {
+          "exchange": "Bybit",
+          "pair": "ZETA/USDT",
+          "oi_usd": 964751.6621431244
+        }
+      ],
+      "slug": "zetachain",
+      "fetched_utc": "2026-05-31T16:35:52Z",
+      "mcap_now_usd": 68878894.48,
+      "fdv_now_usd": 102400999.4,
+      "oi_pct_mcap": 19.67712240201958
+    },
+    "ZKC": {
+      "oi_usd": 68567071.0879149,
+      "n_pairs": 37,
+      "num_market_pairs": 37,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "ZKC/USDT",
+          "oi_usd": 59577267.27262287
+        },
+        {
+          "exchange": "KuCoin",
+          "pair": "ZKC/USDT",
+          "oi_usd": 1391684.5758
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "ZKC/USDT",
+          "oi_usd": 1330691.2876338954
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ZKC/USDT",
+          "oi_usd": 1085082.1273
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ZKC/USDT",
+          "oi_usd": 1075894.5428600938
+        }
+      ],
+      "slug": "boundless",
+      "fetched_utc": "2026-05-31T16:35:55Z",
+      "mcap_now_usd": 18766334.69,
+      "fdv_now_usd": 65692844.67,
+      "oi_pct_mcap": 365.37273911272706
+    },
+    "ZKP": {
+      "oi_usd": 48273859.66702967,
+      "n_pairs": 36,
+      "num_market_pairs": 36,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "XT.COM",
+          "pair": "ZKP/USDT",
+          "oi_usd": 34318721.05959036
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ZKP/USDT",
+          "oi_usd": 2377490.267774846
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ZKP/USDT",
+          "oi_usd": 2364419.41273
+        },
+        {
+          "exchange": "Phemex",
+          "pair": "ZKP/USDT",
+          "oi_usd": 1708626.2577297261
+        },
+        {
+          "exchange": "Toobit",
+          "pair": "ZKP/USDT",
+          "oi_usd": 1125151.9904
+        }
+      ],
+      "slug": "zkpass",
+      "fetched_utc": "2026-05-31T16:35:57Z",
+      "mcap_now_usd": 18652390.79,
+      "fdv_now_usd": 67826875.6,
+      "oi_pct_mcap": 258.8078933715589
+    },
+    "ZORA": {
+      "oi_usd": 32596541.99741356,
+      "n_pairs": 55,
+      "num_market_pairs": 55,
+      "complete": true,
+      "top": [
+        {
+          "exchange": "BitMart",
+          "pair": "ZORA/USDT",
+          "oi_usd": 5528620.605451623
+        },
+        {
+          "exchange": "OrangeX",
+          "pair": "ZORA/USDT",
+          "oi_usd": 3750112.7124245204
+        },
+        {
+          "exchange": "Binance",
+          "pair": "ZORA/USDT",
+          "oi_usd": 2414889.0584
+        },
+        {
+          "exchange": "BingX",
+          "pair": "ZORA/USDT",
+          "oi_usd": 2412590.69882401
+        },
+        {
+          "exchange": "BTCC",
+          "pair": "ZORA/USDT",
+          "oi_usd": 2322943.1666561626
+        }
+      ],
+      "slug": "zora",
+      "fetched_utc": "2026-05-31T16:36:00Z",
+      "mcap_now_usd": 46922190.94,
+      "fdv_now_usd": 104971344.41,
+      "oi_pct_mcap": 69.46935201532932
+    }
+  }
+}

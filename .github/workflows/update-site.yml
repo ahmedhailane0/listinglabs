@@ -1,0 +1,87 @@
+name: Update ListingLabs site
+
+# Forever-autonomous, $0 refresh:
+#   • polls the BWEnews RSS feed for new listing signals
+#   • re-pulls each token's GeckoTerminal candles up to "now" (charts stay live)
+#   • rebuilds the static site and publishes it to GitHub Pages
+#
+# No API keys are used here — the build runs fully offline except for the public,
+# keyless GeckoTerminal / CoinMarketCap-web / BWEnews endpoints. There is nothing
+# secret in this workflow, so nothing secret can leak from it.
+
+on:
+  schedule:
+    - cron: "*/20 * * * *"     # every ~20 min (GitHub may delay/skip; best-effort)
+  workflow_dispatch: {}         # lets you run it by hand from the Actions tab
+  push:
+    branches: [main]            # rebuild on any code change you push
+
+# Only one run at a time; a new run waits for the previous to finish.
+concurrency:
+  group: listinglabs-site
+  cancel-in-progress: false
+
+permissions:
+  contents: write               # to commit the refreshed cache back to the repo
+  pages: write                  # to publish to GitHub Pages
+  id-token: write               # required by the Pages deploy action
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: perps_correlation
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: python -m pip install --quiet requests plotly matplotlib
+
+      - name: Refresh price candles (charts stay current)
+        run: python refresh_klines.py
+        continue-on-error: true   # a flaky pool must never block the build
+
+      - name: Build the site (RSS poll + reports + landing)
+        run: python build_all.py --no-zip
+
+      - name: Commit refreshed cache back to the repo
+        # ONLY cache/ — that's the state that must persist between runs (accumulated
+        # candles + the news feed). Listinglabs/ is redeployed as a Pages artifact
+        # every run (the git copy is never read by deploy), and charts/ PNGs aren't
+        # regenerated here — committing either would be pure churn that bloats history
+        # over the lifetime of the schedule. The commit also keeps the scheduled
+        # workflow from being auto-disabled for inactivity.
+        working-directory: .
+        run: |
+          git config user.name  "listinglabs-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add cache
+          if git diff --cached --quiet; then
+            echo "No cache changes to commit."
+          else
+            git commit -m "chore: auto-refresh candles + listing signals [skip ci]"
+            git push
+          fi
+
+      - name: Upload the site as a Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: perps_correlation/Listinglabs
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

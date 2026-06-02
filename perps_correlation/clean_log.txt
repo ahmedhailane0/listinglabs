@@ -1,0 +1,31 @@
+Cleaning summary:
+  rd_zero_to_null: 0
+  cr_mismatch_nulled: 0
+  rd_mismatch_nulled: 14
+  dropped_no_klines: 3
+  dropped_low_volume: 0
+  estab_date_normalized: 4
+  vol_decay_flagged: 1
+
+rows in : 347
+rows out: 344
+
+Details:
+  RD mismatch nulled: POL (ex-MATIC) (POL) -> RD said 'Polyflow' (sym='', sim=0.27)
+  RD mismatch nulled: TerraClassicUSD (USTC) -> RD said 'iTrustCapital' (sym='', sim=0.29)
+  RD mismatch nulled: Four (FORM) -> RD said 'BinaryX' (sym='BNX', sim=0.18)
+  RD mismatch nulled: BROCCOLI714 (BROCCOLI714) -> RD said 'CZ'S Dog' (sym='BROCCOLI', sim=0.11)
+  RD mismatch nulled: JUST (JST) -> RD said 'Just a chill guy' (sym='CHILLGUY', sim=0.40)
+  RD mismatch nulled: BSquared Network (B2) -> RD said 'Capy Finance' (sym='', sim=0.14)
+  RD mismatch nulled: OG Fan Token (OG) -> RD said 'Ontology' (sym='ONT', sim=0.20)
+  RD mismatch nulled: Alaya AI (AGT) -> RD said 'Himalayan Protocol' (sym='', sim=0.46)
+DROP no-klines: BONDEX (BDXN)
+  RD mismatch nulled: Smooth Love Potion (SLP) -> RD said 'Smooth' (sym='', sim=0.50)
+DROP no-klines: INFINIT (INFINIT)
+  RD mismatch nulled: Portal to Bitcoin (PTB) -> RD said 'Portal' (sym='PORTAL', sim=0.52)
+  RD mismatch nulled: 1000SATS (Ordinals) (1000SATS) -> RD said 'ORDI' (sym='ORDI', sim=0.35)
+DROP no-klines: GAIB (GAIB)
+  RD mismatch nulled: BOB (Build on Bitcoin) (BOB) -> RD said 'Capybobo' (sym='PYBOBO', sim=0.27)
+  RD mismatch nulled: Legacy Frax Dollar (FRAX) -> RD said 'LEGACY Network' (sym='LGCT', sim=0.50)
+  RD mismatch nulled: Fabric Protocol (ROBO) -> RD said 'OpenMind' (sym='', sim=0.09)
+  vol_decay > 10: USD.AI (CHIP) = 12.0
