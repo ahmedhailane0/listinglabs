@@ -55,18 +55,32 @@ def _venue_already_event(venue: str, events: list) -> bool:
                 or ev.get("exchange", "").startswith(base)) for ev in events)
 
 
+def _confident_match(cfg: dict, sig: dict) -> bool:
+    """Guard against false positives for short tickers (audit M-4). A 1-2 char symbol
+    (G, IP, LA...) can appear incidentally in an unrelated headline, so for those we
+    require the token's NAME to also appear in the title before trusting the match.
+    Longer symbols are distinctive enough on their own."""
+    sym = (cfg.get("token") or "").upper()
+    if len(sym) > 2:
+        return True
+    name = (cfg.get("name") or "").lower()
+    title = (sig.get("title") or "").lower()
+    return bool(name) and name in title
+
+
 def apply_to_token(cfg: dict, sigs: list[dict]) -> list[str]:
     """Mutate cfg in place. Return human-readable change lines (empty = no change)."""
     changes: list[str] = []
     events = cfg.setdefault("events", [])
     not_listed = cfg.get("not_listed", [])
 
-    # newest signal per venue (a venue may appear in several headlines)
+    # newest signal per venue (a venue may appear in several headlines); drop
+    # low-confidence matches for short tickers.
     by_venue: dict[str, dict] = {}
     for s in sigs:
         v = s.get("venue")
         t = s.get("published_utc")
-        if not v or not t:
+        if not v or not t or not _confident_match(cfg, s):
             continue
         if v not in by_venue or t > (by_venue[v].get("published_utc") or ""):
             by_venue[v] = s

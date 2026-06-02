@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -92,7 +92,28 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     # headline; users pan/scroll right to follow the token's full live history.
     _win_lo = cfg.get("window_start_utc")
     _win_hi = cfg.get("window_end_utc")
-    win_range = [_win_lo, _win_hi] if (_win_lo and _win_hi) else None
+    # Extend the default view's upper bound to cover any real (non-sweep) listing event
+    # past window_end, so late co-listings are visible by default, not just on pan
+    # (audit M-2). Daily-resolution sweep artifacts are excluded so a bogus midnight
+    # date can't stretch the view (audit M-1).
+    if _win_lo and _win_hi:
+        _sweep = ("earliest-candle sweep", "daily resolution")
+        ev_times = []
+        for ev in cfg.get("events", []):
+            note = (ev.get("note") or "").lower()
+            if ev.get("iso_time_utc") and not any(m in note for m in _sweep):
+                try:
+                    ev_times.append(parse_iso(ev["iso_time_utc"]))
+                except Exception:
+                    pass
+        hi = parse_iso(_win_hi)
+        if ev_times:
+            latest = max(ev_times)
+            if latest > hi:
+                hi = latest + timedelta(hours=6)
+        win_range = [_win_lo, hi.strftime("%Y-%m-%dT%H:%M:%SZ")]
+    else:
+        win_range = None
 
     fig = go.Figure()
     for i, (_name, mins) in enumerate(TIMEFRAMES):

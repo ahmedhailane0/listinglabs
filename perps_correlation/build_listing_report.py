@@ -216,9 +216,16 @@ def _annotations(cfg: dict) -> str:
 
 
 def _page(title: str, body: str, extra_head: str = "") -> str:
+    # CSP as a <meta> (GitHub Pages can't set response headers). Allows same-origin +
+    # the inline scripts/styles Plotly emits, but blocks any external script load or
+    # data exfil — defense-in-depth on top of output escaping (audit L-3).
+    csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; "
+           "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+           "connect-src 'self'; base-uri 'self'; frame-ancestors 'none'")
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="{csp}">
 <title>{html.escape(title)}</title>
 <link rel="stylesheet" href="style.css">{extra_head}</head>
 <body>{body}</body></html>"""
@@ -638,6 +645,9 @@ def _news_strip(tracked_syms: set[str]) -> str:
         sym = s.get("symbol")
         venue = html.escape(s.get("venue", "?"))
         link = s.get("link")
+        # only allow http(s) hrefs — html.escape doesn't neutralize a javascript: scheme (audit L-4)
+        if link and not str(link).startswith(("http://", "https://")):
+            link = None
         if sym and s.get("tracked"):
             label = f'<a href="{sym.lower()}.html">{html.escape(sym)}</a>'
             cls = "sig"
