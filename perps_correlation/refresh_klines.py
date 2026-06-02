@@ -21,6 +21,7 @@ script never raises, so a flaky pool can't break the scheduled build.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -93,24 +94,79 @@ def refresh_one(cfg: dict) -> str:
             f"(+{len(merged) - len(old)}); latest {lag_h:.1f}h old")
 
 
+def _last_candle_ms(token: str) -> int:
+    """Timestamp of the newest cached candle (0 if none) — the staleness key."""
+    p = _cache_path(token)
+    if not p.exists():
+        return 0
+    try:
+        rows = json.loads(p.read_text(encoding="utf-8")).get("rows") or []
+        return rows[-1][0] if rows else 0
+    except Exception:
+        return 0
+
+
+def _process(p: Path) -> str:
+    if not p.exists():
+        return f"{p.name}: not found"
+    try:
+        cfg = json.loads(p.read_text(encoding="utf-8"))
+    except Exception as e:
+        return f"{p.name}: bad JSON ({e})"
+    return refresh_one(cfg)
+
+
 def main(argv: list[str]) -> int:
-    if argv:
-        cfgs = [LISTINGS / f"{t.lower()}.json" for t in argv]
+    # Pull "--limit N" / "--workers N" out of argv; the rest are token names.
+    limit = int(os.environ.get("REFRESH_LIMIT") or 0)
+    workers = int(os.environ.get("REFRESH_WORKERS") or 6)
+    tokens = []
+    it = iter(argv)
+    for a in it:
+        if a == "--limit":
+            limit = int(next(it, "0"))
+        elif a == "--workers":
+            workers = int(next(it, "6"))
+        else:
+            tokens.append(a)
+
+    if tokens:
+        cfgs = [LISTINGS / f"{t.lower()}.json" for t in tokens]
     else:
         cfgs = sorted(LISTINGS.glob("*.json"))
+        # Most-stale first: tokens whose newest cached candle is oldest (incl. those
+        # still at only their launch window, or with no cache) go first. With a cap,
+        # this makes successive runs round-robin fairly across all tokens.
+        cfgs.sort(key=lambda p: _last_candle_ms(p.stem))
+
+    # A cap keeps a rate-limited CI run bounded; 0/unset = all (use locally to seed).
+    if limit > 0:
+        cfgs = cfgs[:limit]
+        print(f"refresh_klines: limited to {limit} most-stale token(s)")
+
+    # Parallel across tokens: each hits a DIFFERENT GeckoTerminal pool endpoint and
+    # writes its OWN cache file, so they're independent (no shared state, no write
+    # races). Threads overlap the network/sleep waits. Note: GeckoTerminal still
+    # rate-limits per IP, so keep `workers` modest in CI (the per-page 429 backoff in
+    # fetch_geckoterminal absorbs bursts); locally the IP isn't throttled so more
+    # workers = much faster seeding.
+    workers = max(1, min(workers, len(cfgs) or 1))
     ok = 0
-    for p in cfgs:
-        if not p.exists():
-            print(f"  {p.name}: not found")
-            continue
-        try:
-            cfg = json.loads(p.read_text(encoding="utf-8"))
-        except Exception as e:
-            print(f"  {p.name}: bad JSON ({e})")
-            continue
-        msg = refresh_one(cfg)
-        print(f"  {msg}", flush=True)
-        ok += 1
+    print(f"refresh_klines: {len(cfgs)} token(s), {workers} worker(s)", flush=True)
+    if workers == 1:
+        for p in cfgs:
+            print(f"  {_process(p)}", flush=True)
+            ok += 1
+    else:
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        with ThreadPoolExecutor(max_workers=workers) as ex:
+            futs = {ex.submit(_process, p): p for p in cfgs}
+            for fut in as_completed(futs):
+                try:
+                    print(f"  {fut.result()}", flush=True)
+                except Exception as e:
+                    print(f"  {futs[fut].name}: worker error {e}", flush=True)
+                ok += 1
     print(f"refresh_klines: processed {ok} token(s)")
     return 0
 

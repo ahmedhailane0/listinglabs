@@ -30,6 +30,9 @@
 # 4) Drop heavy / regenerated artifacts the live site doesn't need. Excluding the
 #    logs + notebooks also shrinks the surface where a stray key could hide.
 perps_correlation/Listinglabs.zip
+# The built site is published as a Pages artifact every run (never read from git),
+# so tracking it would just churn HTML into history forever.
+perps_correlation/Listinglabs/
 perps_correlation/*.log
 perps_correlation/**/*.log
 perps_correlation/*.ipynb

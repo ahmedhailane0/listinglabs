@@ -45,30 +45,38 @@ jobs:
         run: python -m pip install --quiet requests plotly matplotlib
 
       - name: Refresh price candles (charts stay current)
+        # GeckoTerminal rate-limits GitHub's shared IP hard, so each run refreshes
+        # only the N most-stale tokens (incremental: ~1 page each). Successive runs
+        # round-robin across all tokens (~every 80 min at a 20-min cron). The heavy
+        # one-time gap-fill is done locally and committed, so CI only does cheap work.
         run: python refresh_klines.py
+        env:
+          REFRESH_LIMIT: "20"
+          REFRESH_WORKERS: "4"   # modest concurrency — GeckoTerminal rate-limits per IP
         continue-on-error: true   # a flaky pool must never block the build
-        timeout-minutes: 12       # hard ceiling; each token writes as it goes, so a
+        timeout-minutes: 10       # hard ceiling; each token writes as it goes, so a
                                   # timeout just means the rest resume on the next run
 
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
 
-      - name: Commit refreshed cache back to the repo
-        # ONLY cache/ — that's the state that must persist between runs (accumulated
-        # candles + the news feed). Listinglabs/ is redeployed as a Pages artifact
-        # every run (the git copy is never read by deploy), and charts/ PNGs aren't
-        # regenerated here — committing either would be pure churn that bloats history
-        # over the lifetime of the schedule. The commit also keeps the scheduled
-        # workflow from being auto-disabled for inactivity.
+      - name: Commit refreshed data back to the repo
+        # cache/   = accumulated candles + the news feed (must persist between runs)
+        # listings/ = venue events auto-added by apply_signals.py from BWEnews
+        # Both must be committed so the autonomous state survives. Listinglabs/ is
+        # redeployed as a Pages artifact every run (the git copy is never read by
+        # deploy) and charts/ PNGs aren't regenerated here, so neither is committed —
+        # that would be pure churn. The commit also keeps the scheduled workflow from
+        # being auto-disabled for inactivity.
         working-directory: .
         run: |
           git config user.name  "listinglabs-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add cache
+          git add cache perps_correlation/listings
           if git diff --cached --quiet; then
-            echo "No cache changes to commit."
+            echo "No data changes to commit."
           else
-            git commit -m "chore: auto-refresh candles + listing signals [skip ci]"
+            git commit -m "chore: auto-refresh candles + apply listing signals [skip ci]"
             git push
           fi
 

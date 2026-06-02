@@ -156,11 +156,20 @@ Setup is hand-held in `SETUP_GITHUB.md`. Pieces:
   option for an always-on local listener.
 - **`refresh_klines.py`** — re-pulls GeckoTerminal candles to *now* and MERGES
   with the cached launch-window candles (union by ts), so charts extend forever
-  while the launch reaction is never lost. The interactive chart pins its default
-  x-range to the launch window (`win_range` in `interactive_chart.py`); pan/zoom
-  reveals the live history. NOTE: GeckoTerminal's free 5m endpoint caps ~12k
-  candles (~41d) per refresh, so a token older than that, fetched fresh, keeps
-  its launch window (cached) + the most recent ~41d, with a gap between.
+  while the launch reaction is never lost. **Incremental**: only fetches candles
+  *since the last cached one* (~1 page), so steady-state is ~0.8s/token. Tokens
+  are processed **most-stale-first**; `REFRESH_LIMIT` env (or `--limit N`) caps how
+  many a run touches. The interactive chart pins its default x-range to the launch
+  window (`win_range` in `interactive_chart.py`); pan/zoom reveals the live history.
+  NOTE: GeckoTerminal's free 5m endpoint caps ~12k candles (~41d) per fetch.
+
+  **⚠️ Throttling lesson (don't relearn):** GeckoTerminal rate-limits (429) the
+  shared **GitHub Actions IP hard** — a CI run managed only ~5 tokens' gap-fills in
+  12 min. So: the expensive **one-time gap-fill is done LOCALLY** (`python
+  refresh_klines.py`, unthrottled) and committed; **CI only does capped incremental
+  refresh** (`REFRESH_LIMIT: "20"` in the workflow), round-robining all 78 tokens
+  every ~80 min. If you add many new tokens, seed them locally first, then push —
+  don't expect CI to do large fetches. Local IP is not throttled.
 
 ### Security model (must preserve)
 

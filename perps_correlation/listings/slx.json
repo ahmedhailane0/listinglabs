@@ -13,7 +13,7 @@
   "total_supply": 1000000000,
   "mcap_source": "CoinMarketCap quotes/latest, 2026-05-29 (current, not at-listing)",
   "window_start_utc": "2026-05-25T11:00:00Z",
-  "window_end_utc": "2026-05-29T15:30:00Z",
+  "window_end_utc": "2026-06-01T12:15:08Z",
   "events": [
     {
       "exchange": "Gate.io Spot",
@@ -39,18 +39,33 @@
       "exchange": "Gate.io Perp",
       "iso_time_utc": "2026-05-26T04:05:00Z",
       "note": "SLX_USDT first 5m candle on Gate.io USDT-M futures (16h after Alpha)."
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-06-01T02:45:01Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for Solstice(SLX) (KRW, BTC, USDT Market) Upbit 上新: [交易] Solstice (SLX) 市场支持（韩元、比特币、USDT市场） SLX_978 Ma\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16223",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-06-01T02:59:25Z",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [新增市场] Solstice (SLX) 韩元市场新增 SLX MarketCap: 45.4M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 202\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16224",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-06-01T06:15:08Z",
+      "note": "Auto-added from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined SLXUSDT Perpetual Contract (2026-06-01) 币安重要公告: 币安合约交易平台将上线 U 本位 SLXUSDT 永续合约（2026-06-\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16225",
+      "source": "bwenews"
     }
   ],
   "not_listed": [
     "Binance main spot",
-    "Binance USDT-M perp",
     "OKX spot+perp",
     "Bybit spot+perp",
     "KuCoin spot+perp",
     "Coinbase spot+INTX",
     "Bitget perp",
-    "Gate.io spot",
-    "Upbit",
-    "Bithumb"
+    "Gate.io spot"
   ]
 }

@@ -88,6 +88,7 @@ def main():
 
     print("building reports into Listinglabs/ ...", flush=True)
     _run(HERE / "fetch_bwenews.py")                  # cache/bwenews_signals.json (RSS poll; never fails build)
+    _run(HERE / "apply_signals.py")                  # fold new venue signals into listings/*.json
     _run(HERE / "build_funding.py")                  # cache/funding.json (offline merge)
     _run(HERE / "build_listing_report.py")          # -> Listinglabs/report
     _run(HERE / "funnel" / "funnel_report.py")       # -> Listinglabs/funnel/report
