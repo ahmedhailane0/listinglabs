@@ -3,7 +3,7 @@
   "name": "Space and Time",
   "chain": "base",
   "token_contract": "0xa2c22252cdc8b7cddee1b0b2e242818509fcf7b8",
-  "gecko_pool": null,
+  "gecko_pool": "0x71f5b92e32bfc9f35b6f0e89208863dbcb6cfc5e36bdd0d1b07babb75cd4c839",
   "fdv_usd": 59559423.02,
   "fdv_source": "CMC/GeckoTerminal (current)",
   "category": "",
@@ -78,5 +78,6 @@
     }
   ],
   "not_listed": [],
-  "funnel": true
+  "funnel": true,
+  "gecko_pool_source": "backfilled 2026-06-02 (top-liquidity pool by contract; audit M-3)"
 }

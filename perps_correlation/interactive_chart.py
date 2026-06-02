@@ -115,6 +115,18 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     else:
         win_range = None
 
+    # L-2: bound the inline payload. Long histories (esp. Binance-fallback tokens with
+    # 100k+ candles) would make pages multi-MB. Keep full 5m resolution where it's
+    # actually viewed — the default window + the last 3 days — and decimate everything
+    # older to hourly. The launch reaction stays crisp; old tails shrink ~12x.
+    if len(rows) > 4000:
+        lo_ms = int(parse_iso(win_range[0]).timestamp()*1000) if win_range else 0
+        hi_ms = int(parse_iso(win_range[1]).timestamp()*1000) if win_range else 1 << 62
+        recent_ms = rows[-1][0] - 3*86400*1000
+        rows = [r for r in rows
+                if (lo_ms <= r[0] <= hi_ms) or r[0] >= recent_ms
+                or (r[0] % 3_600_000) < 300_000]
+
     fig = go.Figure()
     for i, (_name, mins) in enumerate(TIMEFRAMES):
         xs, _op, _hi, _lo, cl = _aggregate(rows, mins)

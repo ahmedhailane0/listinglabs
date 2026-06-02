@@ -45,6 +45,37 @@ def _merge(old: list, new: list) -> list:
     return [by_ts[k] for k in sorted(by_ts)]
 
 
+def _fetch_binance_spot(symbol: str, start: datetime, end: datetime) -> list:
+    """Fallback OHLC for tokens whose on-chain GeckoTerminal pool is gone (audit L-1):
+    fetch 5m spot klines for <SYMBOL>USDT from Binance. Returns [] if the pair doesn't
+    exist there. Free, keyless, deep history."""
+    import requests
+    url = "https://api.binance.com/api/v3/klines"
+    pair = f"{symbol.upper()}USDT"
+    out, cur, end_ms = {}, int(start.timestamp() * 1000), int(end.timestamp() * 1000)
+    for _ in range(160):  # Binance isn't IP-throttled; allow deep backfill (~1.5y of 5m)
+        try:
+            r = requests.get(url, params={"symbol": pair, "interval": "5m",
+                                          "startTime": cur, "limit": 1000}, timeout=20)
+        except Exception:
+            break
+        if r.status_code != 200:
+            break  # bad symbol / not listed on Binance spot
+        rows = r.json()
+        if not rows:
+            break
+        for k in rows:
+            ts = int(k[0])
+            if ts > end_ms:
+                break
+            out[ts] = [ts, float(k[1]), float(k[2]), float(k[3]), float(k[4])]
+        nxt = int(rows[-1][0]) + 1
+        if nxt <= cur or len(rows) < 1000:
+            break
+        cur = nxt
+    return [out[k] for k in sorted(out)]
+
+
 def refresh_one(cfg: dict) -> str:
     token = cfg["token"]
     pool = cfg.get("gecko_pool")
@@ -74,24 +105,41 @@ def refresh_one(cfg: dict) -> str:
     else:
         fetch_start = w_start
 
+    src_label = f"Binance Alpha ({chain}, on-chain)"
+    fresh, gt_failed = [], False
     try:
         fresh = fetch_geckoterminal(chain, pool, fetch_start, now)
-    except SystemExit as e:           # fetch_geckoterminal raises SystemExit on empty
-        return f"{token}: fetch failed ({e}) — kept {len(old)} cached"
-    except Exception as e:
-        return f"{token}: error {type(e).__name__}: {e} — kept {len(old)} cached"
+    except SystemExit:                # fetch_geckoterminal raises SystemExit on empty
+        gt_failed = True
+    except Exception:
+        gt_failed = True
+
+    # Fallback: on-chain pool gone/empty (audit L-1) -> try Binance spot so the chart
+    # still tracks current price. Merged by timestamp with the on-chain launch history.
+    fb = ""
+    if not fresh:
+        # Cap the fallback backfill to recent history so caches stay bounded (the
+        # on-chain launch candles are already preserved in `old`; we only need to keep
+        # the chart's current tail alive). ~120d of 5m ≈ 35k candles.
+        bn_start = max(fetch_start, now - timedelta(days=120))
+        bn = _fetch_binance_spot(token, bn_start, now)
+        if bn:
+            fresh = bn
+            fb = " [binance-spot fallback]"
+        elif gt_failed:
+            return f"{token}: on-chain gone + no Binance spot — kept {len(old)} cached"
 
     merged = _merge(old, fresh)
     if not merged:
         return f"{token}: no candles — skipped"
 
-    label = f"Binance Alpha ({chain}, on-chain)"
+    label = src_label + (" + binance-spot" if fb else "")
     path.write_text(json.dumps({"source": label, "rows": merged}, ensure_ascii=False),
                     encoding="utf-8")
     last = datetime.fromtimestamp(merged[-1][0] / 1000, tz=timezone.utc)
     lag_h = (now - last).total_seconds() / 3600
     return (f"{token}: {len(old)}->{len(merged)} candles "
-            f"(+{len(merged) - len(old)}); latest {lag_h:.1f}h old")
+            f"(+{len(merged) - len(old)}); latest {lag_h:.1f}h old{fb}")
 
 
 def _last_candle_ms(token: str) -> int:

@@ -21,8 +21,9 @@ content is safely escaped, and no secret material is exposed. The findings below
 | 🟠 Medium | **4** | Data-quality + signal-robustness (consolidated) |
 | 🟡 Low | **6** | Freshness, performance, hardening, hygiene |
 
-**Remediation status:** 4 findings (M-2, M-4, L-3, L-4) were **fixed in this same pass**
-and re-verified; see §5.1. The rest are documented with a prioritized roadmap.
+**Remediation status:** **all findings have now been addressed** across two passes —
+M-2/M-4/L-3/L-4 (pass 1, §5.1) and M-1/M-3/L-1/L-2/L-6 (pass 2, §5.2). The only residual
+is a small set of tokens with no live price source anywhere (documented in L-1).
 
 **Availability:** 78/78 token pages + landing/funnel/scams/assets all return HTTP 200.  
 **Security posture:** no key in CI (250 staged files scanned clean), whitelist `.gitignore`
@@ -165,17 +166,24 @@ cleaner production surface.
 The full pipeline + both audit harnesses were re-run after the fixes — build green, no
 regressions.
 
-## 5.2 Remediation roadmap (remaining, prioritized)
+## 5.2 Remediation applied — pass 2 (verified)
 
-| # | Fix | Effort | Value |
-|---|---|---|---|
-| 1 | M-1 qualify/verify sweep dates (≈ date-only, or candle-verify Bitget/OKX) | S–M | Removes 31 misleading dates |
-| 2 | M-3 backfill 3 missing `gecko_pool` (bard, kat, sxt) | S | Restores "forever" guarantee |
-| 3 | L-2 partial Plotly bundle + downsample old series | M | Faster mobile loads |
-| 4 | L-1(a) CEX-OHLC fallback for 404'ing ETH pools | M | Fresher charts for ~20 tokens |
-| 5 | L-6 move audit/research scripts to `tools/` | XS | Cleaner production surface |
+| Finding | Fix shipped | Verification |
+|---|---|---|
+| **M-1** bogus uniform Bitget/OKX sweep dates | Root-caused: Bitget API retains only ~300 daily candles, so `2025-08-04` is a **data floor, not a listing date**. Sweep-sourced times now render muted "≈ date" with a "data-limited, not verified" tooltip — never as a precise time. Generalizes to all daily-resolution sweeps. | mog Bybit sweep now shows "≈ 2024-10-08" (its real announcement was 2024-06) |
+| **M-3** missing `gecko_pool` | bard + sxt backfilled with their top-liquidity pools (now refresh: SXT +41, BARD +13 candles); kat has **0** GeckoTerminal pools → explicitly marked `chart_note: static` so the gap is documented, not silent | refreshed live |
+| **L-1** 404'ing ETH pools | Added **Binance-spot OHLC fallback** in `refresh_klines`: when a token's on-chain pool is gone/empty, pull `<SYM>USDT` 5m klines from Binance (capped to recent ~120d to bound cache), merged with the on-chain launch history | MORPHO/ONDO now current (latest 0.0h); ZETA/MOG not on Binance spot → honestly kept cached |
+| **L-2** heavy Plotly payload | `interactive_chart` keeps full 5m only in the default view + last 3 days, decimates older history to hourly | ONDO page 110k-candle → **864 KB** (was multi-MB); pump 1.9MB→1.3MB |
+| **L-6** mixed script surface | audit + probe scripts moved to `tools/` (imports/paths fixed) | `python tools/audit_internal.py` runs clean |
 
-(M-2, M-4, L-3, L-4 already closed — see §5.1.)
+## 5.3 Residual (by design, not a defect)
+
+- A few tokens (e.g. ZETA, MOG) have **no live price source** — their on-chain pool was
+  pruned from GeckoTerminal *and* they aren't on Binance spot under `<SYM>USDT`. These
+  keep their cached launch-window charts (graceful), correctly frozen at last real data.
+- The internal audit's "window_end < last event" check inspects the **stored JSON**; that
+  case is fixed at **render time** (M-2 extends the default view to the latest real
+  event), so it is closed in the live product even though the JSON field is unchanged.
 
 ---
 

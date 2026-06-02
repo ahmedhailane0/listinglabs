@@ -4,13 +4,14 @@ from __future__ import annotations
 import json, re, sys
 from datetime import datetime, timezone
 from pathlib import Path
+ROOT = Path(__file__).resolve().parent.parent          # perps_correlation/ (this file is in tools/)
+sys.path.insert(0, str(ROOT))
 from listing_chart import parse_iso
 import build_listing_report as B
 
-HERE = Path(__file__).parent
-LISTINGS = HERE / "listings"
-CACHE = HERE.parent / "cache"
-REPORT = HERE / "Listinglabs" / "report"
+LISTINGS = ROOT / "listings"
+CACHE = ROOT.parent / "cache"
+REPORT = ROOT / "Listinglabs" / "report"
 NOW = datetime.now(timezone.utc)
 
 findings = []  # (severity, area, msg)

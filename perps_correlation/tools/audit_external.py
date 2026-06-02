@@ -6,9 +6,9 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 BASE = "https://ahmedhailane0.github.io/listinglabs"
-HERE = Path(__file__).parent
-LISTINGS = HERE / "listings"
-LOCAL = HERE / "Listinglabs"
+ROOT = Path(__file__).resolve().parent.parent          # perps_correlation/ (this file is in tools/)
+LISTINGS = ROOT / "listings"
+LOCAL = ROOT / "Listinglabs"
 UA = {"User-Agent": "Mozilla/5.0 listinglabs-audit"}
 findings = []
 def add(sev, area, msg): findings.append((sev, area, msg))

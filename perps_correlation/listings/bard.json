@@ -3,7 +3,7 @@
   "name": "Lombard",
   "chain": "bsc",
   "token_contract": "0xd23a186a78c0b3b805505e5f8ea4083295ef9f3a",
-  "gecko_pool": null,
+  "gecko_pool": "0x82177d543a00fe30079363d5a44c87244094f31d173c88117a366997db81014d",
   "fdv_usd": 192845573.7,
   "fdv_source": "CMC/GeckoTerminal (current)",
   "category": "",
@@ -97,5 +97,6 @@
     }
   ],
   "not_listed": [],
-  "funnel": true
+  "funnel": true,
+  "gecko_pool_source": "backfilled 2026-06-02 (top-liquidity pool by contract; audit M-3)"
 }

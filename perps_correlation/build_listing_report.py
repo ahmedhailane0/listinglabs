@@ -172,7 +172,17 @@ def _events_rows(cfg: dict) -> str:
     chain, contract = cfg.get("chain", ""), cfg.get("token_contract", "")
     ann_map = ANN.get(_slug(cfg), {})
     for ev in sorted(cfg.get("events", []), key=lambda e: e["iso_time_utc"]):
-        t = parse_iso(ev["iso_time_utc"]).strftime("%Y-%m-%d %H:%M")
+        dt = parse_iso(ev["iso_time_utc"])
+        # Daily-resolution sweep events are NOT verified listing times — they're the
+        # earliest candle a venue's API still serves (e.g. Bitget retains only ~300
+        # days, so 31 tokens share a 2025-08-04 floor). Render them date-only, muted,
+        # and flagged so they never masquerade as a precise listing time (audit M-1).
+        if _is_sweep(ev):
+            t = (f'<span class="approx" title="Earliest candle the venue API still '
+                 f'serves — not a verified listing time (data-limited).">'
+                 f'≈ {dt.strftime("%Y-%m-%d")}</span>')
+        else:
+            t = dt.strftime("%Y-%m-%d %H:%M")
         cls = " class=\"alpha\"" if ev["exchange"] == "Binance Alpha" else ""
         dot = f"<span class=\"dot\" style=\"background:{venue_color(ev['exchange'])}\"></span>"
         ex = html.escape(ev["exchange"])
@@ -833,6 +843,7 @@ th, td { overflow-wrap: anywhere; word-break: break-word; }
 th:nth-child(1), td:nth-child(1) { width: 24%; }
 th:nth-child(2), td:nth-child(2) { width: 26%; }
 td.t { color: #1f4e79; word-break: normal; overflow-wrap: normal; }
+.approx { color: #8a96a3; font-style: italic; cursor: help; border-bottom: 1px dotted #c5ccd3; }
 .ann-link { color: #1f4e79; text-decoration: none; }
 .ann-link:hover { text-decoration: underline; }
 tr.alpha td { background: #fff7e6; font-weight: 600; }
