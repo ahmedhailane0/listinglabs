@@ -184,6 +184,18 @@ dl{display:grid;grid-template-columns:96px 1fr;gap:3px 10px;margin:12px 0}dt{col
 h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;color:#6b7785}
 .lags{display:grid;grid-template-columns:1fr 1fr;gap:6px}.lag{background:#f7f9fc;border:1px solid #e7edf3;border-radius:7px;padding:6px 9px}
 .lag .k{display:block;font-size:10.5px;color:#8a96a3}.lag .v{font-weight:700}
+/* responsive */
+img,svg{max-width:100%;height:auto}
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.detail{min-width:0}
+@media(max-width:1024px){header,section,.detail{padding-left:18px;padding-right:18px}}
+@media(max-width:640px){
+ header,section,.detail{padding-left:14px;padding-right:14px}
+ header h1{font-size:17px}
+ .topnav{flex-wrap:wrap}
+ .lags{grid-template-columns:1fr}
+ dl{grid-template-columns:84px 1fr}
+}
 """
 
 SORT_JS = """

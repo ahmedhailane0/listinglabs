@@ -879,7 +879,43 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
 .chart img { width: 100%; height: auto; border-radius: 6px; }
 .chart > .plotly-graph-div, .chart > div { width: 100%; }
 .missing { color: #b00; font-style: italic; }
-@media (max-width: 900px) { .card { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   Responsive layer — fluid grids, flexible media, breakpoints
+   ============================================================ */
+/* flexible media: never let an image/chart/svg force horizontal overflow */
+img, svg, canvas, video { max-width: 100%; height: auto; }
+.thumb { height: auto; }              /* sparklines keep their viewBox aspect */
+/* grid/flex children default to min-width:auto and refuse to shrink below their
+   content — the #1 cause of charts/tables overflowing (and being clipped by an
+   overflow:hidden card). Let them shrink. */
+.card > *, .chart, .stats > *, .grid > * { min-width: 0; }
+.chart > .plotly-graph-div, .chart > div { width: 100% !important; max-width: 100%; }
+
+@media (max-width: 1024px) {
+  header, .newsbar, .filters, .grid, .listwrap, main:not(.grid) {
+    padding-left: 20px; padding-right: 20px; }
+}
+@media (max-width: 900px) {
+  .card { grid-template-columns: 1fr; }   /* info + chart stack */
+}
+@media (max-width: 640px) {
+  header, .newsbar, .filters, .grid, .listwrap, main:not(.grid) {
+    padding-left: 14px; padding-right: 14px; }
+  header { padding-top: 14px; padding-bottom: 14px; }
+  header h1 { font-size: 18px; }
+  .filters { gap: 8px 10px; }
+  .filters #search { flex: 1 1 100%; min-width: 0; }   /* full-width search */
+  .filters .count { margin-left: 0; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .info { padding: 16px; }
+  dl { grid-template-columns: 80px 1fr; }
+  /* the dense 12-col list scrolls (readable) instead of crushing to 0-width cols */
+  table.list { min-width: 760px; }
+}
+@media (max-width: 380px) {
+  .grid { grid-template-columns: 1fr; }
+}
 """
 
 

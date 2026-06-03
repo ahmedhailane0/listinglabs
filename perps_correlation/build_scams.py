@@ -464,8 +464,8 @@ def _perp_table(perp) -> str:
             '100%. Smaller / low-quality venues (BingX, MEXC, LBank, XT…) are '
             'excluded by design, as their reported open interest is often inflated, so '
             'this is the <b>reputable-venue</b> total, not the entire market.</p>')
-    return (f'<table class="perp"><thead>{head}</thead>'
-            f'<tbody>{"".join(rows)}</tbody></table>{note}')
+    return (f'<div class="tablewrap"><table class="perp"><thead>{head}</thead>'
+            f'<tbody>{"".join(rows)}</tbody></table></div>{note}')
 
 
 def _holder_tag(hd) -> str:
@@ -515,8 +515,8 @@ def _holders_block(rec) -> str:
             f'CEX/contract/burn wallets (simple definition). Source: {src}.</p>')
     donut = _donut_holders(rec, h)
     table = (f'<div class="badges">{tb} {rb}{hc_badge}</div>'
-             f'<table class="holders"><thead>{head}</thead>'
-             f'<tbody>{"".join(rows)}</tbody></table>{note}')
+             f'<div class="tablewrap"><table class="holders"><thead>{head}</thead>'
+             f'<tbody>{"".join(rows)}</tbody></table></div>{note}')
     return f'<div class="hol-grid">{table}{donut}</div>' if donut else table
 
 
@@ -620,7 +620,7 @@ def _donut_oi(rec, perp) -> str:
     values = [v["oi_usd"] for v in venues]
     total = perp.get("total_oi_usd") or sum(values)
     return _donut(f"doi-{rec['symbol'].lower()}", labels, values,
-                  "Open interest by exchange", center=f"OI<br>{_usd(total)}", usd=True)
+                  "OI by exchange", center=f"OI<br>{_usd(total)}", usd=True)
 
 
 def _donut_supply(rec) -> str:
@@ -632,7 +632,7 @@ def _donut_supply(rec) -> str:
     locked = tot - circ
     ratio = circ / tot * 100
     return _donut(f"dsup-{rec['symbol'].lower()}", ["Circulating", "Locked / not unlocked"],
-                  [circ, locked], "Supply: circulating vs locked",
+                  [circ, locked], "Circulating vs locked",
                   colors=["#1f4e79", "#c5ccd3"], center=f"Circ<br>{ratio:.0f}%")
 
 
@@ -821,11 +821,24 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
   font-weight:600;color:#6b7785;background:#eef2f6;vertical-align:middle}
 /* holders table + donut side by side (stacks on narrow screens) */
 .hol-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
+.hol-grid>*{min-width:0}
 @media(max-width:760px){.hol-grid{grid-template-columns:1fr}}
-/* donut grids: 1–2 donuts per row, responsive */
-.donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-top:8px}
+/* donut grids: fluid, 1–2 donuts per row. min-width:0 on the cells lets each
+   Plotly chart shrink with its column instead of overflowing and being clipped
+   by .card{overflow:hidden} (the bug where the supply donut got cut off). */
+.donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
+.donut-grid>*{min-width:0}
+.donut-grid .plotly-graph-div,.donut-grid>div{width:100%!important;max-width:100%}
+/* wide tables (perp/holders) scroll horizontally on small screens instead of
+   overflowing the card */
+.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+section.card.span .plotly-graph-div{max-width:100%}
 .hist-h{margin:18px 0 4px;font-size:14px;color:#1d2733}
 .hist-h .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:6px}
+@media(max-width:640px){
+  section.card.span{padding:16px 14px}
+  .info dl{grid-template-columns:78px 1fr}
+}
 """
 
 JS = """
