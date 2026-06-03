@@ -229,70 +229,135 @@ def ingest_oi_cmc(records):
             records[sym]["open_interest"].setdefault("cmc_all_venue_usd", o.get("oi_usd"))
 
 
-# ── flat CSV projection ──────────────────────────────────────────────────────
+# ── per-tab record files ─────────────────────────────────────────────────────
+# Each tab keeps its OWN record folder under research/<tab>/, documenting only the
+# tokens shown on that tab, with columns tailored to that tab. No single mixed
+# time-series file.
 
-FLAT_COLS = ["date", "symbol", "name", "reports", "chain", "cmc_slug", "price", "mcap",
-             "fdv", "fdv_at_listing", "vol24h", "circ_supply", "total_supply", "max_supply",
-             "circ_ratio", "oi_tracked_usd", "oi_pct_mcap", "cmc_all_venue_oi",
-             "funding_amount", "holder_count", "top10_share", "retail_share",
-             "binance_alpha_date", "binance_perp_date", "coinbase_date", "first_korean_date"]
+TABS = {
+    "binance_alpha_perps": "Binance Alpha & Perps",
+    "cex_to_korea": "CEX → Korea",
+    "scam_watchlist": "Scam Watchlist",
+}
+
+# Tab-specific flat CSV columns (what that tab actually documents).
+TAB_COLS = {
+    "binance_alpha_perps": [
+        "date", "symbol", "name", "chain", "cmc_slug", "fdv", "mcap",
+        "circ_supply", "total_supply", "change_pct", "ath_px", "atl_px",
+        "max_drawdown_pct", "peak_gain_pct", "cmc_oi_usd",
+        "binance_alpha_date", "binance_perp_date", "coinbase_date", "first_korean_date"],
+    "cex_to_korea": [
+        "date", "symbol", "name", "chain", "cmc_slug", "fdv", "fdv_at_listing", "mcap",
+        "circ_supply", "total_supply", "days_alpha_to_perp", "days_alpha_to_coinbase",
+        "days_alpha_to_korean", "days_coinbase_to_korean", "days_perp_to_korean",
+        "binance_alpha_date", "binance_perp_date", "coinbase_date", "first_korean_date",
+        "on_upbit", "on_bithumb", "on_coinone"],
+    "scam_watchlist": [
+        "date", "symbol", "name", "chain", "cmc_slug", "price", "mcap", "fdv", "vol24h",
+        "circ_supply", "total_supply", "max_supply", "circ_ratio",
+        "oi_tracked_usd", "oi_pct_mcap", "cmc_all_venue_oi",
+        "funding_amount", "holder_count", "top10_share", "retail_share"],
+}
 
 
-def _flat_row(date_str, r) -> dict:
+def _row(tab, date_str, r) -> dict:
+    """Flat per-tab row for one token, picking the fields that tab documents."""
     vd = r["listings"]["venue_dates"]
-    oi = r["open_interest"]
-    return {
-        "date": date_str, "symbol": r["symbol"], "name": r.get("name"),
-        "reports": "|".join(r["reports"]), "chain": r["identity"].get("chain"),
-        "cmc_slug": r["identity"].get("cmc_slug"),
-        "price": r["market"].get("price"), "mcap": r["market"].get("mcap"),
-        "fdv": r["market"].get("fdv"), "fdv_at_listing": r["market"].get("fdv_at_listing"),
-        "vol24h": r["market"].get("vol24h"),
-        "circ_supply": r["supply"].get("circulating"), "total_supply": r["supply"].get("total"),
-        "max_supply": r["supply"].get("max"), "circ_ratio": r["supply"].get("circ_ratio"),
-        "oi_tracked_usd": oi.get("tracked_total_usd"), "oi_pct_mcap": oi.get("pct_mcap"),
-        "cmc_all_venue_oi": oi.get("cmc_all_venue_usd"),
-        "funding_amount": (r["funding_round"] or {}).get("amount"),
-        "holder_count": (r["holders"] or {}).get("holder_count"),
-        "top10_share": (r["holders"] or {}).get("top10_share"),
-        "retail_share": (r["holders"] or {}).get("retail_share"),
-        "binance_alpha_date": vd.get("Binance Alpha"), "binance_perp_date": vd.get("Binance Perp"),
-        "coinbase_date": vd.get("Coinbase"), "first_korean_date": vd.get("First Korean"),
-    }
+    oi, sup, mk, m = r["open_interest"], r["supply"], r["market"], r["metrics"]
+    base = {"date": date_str, "symbol": r["symbol"], "name": r.get("name"),
+            "chain": r["identity"].get("chain"), "cmc_slug": r["identity"].get("cmc_slug")}
+    if tab == "binance_alpha_perps":
+        base.update(
+            fdv=mk.get("fdv"), mcap=mk.get("mcap"),
+            circ_supply=sup.get("circulating"), total_supply=sup.get("total"),
+            change_pct=m.get("change_pct"), ath_px=m.get("ath_px"), atl_px=m.get("atl_px"),
+            max_drawdown_pct=m.get("max_drawdown_pct"), peak_gain_pct=m.get("peak_gain_pct"),
+            cmc_oi_usd=oi.get("cmc_all_venue_usd"),
+            binance_alpha_date=vd.get("Binance Alpha"), binance_perp_date=vd.get("Binance Perp"),
+            coinbase_date=vd.get("Coinbase") or vd.get("Coinbase Spot"),
+            first_korean_date=vd.get("First Korean"))
+    elif tab == "cex_to_korea":
+        fn = r["raw"].get("funnel", {}) or {}
+        base.update(
+            fdv=mk.get("fdv"), fdv_at_listing=mk.get("fdv_at_listing"), mcap=mk.get("mcap"),
+            circ_supply=sup.get("circulating"), total_supply=sup.get("total"),
+            days_alpha_to_perp=fn.get("days_alpha_to_perp"),
+            days_alpha_to_coinbase=fn.get("days_alpha_to_coinbase"),
+            days_alpha_to_korean=fn.get("days_alpha_to_korean"),
+            days_coinbase_to_korean=fn.get("days_coinbase_to_korean"),
+            days_perp_to_korean=fn.get("days_perp_to_korean"),
+            binance_alpha_date=vd.get("Binance Alpha"), binance_perp_date=vd.get("Binance Perp"),
+            coinbase_date=vd.get("Coinbase"), first_korean_date=vd.get("First Korean"),
+            on_upbit=fn.get("on_upbit"), on_bithumb=fn.get("on_bithumb"),
+            on_coinone=fn.get("on_coinone"))
+    else:  # scam_watchlist
+        fr, h = (r["funding_round"] or {}), (r["holders"] or {})
+        base.update(
+            price=mk.get("price"), mcap=mk.get("mcap"), fdv=mk.get("fdv"), vol24h=mk.get("vol24h"),
+            circ_supply=sup.get("circulating"), total_supply=sup.get("total"),
+            max_supply=sup.get("max"), circ_ratio=sup.get("circ_ratio"),
+            oi_tracked_usd=oi.get("tracked_total_usd"), oi_pct_mcap=oi.get("pct_mcap"),
+            cmc_all_venue_oi=oi.get("cmc_all_venue_usd"),
+            funding_amount=fr.get("amount"), holder_count=h.get("holder_count"),
+            top10_share=h.get("top10_share"), retail_share=h.get("retail_share"))
+    return base
 
 
-def _append_timeseries(date_str, records):
-    """One flat row per token per day; re-running the same day replaces that day."""
-    path = OUT / "timeseries.csv"
+def _write_csv(path, cols, rows):
+    with path.open("w", encoding="utf-8", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=cols, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+
+
+def _append_daily_csv(path, date_str, cols, rows):
+    """Append today's rows to a per-tab accumulating CSV; re-running the same day
+    replaces that day (idempotent), so each token gets one row per day."""
     existing = []
     if path.exists():
         with path.open(encoding="utf-8", newline="") as f:
             existing = [row for row in csv.DictReader(f) if row.get("date") != date_str]
-    rows = existing + [_flat_row(date_str, r) for r in records.values()]
-    with path.open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=FLAT_COLS, extrasaction="ignore")
-        w.writeheader()
-        w.writerows(rows)
-    return len(rows)
+    _write_csv(path, cols, existing + rows)
+    return len(existing) + len(rows)
+
+
+def _cleanup_legacy():
+    """Remove the old single-archive outputs replaced by the per-tab layout."""
+    for name in ("tokens_latest.json", "tokens_latest.csv", "timeseries.csv"):
+        (OUT / name).unlink(missing_ok=True)
+    snaps = OUT / "snapshots"
+    if snaps.is_dir():
+        for p in snaps.glob("*.json"):
+            p.unlink(missing_ok=True)
+        try:
+            snaps.rmdir()
+        except OSError:
+            pass
 
 
 README = """# Token research archive (LOCAL-ONLY)
 
 Built by `perps_correlation/build_research_archive.py`. This folder is **not**
-tracked by git (the repo's .gitignore whitelist only tracks perps_correlation/,
-cache/, .github/), so it stays on this PC and is never published.
+tracked by git (the .gitignore whitelist tracks only perps_correlation/, cache/,
+.github/), so it stays on this PC and is never published.
 
-- `tokens_latest.json` — full unified record per token (current state). Each record
-  merges identity / market / supply / open-interest / funding / holders / venue
-  listing dates + lags / price metrics, and keeps every source's raw block under
-  `raw{}` so nothing is dropped.
-- `tokens_latest.csv` — flat current snapshot, one row per token (for spreadsheets).
-- `snapshots/<YYYY-MM-DD>.json` — full daily snapshots (accumulate over time).
-- `timeseries.csv` — flat longitudinal table, one row per token per day. Load with
-  pandas: `pd.read_csv('timeseries.csv', parse_dates=['date'])`.
+**Each tab has its own record folder** documenting only that tab's tokens:
 
-Re-run `python build_research_archive.py` to capture today; same-day re-runs
-overwrite the day (idempotent).
+- `binance_alpha_perps/`  — the "Binance Alpha & Perps" tab
+- `cex_to_korea/`         — the "CEX → Korea" funnel tab
+- `scam_watchlist/`       — the "Scam Watchlist" tab
+
+Inside each:
+- `latest.json` — full unified record per token (current state); keeps every source's
+  raw block under `raw{}` so nothing is dropped.
+- `latest.csv`  — flat current snapshot, one row per token (columns tailored to the tab).
+- `daily/<YYYY-MM-DD>.json` — full daily snapshots (accumulate every build).
+- `daily.csv`   — flat accumulating log, one row per token **per day** (load with
+  `pd.read_csv('daily.csv', parse_dates=['date'])`).
+
+Re-run `python build_research_archive.py` to record today; same-day re-runs overwrite
+the day (idempotent). A token shown on multiple tabs is recorded in each tab's folder.
 """
 
 
@@ -311,29 +376,25 @@ def main():
         r["captured_at"] = stamp
 
     OUT.mkdir(parents=True, exist_ok=True)
-    (OUT / "snapshots").mkdir(exist_ok=True)
+    _cleanup_legacy()
     (OUT / "README.md").write_text(README, encoding="utf-8")
 
-    blob = json.dumps(records, indent=2, ensure_ascii=False, default=_jsonable)
-    (OUT / "tokens_latest.json").write_text(blob, encoding="utf-8")
-    (OUT / "snapshots" / f"{date_str}.json").write_text(blob, encoding="utf-8")
-
-    # flat current CSV
-    with (OUT / "tokens_latest.csv").open("w", encoding="utf-8", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=FLAT_COLS, extrasaction="ignore")
-        w.writeheader()
-        for r in records.values():
-            w.writerow(_flat_row(date_str, r))
-    ts_rows = _append_timeseries(date_str, records)
-
-    by_report = {}
-    for r in records.values():
-        for rep in r["reports"]:
-            by_report[rep] = by_report.get(rep, 0) + 1
-    print(f"research archive -> {OUT}")
-    print(f"  {len(records)} unique tokens  ({by_report})")
-    print(f"  tokens_latest.json/.csv + snapshots/{date_str}.json + timeseries.csv "
-          f"({ts_rows} rows total)")
+    print(f"research archive -> {OUT}  (captured {date_str})")
+    for tab, label in TABS.items():
+        recs = {sym: r for sym, r in records.items() if tab in r["reports"]}
+        if not recs:
+            continue
+        d = OUT / tab
+        (d / "daily").mkdir(parents=True, exist_ok=True)
+        blob = json.dumps(recs, indent=2, ensure_ascii=False, default=_jsonable)
+        (d / "latest.json").write_text(blob, encoding="utf-8")
+        (d / "daily" / f"{date_str}.json").write_text(blob, encoding="utf-8")
+        cols = TAB_COLS[tab]
+        rows = [_row(tab, date_str, r) for r in recs.values()]
+        _write_csv(d / "latest.csv", cols, rows)
+        total = _append_daily_csv(d / "daily.csv", date_str, cols, rows)
+        print(f"  {label:22} {len(recs):3} tokens -> {tab}/ "
+              f"(latest.json/.csv, daily/{date_str}.json, daily.csv {total} rows)")
 
 
 if __name__ == "__main__":
