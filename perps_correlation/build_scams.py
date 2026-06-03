@@ -110,7 +110,7 @@ def _price_chart(sym: str, name: str) -> str:
         hovermode="x", showlegend=False, dragmode="pan")
     div_id = f"chart-{sym.lower()}"
     snippet = fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
-                          config={"displayModeBar": False, "scrollZoom": True})
+                          config={"displayModeBar": False, "scrollZoom": True, "responsive": True})
     # Same interaction as the reactions charts: y-axis auto-fits the x-range in view
     # on zoom/pan (shared engine), so the watchlist feels like one product.
     return snippet + _autofit_js(div_id)
@@ -439,9 +439,14 @@ def _perp_table(perp) -> str:
     if not perp or not perp.get("venues"):
         return ('<div class="missing">No perp markets found on the tracked '
                 'exchanges (keyless public APIs).</div>')
+    n = len(perp["venues"])
     head = ("<tr><th>Exchange</th><th>OI (USD)</th><th>Share</th>"
             "<th>Funding</th><th>Every</th><th>Annualized</th><th>OI/24h vol</th></tr>")
-    all_row = (f'<tr class="allrow"><td>All</td><td>{_usd(perp["total_oi_usd"])}</td>'
+    # "Share" is each venue's % of the LISTED-venue total (rows sum to 100%). The
+    # All row's 100% therefore means "100% of the venues we track", NOT 100% of the
+    # entire market — see the note below.
+    all_row = (f'<tr class="allrow"><td>All listed ({n})</td>'
+               f'<td>{_usd(perp["total_oi_usd"])}</td>'
                f'<td>100%</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>')
     rows = [all_row]
     for v in perp["venues"]:
@@ -454,7 +459,13 @@ def _perp_table(perp) -> str:
             f'<td>{_fund_span(v.get("funding"))}</td><td class="iv">{iv}</td>'
             f'<td>{_fund_span(v.get("funding_annualized"), annual=True)}</td>'
             f'<td>{ovr}</td></tr>')
-    return f'<table class="perp"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table>'
+    note = ('<p class="note">Shares are each venue’s % of the <b>major venues we '
+            'track</b> (Binance, OKX, Bybit, KuCoin, Bitget, Gate) — they sum to '
+            '100%. Smaller / low-quality venues (BingX, MEXC, LBank, XT…) are '
+            'excluded by design, as their reported open interest is often inflated, so '
+            'this is the <b>reputable-venue</b> total, not the entire market.</p>')
+    return (f'<table class="perp"><thead>{head}</thead>'
+            f'<tbody>{"".join(rows)}</tbody></table>{note}')
 
 
 def _holder_tag(hd) -> str:
@@ -554,7 +565,8 @@ def _oi_funding_history_chart(sym: str) -> str:
         hovermode="x unified", dragmode="pan",
         legend=dict(orientation="h", y=1.14, x=0, font=dict(size=11)))
     return fig.to_html(full_html=False, include_plotlyjs=False,
-                       div_id=f"oihist-{sym.lower()}", config={"displayModeBar": False})
+                       div_id=f"oihist-{sym.lower()}",
+                       config={"displayModeBar": False, "responsive": True})
 
 
 def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -> str:
@@ -573,7 +585,7 @@ def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -
         annotations=([dict(text=center, x=0.5, y=0.5, showarrow=False,
                            font=dict(size=12.5, color="#42505e"))] if center else []))
     return fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
-                       config={"displayModeBar": False})
+                       config={"displayModeBar": False, "responsive": True})
 
 
 def _donut_holders(rec, h) -> str:
@@ -779,11 +791,19 @@ EXTRA_CSS = """
 #ltab td.rank{text-align:center}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-/* per-token detail: full-width sections for perp + holders tables */
-section.card.span{display:block;margin-top:18px}
+/* per-token detail: full-width sections for perp + holders tables.
+   The base .card delegates its padding to .info/.chart children, but these span
+   sections render content (h3 / tables / donuts) as DIRECT children, so they need
+   their own padding — without it titles sit flush in the top-left corner and the
+   right edge (donut legends, wide tables) gets clipped by .card{overflow:hidden}. */
+section.card.span{display:block;margin-top:18px;padding:20px 24px}
 section.card.span h3{margin:0 0 12px;font-size:15px;color:#1d2733}
 section.card.span h3 .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:8px}
 .badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
+/* in the narrow info panel a long ratio badge would overflow the dl value column
+   and get clipped by .card{overflow:hidden}; let it wrap there instead of nowrap */
+.info dl dd .badge{white-space:normal;line-height:1.6}
+.info dl dd{min-width:0;overflow-wrap:anywhere}
 .badges{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
 table.perp,table.holders{width:100%;border-collapse:collapse;font-size:13px}
 table.perp th,table.holders th{text-align:right;padding:7px 10px;color:#6b7785;font-weight:600;
