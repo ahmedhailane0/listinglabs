@@ -336,11 +336,142 @@ def _reaction_block(rec) -> str:
             f'<div class="stats">{stats}</div>{checks_block}')
 
 
+PERP = HERE.parent / "cache" / "perp_markets"
+HOLDERS = HERE.parent / "cache" / "scam_holders"
+
+
+def _load_perp(sym):
+    p = PERP / f"{sym.upper()}.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def _load_holders(sym):
+    p = HOLDERS / f"{sym.upper()}.json"
+    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def _compact(v):
+    """Compact plain-number formatter (token counts): 312.54M, 1.00B."""
+    if v is None:
+        return "—"
+    a = abs(v)
+    for div, suf in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
+        if a >= div:
+            return f"{v / div:.2f}{suf}"
+    return f"{v:,.0f}"
+
+
+def _badge(text, risk):
+    fg, bg = ("#c0392b", "#fdecea") if risk else ("#1e7e34", "#eafaf0")
+    return f'<span class="badge" style="color:{fg};background:{bg}">{html.escape(text)}</span>'
+
+
+def _fund_span(x, annual=False):
+    """Funding cell coloured by sign (neg = shorts pay longs = red)."""
+    if x is None:
+        return "—"
+    c = "#c0392b" if x < 0 else "#1e7e34"
+    txt = f"{x * 100:+.1f}%" if annual else f"{x * 100:+.4f}%"
+    return f'<span style="color:{c}">{txt}</span>'
+
+
+def _supply_dl(rec) -> str:
+    """Supply + circulation-ratio + peak-mcap rows for the detail <dl>."""
+    circ, tot = rec.get("circ_supply"), rec.get("total_supply")
+    mx = rec.get("max_supply")
+    denom = tot or mx
+    out = []
+    if tot or mx:
+        out.append(f"<dt>Total supply</dt><dd>{_compact(tot or mx)}"
+                   f"{'' if tot else ' <span class=\"src\">(max)</span>'}</dd>")
+    if circ is not None:
+        pct = f" <span class=\"src\">({circ / denom * 100:.1f}% of supply)</span>" if denom else ""
+        out.append(f"<dt>Circulating</dt><dd>{_compact(circ)}{pct}</dd>")
+    ratio = rec.get("circ_ratio")
+    if ratio is not None:
+        p = ratio * 100
+        risk = p < 30
+        b = _badge(f"{p:.1f}% · {'⚠ <30% (low float)' if risk else '≥30%'}", risk)
+        out.append(f"<dt>Circulation ratio</dt><dd>{b}</dd>")
+    peak = rec.get("peak_mcap")
+    if peak:
+        out.append(f'<dt>Peak market cap</dt><dd>{_usd(peak)} '
+                   f'<span class="src">≈ ATH price × circ supply</span></dd>')
+    return "".join(out)
+
+
+def _perp_table(perp) -> str:
+    if not perp or not perp.get("venues"):
+        return ('<div class="missing">No perp markets found on the tracked '
+                'exchanges (keyless public APIs).</div>')
+    head = ("<tr><th>Exchange</th><th>OI (USD)</th><th>Share</th>"
+            "<th>Funding</th><th>Every</th><th>Annualized</th><th>OI/24h vol</th></tr>")
+    all_row = (f'<tr class="allrow"><td>All</td><td>{_usd(perp["total_oi_usd"])}</td>'
+               f'<td>100%</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>')
+    rows = [all_row]
+    for v in perp["venues"]:
+        iv = f"{v.get('interval_h', 8):g}h"
+        ovr = f"{v['oi_vol_ratio']:.3f}" if v.get("oi_vol_ratio") is not None else "—"
+        rows.append(
+            f'<tr><td class="venue">{html.escape(v["venue"])}</td>'
+            f'<td>{_usd(v["oi_usd"])}</td>'
+            f'<td>{v["oi_share_pct"]:.1f}%</td>'
+            f'<td>{_fund_span(v.get("funding"))}</td><td class="iv">{iv}</td>'
+            f'<td>{_fund_span(v.get("funding_annualized"), annual=True)}</td>'
+            f'<td>{ovr}</td></tr>')
+    return f'<table class="perp"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table>'
+
+
+def _holders_block(rec) -> str:
+    h = _load_holders(rec["symbol"])
+    if not h or not h.get("available"):
+        chain = html.escape(rec.get("chain") or "this chain")
+        return ('<div class="missing">Top-holder data unavailable on '
+                f'{chain} — the keyless source covers Ethereum only.</div>')
+    tot = rec.get("total_supply") or rec.get("max_supply")
+    px = rec.get("price")
+    rows = []
+    for hd in h["holders"]:
+        share = hd["share"]
+        toks = (share / 100 * tot) if tot else None
+        usd = (toks * px) if (toks and px) else None
+        addr = hd.get("address") or ""
+        short = f"{addr[:8]}…{addr[-6:]}" if len(addr) > 16 else addr
+        link = (f'<a href="https://etherscan.io/address/{html.escape(addr)}" '
+                f'target="_blank" rel="noopener" class="mono">{html.escape(short)}</a>')
+        rows.append(f'<tr><td>{hd["rank"]}</td><td>{link}</td>'
+                    f'<td>{_compact(toks)}</td><td>{_usd(usd)}</td>'
+                    f'<td>{share:.2f}%</td></tr>')
+    top10, retail = h["top10_share"], h["retail_share"]
+    tb = _badge(f"Top-10: {top10:.1f}% · {'⚠ ≥95% (highly concentrated)' if top10 >= 95 else '<95%'}",
+                top10 >= 95)
+    rb = _badge(f"Retail: {retail:.1f}% · {'⚠ <1% (negligible)' if retail < 1 else '≥1%'}",
+                retail < 1)
+    head = "<tr><th>#</th><th>Holder</th><th>Tokens</th><th>USD</th><th>Share</th></tr>"
+    note = ('<p class="note">Retail = 100% − top-10 holders. Top-10 includes any '
+            'CEX/contract/burn wallets (simple definition).</p>')
+    return (f'<div class="badges">{tb} {rb}</div>'
+            f'<table class="holders"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table>{note}')
+
+
 def _detail(rec) -> str:
     sym = rec["symbol"]
     name = html.escape(rec.get("name", sym))
     fund_amt, fund_inv = _funding_str(rec)
-    oi_str = _oi_str(rec)
+    perp = _load_perp(sym)
+    # OI from the summed per-exchange total (keyless), falling back to the CMC
+    # aggregate; ratio is recomputed against that same total so it reconciles.
+    oi_total = (perp or {}).get("total_oi_usd") or rec.get("oi_usd")
+    mc_for_oi = rec.get("mcap") or rec.get("csv_mc")
+    oi_ratio = (oi_total / mc_for_oi * 100) if (oi_total and mc_for_oi) else None
+    oi_str = (f'{_usd(oi_total)}'
+              + (f' · {oi_ratio:.0f}% of mcap' if oi_ratio else '')) if oi_total else _oi_str(rec)
+    # honest freshness stamp from the perp snapshot (this data is refreshed by
+    # fetch_perp_markets.py, not in the page build, so label when it was pulled).
+    import datetime as _dt
+    _ts = (perp or {}).get("fetched_at")
+    perp_asof = (f"as of {_dt.datetime.fromtimestamp(_ts, _dt.timezone.utc):%Y-%m-%d %H:%M} UTC"
+                 if _ts else "keyless public exchange APIs")
     warn = ("" if rec.get("resolved", True) else
             '<div class="cat" style="background:#fdecea;color:#c0392b">⚠ identity auto-matched by symbol — verify</div>')
     memo = html.escape(rec.get("memo_en") or "—")
@@ -362,6 +493,7 @@ def _detail(rec) -> str:
       <dt>FDV</dt><dd>{_usd(fdv)}</dd>
       {fdvmc}
       <dt>Volume (24h)</dt><dd>{_usd(rec.get('vol') or rec.get('csv_vol'))}</dd>
+      {_supply_dl(rec)}
       <dt>Open interest</dt><dd>{oi_str}</dd>
       <dt>Funding</dt><dd>{fund_amt}{fund_inv}</dd>
       <dt>Days &gt;$1B</dt><dd>{days}</dd>
@@ -370,6 +502,14 @@ def _detail(rec) -> str:
     {_reaction_block(rec)}
   </div>
   <div class="chart">{_price_chart(sym, name)}</div>
+</section>
+<section class="card span">
+  <h3>Perp markets <span class="asof">open interest &amp; funding · per exchange · {perp_asof}</span></h3>
+  {_perp_table(perp)}
+</section>
+<section class="card span">
+  <h3>Top holders <span class="asof">on-chain distribution</span></h3>
+  {_holders_block(rec)}
 </section></main>"""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
@@ -432,6 +572,23 @@ EXTRA_CSS = """
 #ltab td.rank{text-align:center}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+/* per-token detail: full-width sections for perp + holders tables */
+section.card.span{display:block;margin-top:18px}
+section.card.span h3{margin:0 0 12px;font-size:15px;color:#1d2733}
+section.card.span h3 .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:8px}
+.badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
+.badges{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
+table.perp,table.holders{width:100%;border-collapse:collapse;font-size:13px}
+table.perp th,table.holders th{text-align:right;padding:7px 10px;color:#6b7785;font-weight:600;
+  border-bottom:2px solid #e1e7ee;font-size:12px}
+table.perp th:first-child,table.holders th:nth-child(2){text-align:left}
+table.perp td,table.holders td{text-align:right;padding:7px 10px;border-bottom:1px solid #eef2f6}
+table.perp td.venue,table.holders td:nth-child(2){text-align:left}
+table.perp td.iv{color:#8a96a3}
+table.perp tr.allrow td{font-weight:700;background:#f7f9fb}
+table.holders td.mono,table.holders a.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+section.card.span .missing{color:#8a96a3;font-style:italic;padding:8px 0}
+section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 """
 
 JS = """

@@ -183,7 +183,19 @@ def main():
                 "mcap": md.get("market_cap", {}).get("usd"),
                 "fdv": md.get("fully_diluted_valuation", {}).get("usd"),
                 "vol": md.get("total_volume", {}).get("usd"),
+                "circ_supply": md.get("circulating_supply"),
+                "total_supply": md.get("total_supply"),
+                "max_supply": md.get("max_supply"),
+                "ath_price": (md.get("ath") or {}).get("usd"),
             })
+            # circulation ratio = circulating / total (fall back to max supply)
+            circ = md.get("circulating_supply")
+            denom = md.get("total_supply") or md.get("max_supply")
+            rec["circ_ratio"] = (circ / denom) if (circ and denom) else None
+            # peak market cap ≈ all-time-high price × current circulating supply
+            # (CoinGecko exposes no historical-supply series, so this is approximate)
+            athp = (md.get("ath") or {}).get("usd")
+            rec["peak_mcap"] = (athp * circ) if (athp and circ) else None
             mc = _get(f"{CG}/coins/{cid}/market_chart?vs_currency=usd&days=180&interval=daily")
             time.sleep(PACE)
             prices = (mc or {}).get("prices") or []
@@ -228,7 +240,8 @@ def main():
         prev = out.get(sym) or {}
         for k in ("price", "mcap", "fdv", "vol", "chain", "contract", "cg_id",
                   "cmc_slug", "oi_usd", "oi_pct_mcap", "image", "name",
-                  "website", "twitter"):
+                  "website", "twitter", "circ_supply", "total_supply",
+                  "max_supply", "ath_price", "circ_ratio", "peak_mcap"):
             if rec.get(k) in (None, "") and prev.get(k) not in (None, ""):
                 rec[k] = prev[k]
         # keep prior funding if this run found none
