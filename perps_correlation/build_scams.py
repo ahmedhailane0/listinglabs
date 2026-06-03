@@ -755,8 +755,8 @@ def _index(recs) -> str:
     rows = "\n".join(_list_row(r) for r in recs)
     body = f"""
 <header><h1>Scam Watchlist</h1>
-<nav class="topnav"><a href="../report/index.html">Listing Reactions</a>
-<a href="../funnel/report/index.html">Listing Funnel</a>
+<nav class="topnav"><a href="../report/index.html">Binance Alpha &amp; Perps</a>
+<a href="../funnel/report/index.html">CEX → Korea</a>
 <a class="active" href="index.html">Scam Watchlist ({len(recs)})</a></nav>
 <p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour</p></header>
 {_filter_bar(len(recs))}

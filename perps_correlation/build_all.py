@@ -51,7 +51,7 @@ img,svg{{max-width:100%;height:auto}}
 <p>Two views of the same Alpha-listed token set, under one roof.</p></header>
 <div class="wrap"><div class="cards">
   <a class="card" href="report/index.html">
-    <h2>Listing Reactions</h2><span class="n">{REACTIONS_N} tokens</span>
+    <h2>Binance Alpha &amp; Perps</h2><span class="n">{REACTIONS_N} tokens</span>
     <p>Per-token price-reaction charts annotated with every venue listing —
        Alpha, Binance Perp, Coinbase, the Korean exchanges, plus full
        OKX / Bybit / Kraken / KuCoin / Bitget / Gate spot &amp; perp coverage.
@@ -59,7 +59,7 @@ img,svg{{max-width:100%;height:auto}}
     <span class="go">Open reactions →</span>
   </a>
   <a class="card" href="funnel/report/index.html">
-    <h2>Listing Funnel</h2><span class="n">{FUNNEL_N} tokens</span>
+    <h2>CEX → Korea</h2><span class="n">{FUNNEL_N} tokens</span>
     <p>Alpha → Binance Perp → Coinbase → Korea progression with timing gaps,
        FDV-at-listing, and open interest for the tokens that completed the
        funnel.</p>
