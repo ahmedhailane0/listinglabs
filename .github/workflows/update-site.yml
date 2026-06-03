@@ -61,12 +61,17 @@ jobs:
         timeout-minutes: 10       # hard ceiling; each token writes as it goes, so a
                                   # timeout just means the rest resume on the next run
 
-      # NOTE: per-exchange perp OI+funding (fetch_perp_markets.py) is deliberately
-      # NOT run here. GitHub's runner IP is geo-blocked by Binance/OKX/Bybit (the
-      # 3 biggest perp venues return 451 to datacenter IPs), so a CI fetch silently
-      # drops them and renders wrong OI shares. It's refreshed LOCALLY instead
-      # (`python fetch_perp_markets.py`, unblocked IP) and the snapshot is committed
-      # to cache/perp_markets/; build_scams stamps each page with the fetch time.
+      - name: Refresh per-exchange perp OI + funding (Scam Watchlist)
+        # Autonomous + keyless via CoinGecko's /derivatives aggregator — ONE call
+        # that returns every exchange's perp OI + funding SERVER-SIDE, so GitHub's
+        # geo-blocked runner IP (Binance/OKX/Bybit return 451 to datacenter IPs)
+        # still gets all venues. Direct per-exchange fetching is local-only
+        # (`fetch_perp_markets.py --direct`); the default path used here is CoinGecko.
+        # build_scams stamps each page "via CoinGecko · as of <fetch time>".
+        run: python fetch_perp_markets.py
+        continue-on-error: true     # a flaky aggregator call must never block the build
+        timeout-minutes: 5
+
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
 

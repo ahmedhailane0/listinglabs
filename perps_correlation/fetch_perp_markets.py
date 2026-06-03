@@ -383,6 +383,71 @@ def fetch_token(symbol: str, spot_price, bulk_maps=None) -> dict:
     return _assemble(sym, spot_price, raw)
 
 
+# ── CoinGecko derivatives source (AUTONOMOUS / CI default) ───────────────────
+# Binance/OKX/Bybit geo-block GitHub's runner IP, so direct fetching can't run in
+# CI. CoinGecko aggregates every exchange's perp tickers SERVER-SIDE (one keyless
+# call the runner CAN reach), giving per-venue OI + funding for all our venues.
+# Validated against the direct adapters: OI matches, funding matches within
+# snapshot noise. CG lacks the funding interval, so we annualize using KuCoin's
+# interval (one bulk call, confirmed reachable from CI), defaulting to 8h.
+
+CG_DERIV = "https://api.coingecko.com/api/v3/derivatives?include_tickers=all"
+# CoinGecko market name -> our venue label (only the venues we track).
+CG_MARKET = {"Binance (Futures)": "Binance", "OKX (Futures)": "OKX",
+             "Bybit (Futures)": "Bybit", "KuCoin Futures": "KuCoin",
+             "Gate (Futures)": "Gate", "Bitget Futures": "Bitget",
+             "BingX (Futures)": "BingX", "MEXC (Futures)": "MEXC"}
+
+
+def _cg_interval_map(wanted):
+    """Per-token funding interval (hours) from KuCoin's bulk feed — one call,
+    confirmed reachable from the CI runner. Tokens KuCoin doesn't list fall back
+    to 8h at use time. Funding intervals move together across venues, so one
+    venue's interval is a good proxy for the token."""
+    try:
+        ku = _bulk_kucoin()
+    except Exception:
+        ku = {}
+    return {s: d["interval_h"] for s, d in ku.items()
+            if s in wanted and d.get("interval_h")}
+
+
+def fetch_all_cg(tokens) -> dict:
+    """Autonomous, CI-safe per-venue OI+funding via CoinGecko derivatives.
+    tokens: list of (symbol, spot)."""
+    wanted = {s.upper() for s, _ in tokens}
+    spot = {s.upper(): sp for s, sp in tokens}
+    try:
+        deriv = _get(CG_DERIV, tries=3) or []
+    except Exception:
+        deriv = []
+    intervals = _cg_interval_map(wanted)
+    # group: token -> {venue: norm_dict} (keep the larger-OI ticker per venue)
+    by_tok = {}
+    for t in deriv:
+        idx = (t.get("index_id") or "").upper()
+        venue = CG_MARKET.get(t.get("market"))
+        if idx not in wanted or not venue:
+            continue
+        oi, price = _f(t.get("open_interest")), _f(t.get("price"))
+        if not oi:
+            continue
+        fr = _f(t.get("funding_rate"))            # CoinGecko quotes funding in %
+        d = {"oi_usd": oi, "oi_coins": (oi / price) if price else None, "mark": price,
+             "funding": (fr / 100.0) if fr is not None else None,
+             "interval_h": intervals.get(idx, 8.0), "vol24h_usd": _f(t.get("volume_24h"))}
+        slot = by_tok.setdefault(idx, {})
+        if venue not in slot or oi > slot[venue]["oi_usd"]:
+            slot[venue] = d
+    out = {}
+    for sym in wanted:
+        raw = [(v, d) for v, d in (by_tok.get(sym) or {}).items()]
+        res = _assemble(sym, spot.get(sym), raw)
+        res["source"] = "coingecko"
+        out[sym] = res
+    return out
+
+
 def fetch_all(tokens) -> dict:
     """tokens: list of (symbol, spot). Pre-fetch the bulk venue maps ONCE (~10
     calls total), then assemble every token — the per-symbol venues run in
@@ -417,18 +482,24 @@ def _print(res):
 
 def main(argv):
     OUT.mkdir(parents=True, exist_ok=True)
+    # --direct = hit each exchange's own API (full fidelity, but Binance/OKX/Bybit
+    # geo-block datacenter IPs, so it's a LOCAL oracle only). Default = CoinGecko
+    # derivatives (autonomous / CI-safe).
+    direct = "--direct" in argv
+    argv = [a for a in argv if a != "--direct"]
     if len(argv) >= 1 and argv[0].upper() != "--ALL":
         sym = argv[0].upper()
         spot = _f(argv[1]) if len(argv) > 1 else None
-        res = fetch_token(sym, spot)
+        res = (fetch_token(sym, spot) if direct
+               else fetch_all_cg([(sym, spot)])[sym])
         (OUT / f"{sym}.json").write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
         _print(res)
         return 0
-    # refresh all scam-watchlist tokens (bulk per-venue + parallel per-symbol)
+    # refresh all scam-watchlist tokens
     data = json.loads((CACHE / "scam_data.json").read_text(encoding="utf-8"))
     tokens = [(rec["symbol"], rec.get("price") or rec.get("csv_price"))
               for rec in data.values()]
-    results = fetch_all(tokens)
+    results = fetch_all(tokens) if direct else fetch_all_cg(tokens)
     for sym, res in sorted(results.items()):
         if not res:
             print(f"{sym:9} (failed)")

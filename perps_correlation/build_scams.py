@@ -470,7 +470,8 @@ def _detail(rec) -> str:
     # fetch_perp_markets.py, not in the page build, so label when it was pulled).
     import datetime as _dt
     _ts = (perp or {}).get("fetched_at")
-    perp_asof = (f"as of {_dt.datetime.fromtimestamp(_ts, _dt.timezone.utc):%Y-%m-%d %H:%M} UTC"
+    _src = "via CoinGecko" if (perp or {}).get("source") == "coingecko" else "per exchange"
+    perp_asof = (f"{_src} · as of {_dt.datetime.fromtimestamp(_ts, _dt.timezone.utc):%Y-%m-%d %H:%M} UTC"
                  if _ts else "keyless public exchange APIs")
     warn = ("" if rec.get("resolved", True) else
             '<div class="cat" style="background:#fdecea;color:#c0392b">⚠ identity auto-matched by symbol — verify</div>')
@@ -504,7 +505,7 @@ def _detail(rec) -> str:
   <div class="chart">{_price_chart(sym, name)}</div>
 </section>
 <section class="card span">
-  <h3>Perp markets <span class="asof">open interest &amp; funding · per exchange · {perp_asof}</span></h3>
+  <h3>Perp markets <span class="asof">open interest &amp; funding · {perp_asof}</span></h3>
   {_perp_table(perp)}
 </section>
 <section class="card span">
