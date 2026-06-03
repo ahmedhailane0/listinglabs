@@ -55,7 +55,12 @@ jobs:
         run: python refresh_klines.py
         env:
           REFRESH_LIMIT: "20"    # tokens touched per run (cap for the rate-limited IP)
-          REFRESH_NEWEST: "14"   # of those, how many are the newest listings (priority)
+          REFRESH_NEWEST: "8"    # of those, how many are the newest listings (priority).
+                                 # Lowered 14->8 so the OLDER tail gets 12 slots/run
+                                 # instead of 6 — ~halves its refresh cycle (it was
+                                 # going multiple days stale) while total fetch volume
+                                 # (REFRESH_LIMIT) is unchanged, respecting the
+                                 # GeckoTerminal CI-IP throttle ceiling.
           REFRESH_WORKERS: "4"   # modest concurrency — GeckoTerminal rate-limits per IP
         continue-on-error: true   # a flaky pool must never block the build
         timeout-minutes: 10       # hard ceiling; each token writes as it goes, so a
@@ -70,6 +75,23 @@ jobs:
         # build_scams stamps each page "via CoinGecko · as of <fetch time>".
         run: python fetch_perp_markets.py
         continue-on-error: true     # a flaky aggregator call must never block the build
+        timeout-minutes: 5
+
+      - name: Refresh Scam Watchlist prices + supply (charts stay current)
+        # The full fetch_scam_data.py needs a local CSV + RootData key, so it can't
+        # run in CI. This is the keyless price/supply subset: re-pulls CoinGecko
+        # market data + 180d daily series and CMC's authoritative supply for every
+        # token already in cache/scam_data.json. Without this, the watchlist charts
+        # froze ~2 days behind (nothing refreshed scam_prices in the cron).
+        run: python refresh_scam_prices.py
+        continue-on-error: true
+        timeout-minutes: 6
+
+      - name: Refresh top holders (Scam Watchlist)
+        # Keyless multichain holders via GoPlus token-security (BNB Chain / Base /
+        # ETH / …). Non-EVM chains gracefully report "unavailable".
+        run: python fetch_holders.py
+        continue-on-error: true
         timeout-minutes: 5
 
       - name: Build the site (RSS poll + reports + landing)

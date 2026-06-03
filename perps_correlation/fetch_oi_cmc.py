@@ -52,13 +52,26 @@ def _get_json(url: str) -> dict | None:
 
 
 def fetch_mcap(slug: str) -> dict:
-    """Current market cap + FDV from CMC's detail endpoint (same-dated as OI)."""
+    """Current market cap + FDV + supply from CMC's detail endpoint (same-dated as
+    OI). CMC's supply numbers are authoritative — CoinGecko sometimes returns
+    placeholder/wrong supply (total == circulating, or "100"), so the watchlist
+    prefers these (see fetch_scam_data)."""
     payload = _get_json(DETAIL.format(slug=slug))
     if not payload:
         return {}
     st = (payload.get("data") or {}).get("statistics") or {}
     return {"mcap_now_usd": st.get("marketCap") or None,
-            "fdv_now_usd": st.get("fullyDilutedMarketCap") or None}
+            "fdv_now_usd": st.get("fullyDilutedMarketCap") or None,
+            "circulating_supply": st.get("circulatingSupply") or None,
+            "total_supply": st.get("totalSupply") or None,
+            "max_supply": st.get("maxSupply") or None}
+
+
+def fetch_supply(slug: str) -> dict:
+    """Circulating/total/max supply from CMC (subset of fetch_mcap), for callers
+    that only need supply."""
+    m = fetch_mcap(slug)
+    return {k: m.get(k) for k in ("circulating_supply", "total_supply", "max_supply")}
 
 
 def fetch_one(slug: str) -> dict:

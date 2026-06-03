@@ -26,6 +26,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 CACHE = HERE.parent / "cache"
 OUT = CACHE / "perp_markets"
+HIST = CACHE / "perp_history"   # accumulated OI + funding time series per token
 UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 HOURS_PER_YEAR = 24 * 365  # 8760
 
@@ -209,13 +210,17 @@ def _mexc(sym):
             "interval_h": ih, "vol24h_usd": _f(r.get("amount24"))}
 
 
+# VENUE ALLOWLIST (see perps_correlation/CLAUDE.md): only Binance / OKX / Bybit /
+# KuCoin / Bitget / Gate are tracked. BingX & MEXC (and BitMart/HTX/LBank/XT) are
+# excluded by design — their adapters (_bingx/_mexc/_bulk_mexc) remain defined for
+# reference but are NOT wired into any registry below.
 # Single-symbol adapters used by the CLI single-token path (and as the per-symbol
 # venues in the all-token path, which have no bulk endpoint).
 SINGLE = [("Binance", _binance), ("OKX", _okx), ("Bybit", _bybit), ("KuCoin", _kucoin),
-          ("Gate", _gate), ("Bitget", _bitget), ("BingX", _bingx), ("MEXC", _mexc)]
+          ("Gate", _gate), ("Bitget", _bitget)]
 # Venues without a bulk endpoint — always queried per symbol.
-PER_SYMBOL = [("Binance", _binance), ("OKX", _okx), ("BingX", _bingx)]
-BULK_VENUES = ("Bybit", "KuCoin", "Gate", "Bitget", "MEXC")
+PER_SYMBOL = [("Binance", _binance), ("OKX", _okx)]
+BULK_VENUES = ("Bybit", "KuCoin", "Gate", "Bitget")
 
 
 # ── bulk loaders: one (or few) calls return ALL symbols; key by base symbol ───
@@ -366,7 +371,7 @@ def fetch_token(symbol: str, spot_price, bulk_maps=None) -> dict:
                 raw.append((name, d))
     else:
         for name, fn in [("Bybit", _bybit), ("KuCoin", _kucoin), ("Gate", _gate),
-                         ("Bitget", _bitget), ("MEXC", _mexc)]:
+                         ("Bitget", _bitget)]:
             try:
                 d = fn(sym)
             except Exception:
@@ -395,8 +400,7 @@ CG_DERIV = "https://api.coingecko.com/api/v3/derivatives?include_tickers=all"
 # CoinGecko market name -> our venue label (only the venues we track).
 CG_MARKET = {"Binance (Futures)": "Binance", "OKX (Futures)": "OKX",
              "Bybit (Futures)": "Bybit", "KuCoin Futures": "KuCoin",
-             "Gate (Futures)": "Gate", "Bitget Futures": "Bitget",
-             "BingX (Futures)": "BingX", "MEXC (Futures)": "MEXC"}
+             "Gate (Futures)": "Gate", "Bitget Futures": "Bitget"}
 
 
 def _cg_interval_map(wanted):
@@ -454,7 +458,7 @@ def fetch_all(tokens) -> dict:
     parallel across tokens. ~120 calls/run vs ~600 for naive per-symbol."""
     wanted = {s.upper() for s, _ in tokens}
     bulk_maps = {"Bybit": _bulk_bybit(), "KuCoin": _bulk_kucoin(), "Gate": _bulk_gate(),
-                 "Bitget": _bulk_bitget(), "MEXC": _bulk_mexc(wanted)}
+                 "Bitget": _bulk_bitget()}
     out = {}
     from concurrent.futures import ThreadPoolExecutor
     with ThreadPoolExecutor(max_workers=8) as ex:
@@ -465,6 +469,39 @@ def fetch_all(tokens) -> dict:
             except Exception:
                 out[sym] = None
     return out
+
+
+def _append_history(res) -> None:
+    """Append an OI + OI-weighted-funding snapshot to cache/perp_history/<SYM>.json
+    so the Scam Watchlist can plot how each token's perp OI and funding rate evolve
+    over time ("document them after they pass"). Points within 6h of the previous
+    one collapse, so the ~20-min cron caps the series at ~4 points/day rather than
+    bloating it. Only call this when the perp snapshot was actually accepted."""
+    if not res:
+        return
+    sym = res["symbol"]
+    venues = res.get("venues") or []
+    total = res.get("total_oi_usd") or 0.0
+    num = sum(v["funding"] * v["oi_usd"] for v in venues
+              if v.get("funding") is not None and v.get("oi_usd"))
+    den = sum(v["oi_usd"] for v in venues
+              if v.get("funding") is not None and v.get("oi_usd"))
+    t = res.get("fetched_at") or int(time.time())
+    pt = {"t": t, "total_oi_usd": total, "funding_avg": (num / den) if den else None}
+    HIST.mkdir(parents=True, exist_ok=True)
+    p = HIST / f"{sym}.json"
+    series = []
+    if p.exists():
+        try:
+            series = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            series = []
+    if series and (t - (series[-1].get("t") or 0)) < 6 * 3600:
+        series[-1] = pt           # collapse sub-6h points
+    else:
+        series.append(pt)
+    series = series[-1500:]       # ~1y at 4/day
+    p.write_text(json.dumps(series), encoding="utf-8")
 
 
 def _print(res):
@@ -493,6 +530,7 @@ def main(argv):
         res = (fetch_token(sym, spot) if direct
                else fetch_all_cg([(sym, spot)])[sym])
         (OUT / f"{sym}.json").write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+        _append_history(res)
         _print(res)
         return 0
     # refresh all scam-watchlist tokens
@@ -524,6 +562,7 @@ def main(argv):
                       f"${(prev.get('total_oi_usd') or 0)/1e6:.0f}M) — kept cached")
                 continue
         path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
+        _append_history(res)
         print(f"{sym:9} OI ${res['total_oi_usd']/1e6:8.2f}M  {res['n_venues']} venues")
     return 0
 

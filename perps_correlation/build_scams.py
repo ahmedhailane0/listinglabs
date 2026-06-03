@@ -337,12 +337,47 @@ def _reaction_block(rec) -> str:
 
 
 PERP = HERE.parent / "cache" / "perp_markets"
+PERP_HIST = HERE.parent / "cache" / "perp_history"
 HOLDERS = HERE.parent / "cache" / "scam_holders"
+
+# Venue allowlist (see CLAUDE.md). Cached perp snapshots may still contain
+# dropped venues (BingX/MEXC) until re-fetched, so the render filters to this set
+# and recomputes the total + shares from the survivors.
+ALLOWED_PERP_VENUES = {"Binance", "OKX", "Bybit", "KuCoin", "Bitget", "Gate"}
+
+# Holder-address explorers per chain (token explorers live in EXPLORERS above; a
+# holder is a plain address, so the path differs: /address/ not /token/).
+ADDR_EXPLORERS = {
+    "ethereum": "https://etherscan.io/address/",
+    "binance-smart-chain": "https://bscscan.com/address/",
+    "base": "https://basescan.org/address/",
+    "polygon-pos": "https://polygonscan.com/address/",
+    "arbitrum-one": "https://arbiscan.io/address/",
+    "optimistic-ethereum": "https://optimistic.etherscan.io/address/",
+    "avalanche": "https://snowtrace.io/address/",
+    "solana": "https://solscan.io/account/",
+}
 
 
 def _load_perp(sym):
     p = PERP / f"{sym.upper()}.json"
-    return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+    perp = json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+    return _allowed_perp(perp)
+
+
+def _allowed_perp(perp):
+    """Filter a perp snapshot to ALLOWED_PERP_VENUES and recompute total OI +
+    per-venue share from the survivors, so dropped venues vanish from cached files
+    immediately (no re-fetch needed) and the shares still sum to 100%."""
+    if not perp:
+        return perp
+    venues = [v for v in (perp.get("venues") or []) if v.get("venue") in ALLOWED_PERP_VENUES]
+    total = sum(v["oi_usd"] for v in venues) or 0.0
+    for v in venues:
+        v["oi_share_pct"] = (v["oi_usd"] / total * 100) if total else None
+    out = dict(perp)
+    out.update(venues=venues, total_oi_usd=total, n_venues=len(venues))
+    return out
 
 
 def _load_holders(sym):
@@ -422,14 +457,26 @@ def _perp_table(perp) -> str:
     return f'<table class="perp"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table>'
 
 
+def _holder_tag(hd) -> str:
+    """A small tag chip for a holder row: the GoPlus tag (CEX / 'Null Address'),
+    else a generic 'contract' marker for non-EOA holders."""
+    tag = hd.get("tag")
+    if tag:
+        return f'<span class="htag">{html.escape(tag)}</span>'
+    if hd.get("is_contract"):
+        return '<span class="htag">contract</span>'
+    return ""
+
+
 def _holders_block(rec) -> str:
     h = _load_holders(rec["symbol"])
     if not h or not h.get("available"):
         chain = html.escape(rec.get("chain") or "this chain")
         return ('<div class="missing">Top-holder data unavailable on '
-                f'{chain} — the keyless source covers Ethereum only.</div>')
+                f'{chain} — no keyless on-chain holder source covers this chain.</div>')
     tot = rec.get("total_supply") or rec.get("max_supply")
     px = rec.get("price")
+    base = ADDR_EXPLORERS.get(rec.get("chain") or "")
     rows = []
     for hd in h["holders"]:
         share = hd["share"]
@@ -437,9 +484,10 @@ def _holders_block(rec) -> str:
         usd = (toks * px) if (toks and px) else None
         addr = hd.get("address") or ""
         short = f"{addr[:8]}…{addr[-6:]}" if len(addr) > 16 else addr
-        link = (f'<a href="https://etherscan.io/address/{html.escape(addr)}" '
-                f'target="_blank" rel="noopener" class="mono">{html.escape(short)}</a>')
-        rows.append(f'<tr><td>{hd["rank"]}</td><td>{link}</td>'
+        link = (f'<a href="{html.escape(base + addr)}" target="_blank" rel="noopener" '
+                f'class="mono">{html.escape(short)}</a>' if (base and addr)
+                else f'<span class="mono">{html.escape(short)}</span>')
+        rows.append(f'<tr><td>{hd["rank"]}</td><td>{link} {_holder_tag(hd)}</td>'
                     f'<td>{_compact(toks)}</td><td>{_usd(usd)}</td>'
                     f'<td>{share:.2f}%</td></tr>')
     top10, retail = h["top10_share"], h["retail_share"]
@@ -447,11 +495,169 @@ def _holders_block(rec) -> str:
                 top10 >= 95)
     rb = _badge(f"Retail: {retail:.1f}% · {'⚠ <1% (negligible)' if retail < 1 else '≥1%'}",
                 retail < 1)
+    hc = h.get("holder_count")
+    hc_badge = (f' <span class="badge" style="color:#42505e;background:#eef2f6">'
+                f'{hc:,} holders</span>' if hc else "")
+    src = html.escape(h.get("source") or "")
     head = "<tr><th>#</th><th>Holder</th><th>Tokens</th><th>USD</th><th>Share</th></tr>"
     note = ('<p class="note">Retail = 100% − top-10 holders. Top-10 includes any '
-            'CEX/contract/burn wallets (simple definition).</p>')
-    return (f'<div class="badges">{tb} {rb}</div>'
-            f'<table class="holders"><thead>{head}</thead><tbody>{"".join(rows)}</tbody></table>{note}')
+            f'CEX/contract/burn wallets (simple definition). Source: {src}.</p>')
+    donut = _donut_holders(rec, h)
+    table = (f'<div class="badges">{tb} {rb}{hc_badge}</div>'
+             f'<table class="holders"><thead>{head}</thead>'
+             f'<tbody>{"".join(rows)}</tbody></table>{note}')
+    return f'<div class="hol-grid">{table}{donut}</div>' if donut else table
+
+
+# ── time-series + donut charts ────────────────────────────────────────────────
+
+_CHART_FONT = dict(family="Segoe UI, -apple-system, Roboto, sans-serif", size=12, color="#1d2733")
+# slice palette (holders/venues/supply): muted, report-consistent.
+_DONUT_COLORS = ["#1f4e79", "#2e6da4", "#5b9bd5", "#8ab6e0", "#9c6ade", "#d98c5f",
+                 "#e0b35f", "#6aa84f", "#c0392b", "#7f8c9a", "#c5ccd3"]
+
+
+def _oi_funding_history_chart(sym: str) -> str:
+    """Dual-axis time series of total perp OI (left) and OI-weighted funding rate
+    (right), accumulated by fetch_perp_markets into cache/perp_history. Sparse at
+    first; fills in as the cron logs snapshots."""
+    p = PERP_HIST / f"{sym.upper()}.json"
+    if not p.exists():
+        return ""
+    series = [pt for pt in json.loads(p.read_text(encoding="utf-8")) if pt.get("total_oi_usd")]
+    if len(series) < 2:
+        return ('<div class="missing">OI &amp; funding history builds over time — '
+                'a point is logged each refresh; check back after a few cycles.</div>')
+    import datetime as dt
+    xs = [dt.datetime.fromtimestamp(pt["t"], dt.timezone.utc) for pt in series]
+    oi = [pt["total_oi_usd"] for pt in series]
+    fund = [(pt["funding_avg"] * 100 if pt.get("funding_avg") is not None else None)
+            for pt in series]
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=xs, y=oi, name="Total OI", mode="lines", yaxis="y",
+        line=dict(color="#1f4e79", width=2), fill="tozeroy", fillcolor="rgba(31,78,121,0.07)",
+        hovertemplate="%{x|%b %d %H:%M}  OI <b>$%{y:,.0f}</b><extra></extra>"))
+    fig.add_trace(go.Scatter(x=xs, y=fund, name="Funding (OI-wtd)", mode="lines", yaxis="y2",
+        line=dict(color="#c0392b", width=2), connectgaps=True,
+        hovertemplate="%{x|%b %d %H:%M}  funding <b>%{y:.4f}%</b><extra></extra>"))
+    fig.update_layout(
+        height=320, margin=dict(l=62, r=58, t=12, b=36), font=_CHART_FONT,
+        paper_bgcolor="white", plot_bgcolor="white", template="plotly_white",
+        xaxis=dict(showgrid=False, showline=True, linecolor="#e1e7ee", ticks="outside",
+                   tickcolor="#e1e7ee", tickfont=dict(size=11)),
+        yaxis=dict(title=dict(text="OI (USD)", font=dict(size=11, color="#6b7785")),
+                   tickprefix="$", gridcolor="#eef2f6", zeroline=False, side="left",
+                   tickfont=dict(size=11)),
+        yaxis2=dict(title=dict(text="Funding %", font=dict(size=11, color="#c0392b")),
+                    overlaying="y", side="right", ticksuffix="%", showgrid=False,
+                    zeroline=True, zerolinecolor="#f0d7d3", tickfont=dict(size=11)),
+        hovermode="x unified", dragmode="pan",
+        legend=dict(orientation="h", y=1.14, x=0, font=dict(size=11)))
+    return fig.to_html(full_html=False, include_plotlyjs=False,
+                       div_id=f"oihist-{sym.lower()}", config={"displayModeBar": False})
+
+
+def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -> str:
+    """A single donut (go.Pie, hole=0.58). usd=True formats hover/values as $."""
+    hover = "%{label}<br><b>%{percent}</b>" + ("<br>$%{value:,.0f}" if usd else "") + "<extra></extra>"
+    fig = go.Figure(go.Pie(
+        labels=labels, values=values, hole=0.58, sort=False, direction="clockwise",
+        marker=dict(colors=colors or _DONUT_COLORS, line=dict(color="white", width=1.5)),
+        textposition="inside", textinfo="percent", insidetextorientation="horizontal",
+        hovertemplate=hover))
+    fig.update_layout(
+        height=300, margin=dict(l=8, r=8, t=34, b=8), font=_CHART_FONT,
+        title=dict(text=title, x=0.5, xanchor="center", font=dict(size=13, color="#1d2733")),
+        paper_bgcolor="white", showlegend=True,
+        legend=dict(orientation="v", x=1.0, xanchor="right", y=0.5, font=dict(size=10.5)),
+        annotations=([dict(text=center, x=0.5, y=0.5, showarrow=False,
+                           font=dict(size=12.5, color="#42505e"))] if center else []))
+    return fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
+                       config={"displayModeBar": False})
+
+
+def _donut_holders(rec, h) -> str:
+    """Top-10 holders + a 'Retail (rest)' slice."""
+    holders = h.get("holders") or []
+    if not holders:
+        return ""
+    labels, values = [], []
+    for hd in holders:
+        tag = hd.get("tag")
+        addr = hd.get("address") or ""
+        lbl = tag if tag else (f"{addr[:6]}…{addr[-4:]}" if len(addr) > 12 else addr or f"#{hd['rank']}")
+        labels.append(f"#{hd['rank']} {lbl}")
+        values.append(hd["share"])
+    retail = h.get("retail_share")
+    if retail and retail > 0:
+        labels.append("Retail (rest)")
+        values.append(retail)
+    top10 = h.get("top10_share")
+    center = f"Top-10<br>{top10:.0f}%" if top10 is not None else None
+    return _donut(f"dh-{rec['symbol'].lower()}", labels, values,
+                  "Holder distribution", center=center)
+
+
+def _donut_oi(rec, perp) -> str:
+    """Per-venue OI share (allowlisted venues only — already filtered)."""
+    venues = (perp or {}).get("venues") or []
+    venues = [v for v in venues if v.get("oi_usd")]
+    if len(venues) < 1:
+        return ""
+    labels = [v["venue"] for v in venues]
+    values = [v["oi_usd"] for v in venues]
+    total = perp.get("total_oi_usd") or sum(values)
+    return _donut(f"doi-{rec['symbol'].lower()}", labels, values,
+                  "Open interest by exchange", center=f"OI<br>{_usd(total)}", usd=True)
+
+
+def _donut_supply(rec) -> str:
+    """Circulating vs locked/not-yet-unlocked (= total − circulating)."""
+    circ = rec.get("circ_supply")
+    tot = rec.get("total_supply") or rec.get("max_supply")
+    if not (circ and tot and tot > circ):
+        return ""
+    locked = tot - circ
+    ratio = circ / tot * 100
+    return _donut(f"dsup-{rec['symbol'].lower()}", ["Circulating", "Locked / not unlocked"],
+                  [circ, locked], "Supply: circulating vs locked",
+                  colors=["#1f4e79", "#c5ccd3"], center=f"Circ<br>{ratio:.0f}%")
+
+
+def _donut_fdvmc(rec) -> str:
+    """Market cap (realized) vs diluted remainder (FDV − MC)."""
+    mc = rec.get("mcap") or rec.get("csv_mc")
+    fdv = rec.get("fdv") or rec.get("csv_fdv")
+    if not (mc and fdv and fdv > mc):
+        return ""
+    rem = fdv - mc
+    return _donut(f"dfdv-{rec['symbol'].lower()}", ["Market cap", "Diluted remainder"],
+                  [mc, rem], "FDV vs market cap",
+                  colors=["#2e6da4", "#e0b35f"], center=f"MC<br>{_usd(mc)}", usd=True)
+
+
+def _perp_extras(rec, perp, sym) -> str:
+    """OI-by-exchange donut + the OI/funding history time-series, shown under the
+    perp table. Each piece self-skips when it has no data."""
+    parts = []
+    oi_donut = _donut_oi(rec, perp)
+    if oi_donut:
+        parts.append(f'<div class="donut-grid">{oi_donut}</div>')
+    hist = _oi_funding_history_chart(sym)
+    if hist:
+        parts.append('<h4 class="hist-h">OI &amp; funding over time '
+                     '<span class="asof">accumulated per refresh</span></h4>' + hist)
+    return "".join(parts)
+
+
+def _supply_valuation_block(rec) -> str:
+    """Side-by-side supply + valuation donuts (skips whichever lacks data)."""
+    donuts = [d for d in (_donut_supply(rec), _donut_fdvmc(rec)) if d]
+    if not donuts:
+        return ""
+    return (f'<section class="card span"><h3>Supply &amp; valuation '
+            f'<span class="asof">circulation ratio &amp; dilution</span></h3>'
+            f'<div class="donut-grid">{"".join(donuts)}</div></section>')
 
 
 def _detail(rec) -> str:
@@ -476,7 +682,6 @@ def _detail(rec) -> str:
     warn = ("" if rec.get("resolved", True) else
             '<div class="cat" style="background:#fdecea;color:#c0392b">⚠ identity auto-matched by symbol — verify</div>')
     memo = html.escape(rec.get("memo_en") or "—")
-    days = html.escape(rec.get("days") or "—")
     mc, fdv = rec.get("mcap") or rec.get("csv_mc"), rec.get("fdv") or rec.get("csv_fdv")
     fdvmc = f"<dt>FDV / MC</dt><dd>{fdv / mc:.1f}×</dd>" if (mc and fdv) else ""
     body = f"""
@@ -497,7 +702,6 @@ def _detail(rec) -> str:
       {_supply_dl(rec)}
       <dt>Open interest</dt><dd>{oi_str}</dd>
       <dt>Funding</dt><dd>{fund_amt}{fund_inv}</dd>
-      <dt>Days &gt;$1B</dt><dd>{days}</dd>
       <dt>Memo</dt><dd class="note">{memo}</dd>
     </dl>
     {_reaction_block(rec)}
@@ -507,7 +711,9 @@ def _detail(rec) -> str:
 <section class="card span">
   <h3>Perp markets <span class="asof">open interest &amp; funding · {perp_asof}</span></h3>
   {_perp_table(perp)}
+  {_perp_extras(rec, perp, sym)}
 </section>
+{_supply_valuation_block(rec)}
 <section class="card span">
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
   {_holders_block(rec)}
@@ -590,6 +796,16 @@ table.perp tr.allrow td{font-weight:700;background:#f7f9fb}
 table.holders td.mono,table.holders a.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 section.card.span .missing{color:#8a96a3;font-style:italic;padding:8px 0}
 section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
+/* holder rows: a small tag chip for CEX/contract/burn wallets */
+.htag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9px;font-size:11px;
+  font-weight:600;color:#6b7785;background:#eef2f6;vertical-align:middle}
+/* holders table + donut side by side (stacks on narrow screens) */
+.hol-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:760px){.hol-grid{grid-template-columns:1fr}}
+/* donut grids: 1–2 donuts per row, responsive */
+.donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:8px;margin-top:8px}
+.hist-h{margin:18px 0 4px;font-size:14px;color:#1d2733}
+.hist-h .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:6px}
 """
 
 JS = """

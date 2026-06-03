@@ -37,6 +37,19 @@ python build_all.py --no-zip   # skip the deploy zip
 cron runs it *before* `build_all.py` to extend each token's candles to now;
 locally run `python refresh_klines.py [tokens…]` when you want fresh charts.
 
+**Scam Watchlist freshness + history** (also network, also outside `build_all.py`):
+the cron now runs `refresh_scam_prices.py` (keyless CoinGecko price/series + CMC
+authoritative supply — fixes the stale charts and the bogus CoinGecko supply) and
+`fetch_holders.py` (keyless **GoPlus** multichain top-holders — BNB Chain / Base /
+ETH / …; non-EVM chains degrade to "unavailable") before the build. The per-token
+**OI + funding history chart** reads `cache/perp_history/<SYM>.json`, which
+`fetch_perp_markets.py` *appends* a live point to each run (collapsing sub-6h
+points). The trailing ~30 days are seeded by **`backfill_perp_history.py`**, which
+is **LOCAL-ONLY** (Binance/Bybit history endpoints 451 the CI IP, like the klines
+gap-fill): run `python backfill_perp_history.py` locally and commit
+`cache/perp_history/`; CI only appends forward. It anchors on Binance USD OI
+(~30d) + Bybit OI (valued at Binance daily close), OI-weighting funding.
+
 The site is static HTML/CSS + Plotly. `Listinglabs.zip` is the deploy artifact
 (historically uploaded to Netlify). There is **no** separate `report/` / `share/`
 copy anymore — builders write straight into `Listinglabs/`. Don't recreate the

@@ -188,6 +188,7 @@ def main():
                 "max_supply": md.get("max_supply"),
                 "ath_price": (md.get("ath") or {}).get("usd"),
             })
+            rec["supply_source"] = "coingecko"
             # circulation ratio = circulating / total (fall back to max supply)
             circ = md.get("circulating_supply")
             denom = md.get("total_supply") or md.get("max_supply")
@@ -206,7 +207,7 @@ def main():
         else:
             rec["name"] = sym
 
-        # CMC slug + OI
+        # CMC slug + OI + supply
         slug = cmc_slug_for(sym, cmc_list)
         rec["cmc_slug"] = slug
         if slug:
@@ -216,6 +217,26 @@ def main():
             mcv = mcm.get("mcap_now_usd")
             rec["oi_usd"] = amt
             rec["oi_pct_mcap"] = (amt / mcv * 100) if (amt and mcv) else None
+            # Prefer CMC supply — CoinGecko sometimes returns placeholder/wrong
+            # values (total == circulating, or a bare "100"). When CMC has a
+            # number, it wins; the supply-derived ratios are recomputed from it.
+            cmc_circ = mcm.get("circulating_supply")
+            cmc_tot = mcm.get("total_supply")
+            cmc_max = mcm.get("max_supply")
+            if cmc_circ is not None:
+                rec["circ_supply"] = cmc_circ
+            if cmc_tot is not None:
+                rec["total_supply"] = cmc_tot
+            if cmc_max is not None:
+                rec["max_supply"] = cmc_max
+            rec["supply_source"] = "coinmarketcap" if (cmc_circ or cmc_tot) else rec.get("supply_source")
+            # recompute circulation ratio (circ / total, fall back to max) and
+            # peak market cap (ATH price × circ supply) from the trusted supply
+            circ2 = rec.get("circ_supply")
+            denom2 = rec.get("total_supply") or rec.get("max_supply")
+            rec["circ_ratio"] = (circ2 / denom2) if (circ2 and denom2) else rec.get("circ_ratio")
+            athp2 = rec.get("ath_price")
+            rec["peak_mcap"] = (athp2 * circ2) if (athp2 and circ2) else rec.get("peak_mcap")
 
         # funding (RootData)
         rec["funding"] = {"amount": None, "investors": []}
@@ -241,7 +262,8 @@ def main():
         for k in ("price", "mcap", "fdv", "vol", "chain", "contract", "cg_id",
                   "cmc_slug", "oi_usd", "oi_pct_mcap", "image", "name",
                   "website", "twitter", "circ_supply", "total_supply",
-                  "max_supply", "ath_price", "circ_ratio", "peak_mcap"):
+                  "max_supply", "ath_price", "circ_ratio", "peak_mcap",
+                  "supply_source"):
             if rec.get(k) in (None, "") and prev.get(k) not in (None, ""):
                 rec[k] = prev[k]
         # keep prior funding if this run found none
