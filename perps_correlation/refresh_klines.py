@@ -32,9 +32,48 @@ HERE = Path(__file__).parent
 CACHE = HERE.parent / "cache"
 LISTINGS = HERE / "listings"
 
+# Persistent "dead pool" tracker: tokens whose on-chain pool is gone (and have no
+# Binance-spot fallback) return nothing every run. Without this they'd sit at the
+# front of a most-stale-first queue forever and burn the per-run budget. We count
+# consecutive empty runs; once >= DEAD_AFTER a token sinks to the BACK of the older
+# tail (not excluded — it still gets a free re-probe whenever live tokens don't fill
+# the tail budget, so a revived pool auto-rejoins the normal cycle).
+SKIP_STATE = CACHE / "refresh_skip.json"
+DEAD_AFTER = 3
+
 
 def _cache_path(token: str) -> Path:
     return CACHE / f"{token.lower()}_klines_5m_alpha.json"
+
+
+def _load_skip() -> dict:
+    try:
+        return json.loads(SKIP_STATE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save_skip(state: dict) -> None:
+    try:
+        SKIP_STATE.write_text(json.dumps(state, ensure_ascii=False, indent=0),
+                              encoding="utf-8")
+    except Exception:
+        pass
+
+
+def _listing_ms(cfg: dict) -> int:
+    """Epoch-ms of a token's listing, used to order refreshes newest-first. Earliest
+    Binance-Alpha event if present, else the launch window start. 0 if unknown (sorts
+    oldest)."""
+    cands = [e.get("iso_time_utc") for e in (cfg.get("events") or [])
+             if "alpha" in (e.get("exchange") or "").lower() and e.get("iso_time_utc")]
+    iso = min(cands) if cands else cfg.get("window_start_utc")
+    if not iso:
+        return 0
+    try:
+        return int(parse_iso(iso).timestamp() * 1000)
+    except Exception:
+        return 0
 
 
 def _merge(old: list, new: list) -> list:
@@ -76,12 +115,14 @@ def _fetch_binance_spot(symbol: str, start: datetime, end: datetime) -> list:
     return [out[k] for k in sorted(out)]
 
 
-def refresh_one(cfg: dict) -> str:
+def refresh_one(cfg: dict) -> tuple[str, str]:
+    """Returns (message, outcome). outcome is "ok" if the pool produced candles, or
+    "dead" if it's gone with no fallback — the caller uses that to age the skip state."""
     token = cfg["token"]
     pool = cfg.get("gecko_pool")
     chain = cfg.get("chain")
     if not pool or not chain:
-        return f"{token}: no pool/chain — skipped"
+        return f"{token}: no pool/chain — skipped", "dead"
 
     w_start = parse_iso(cfg["window_start_utc"])
     now = datetime.now(timezone.utc)
@@ -127,11 +168,12 @@ def refresh_one(cfg: dict) -> str:
             fresh = bn
             fb = " [binance-spot fallback]"
         elif gt_failed:
-            return f"{token}: on-chain gone + no Binance spot — kept {len(old)} cached"
+            return (f"{token}: on-chain gone + no Binance spot — kept {len(old)} cached",
+                    "dead")
 
     merged = _merge(old, fresh)
     if not merged:
-        return f"{token}: no candles — skipped"
+        return f"{token}: no candles — skipped", "dead"
 
     label = src_label + (" + binance-spot" if fb else "")
     path.write_text(json.dumps({"source": label, "rows": merged}, ensure_ascii=False),
@@ -139,7 +181,7 @@ def refresh_one(cfg: dict) -> str:
     last = datetime.fromtimestamp(merged[-1][0] / 1000, tz=timezone.utc)
     lag_h = (now - last).total_seconds() / 3600
     return (f"{token}: {len(old)}->{len(merged)} candles "
-            f"(+{len(merged) - len(old)}); latest {lag_h:.1f}h old{fb}")
+            f"(+{len(merged) - len(old)}); latest {lag_h:.1f}h old{fb}", "ok")
 
 
 def _last_candle_ms(token: str) -> int:
@@ -154,20 +196,31 @@ def _last_candle_ms(token: str) -> int:
         return 0
 
 
-def _process(p: Path) -> str:
+def _process(p: Path) -> tuple[str, str, str]:
+    """Returns (token_key, message, outcome) so the caller can age the skip state."""
+    key = p.stem.lower()
     if not p.exists():
-        return f"{p.name}: not found"
+        return key, f"{p.name}: not found", "dead"
     try:
         cfg = json.loads(p.read_text(encoding="utf-8"))
     except Exception as e:
-        return f"{p.name}: bad JSON ({e})"
-    return refresh_one(cfg)
+        return key, f"{p.name}: bad JSON ({e})", "dead"
+    msg, outcome = refresh_one(cfg)
+    return key, msg, outcome
+
+
+def _listing_ms_for(p: Path) -> int:
+    try:
+        return _listing_ms(json.loads(p.read_text(encoding="utf-8")))
+    except Exception:
+        return 0
 
 
 def main(argv: list[str]) -> int:
     # Pull "--limit N" / "--workers N" out of argv; the rest are token names.
     limit = int(os.environ.get("REFRESH_LIMIT") or 0)
     workers = int(os.environ.get("REFRESH_WORKERS") or 6)
+    newest_k = int(os.environ.get("REFRESH_NEWEST") or 14)
     tokens = []
     it = iter(argv)
     for a in it:
@@ -175,22 +228,36 @@ def main(argv: list[str]) -> int:
             limit = int(next(it, "0"))
         elif a == "--workers":
             workers = int(next(it, "6"))
+        elif a == "--newest":
+            newest_k = int(next(it, "14"))
         else:
             tokens.append(a)
 
+    skip = _load_skip()
+
     if tokens:
         cfgs = [LISTINGS / f"{t.lower()}.json" for t in tokens]
+    elif limit <= 0:
+        # Local full run: do everything, newest-listed first (nice, predictable logs).
+        cfgs = sorted(LISTINGS.glob("*.json"), key=_listing_ms_for, reverse=True)
     else:
-        cfgs = sorted(LISTINGS.glob("*.json"))
-        # Most-stale first: tokens whose newest cached candle is oldest (incl. those
-        # still at only their launch window, or with no cache) go first. With a cap,
-        # this makes successive runs round-robin fairly across all tokens.
-        cfgs.sort(key=lambda p: _last_candle_ms(p.stem))
-
-    # A cap keeps a rate-limited CI run bounded; 0/unset = all (use locally to seed).
-    if limit > 0:
-        cfgs = cfgs[:limit]
-        print(f"refresh_klines: limited to {limit} most-stale token(s)")
+        # WEIGHTED priority under a per-run cap (CI):
+        #   • the newest `newest_k` listings (QAIT, CTR, SLX, NEX…) refresh EVERY run
+        #     so the actively-watched charts stay current;
+        #   • the remaining slots go to the most-stale of the OLDER tokens, so the long
+        #     tail still cycles — but tokens whose pool keeps coming back empty
+        #     (skip >= DEAD_AFTER) sink to the back instead of burning the budget.
+        all_cfgs = sorted(LISTINGS.glob("*.json"), key=_listing_ms_for, reverse=True)
+        k = min(newest_k, limit)
+        newest = all_cfgs[:k]
+        tail = sorted(
+            all_cfgs[k:],
+            key=lambda p: (min(skip.get(p.stem.lower(), 0), DEAD_AFTER),
+                           _last_candle_ms(p.stem)),
+        )
+        cfgs = newest + tail[: max(0, limit - len(newest))]
+        print(f"refresh_klines: {len(newest)} newest + "
+              f"{len(cfgs) - len(newest)} most-stale older (cap {limit})")
 
     # Parallel across tokens: each hits a DIFFERENT GeckoTerminal pool endpoint and
     # writes its OWN cache file, so they're independent (no shared state, no write
@@ -198,12 +265,21 @@ def main(argv: list[str]) -> int:
     # rate-limits per IP, so keep `workers` modest in CI (the per-page 429 backoff in
     # fetch_geckoterminal absorbs bursts); locally the IP isn't throttled so more
     # workers = much faster seeding.
+    def _age(key: str, outcome: str) -> None:
+        # "ok" revives a token (clear its dead counter); "dead" ages it toward the back.
+        if outcome == "ok":
+            skip.pop(key, None)
+        else:
+            skip[key] = min(skip.get(key, 0) + 1, DEAD_AFTER)
+
     workers = max(1, min(workers, len(cfgs) or 1))
     ok = 0
     print(f"refresh_klines: {len(cfgs)} token(s), {workers} worker(s)", flush=True)
     if workers == 1:
         for p in cfgs:
-            print(f"  {_process(p)}", flush=True)
+            key, msg, outcome = _process(p)
+            print(f"  {msg}", flush=True)
+            _age(key, outcome)
             ok += 1
     else:
         from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -211,10 +287,13 @@ def main(argv: list[str]) -> int:
             futs = {ex.submit(_process, p): p for p in cfgs}
             for fut in as_completed(futs):
                 try:
-                    print(f"  {fut.result()}", flush=True)
+                    key, msg, outcome = fut.result()
+                    print(f"  {msg}", flush=True)
+                    _age(key, outcome)
                 except Exception as e:
                     print(f"  {futs[fut].name}: worker error {e}", flush=True)
                 ok += 1
+    _save_skip(skip)
     print(f"refresh_klines: processed {ok} token(s)")
     return 0
 
