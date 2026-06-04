@@ -50,8 +50,12 @@ gap-fill): run `python backfill_perp_history.py` locally and commit
 `cache/perp_history/`; CI only appends forward. It anchors on Binance USD OI
 (~30d) + Bybit OI (valued at Binance daily close), OI-weighting funding.
 
-The site is static HTML/CSS + JS charts (TradingView Lightweight Charts for the
-reactions report; Plotly for the Scam Watchlist). `Listinglabs.zip` is the deploy artifact
+The site is static HTML/CSS + JS charts. **All price/time trading charts use
+TradingView Lightweight Charts** (the reactions report charts + the Scam Watchlist
+price chart, via `interactive_chart.timeseries_html`). The Scam Watchlist keeps
+Plotly only for its non-time-series visuals — the OI/funding-over-time chart and
+the donut/pie charts (holder distribution, OI-by-exchange, supply, FDV/MC) — so
+its detail pages load both libs. `Listinglabs.zip` is the deploy artifact
 (historically uploaded to Netlify). There is **no** separate `report/` / `share/`
 copy anymore — builders write straight into `Listinglabs/`. Don't recreate the
 old split (`build_share.py`, top-level `report/`, `share/` are gone on purpose).

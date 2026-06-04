@@ -298,6 +298,130 @@ function mount(id, cfg){
 """
 
 
+def timeseries_html(div_id: str, series: list[dict], height: int = 520) -> str:
+    """Generic Lightweight Charts time-series embed, reused by other reports for
+    their price / value-over-time *trading* charts (e.g. the Scam Watchlist price
+    chart and OI+funding history). Renders one or more line/area series, optionally
+    on dual (left/right) price scales, with a crosshair tooltip and auto-resize.
+    No markers / timeframe switcher — that's the listing-reaction chart's job above.
+
+    series: list of dicts, each:
+      {"data": [[t_seconds, value], ...],   # ascending; gaps allowed (omit points)
+       "kind": "area" | "line",
+       "color": "#1f4e79",
+       "scale": "right" | "left",           # which price axis
+       "name": "Price",                      # tooltip label
+       "fmt":  {"kind": "usd"|"usdCompact"|"percent"|"price", "dec": 4},
+       "fill": True}                         # area only
+    """
+    cfg_js = json.dumps({"height": height, "series": series}, separators=(",", ":"))
+    return (
+        f'<div class="tvchart-wrap" style="height:{height}px">'
+        f'<div id="{div_id}" class="tvchart"></div>'
+        f'<div class="tv-tip" id="{div_id}-tip"></div>'
+        f'</div>'
+        f'<script>(function(){{var CFG={cfg_js};{_TS_JS}'
+        f'\nmountTS("{div_id}",CFG);}})();</script>'
+    )
+
+
+# Generic time-series mount (no markers). Shared by reports that just need a robust
+# price/value-vs-time chart on the same engine as the listing charts.
+_TS_JS = r"""
+function mountTS(id, cfg){
+  var el = document.getElementById(id);
+  if(!el || !window.LightweightCharts){ return; }
+  var LC = window.LightweightCharts;
+  function usdC(v){ var a=Math.abs(v);
+    if(a>=1e9) return '$'+(v/1e9).toFixed(2)+'B';
+    if(a>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+    if(a>=1e3) return '$'+(v/1e3).toFixed(1)+'K';
+    return '$'+v.toFixed(0); }
+  function fmtVal(f, v){
+    if(v===null || v===undefined) return '';
+    f = f || {kind:'price', dec:2};
+    if(f.kind==='usdCompact') return usdC(v);
+    if(f.kind==='usd') return '$'+Math.round(v).toLocaleString();
+    if(f.kind==='percent') return v.toFixed(f.dec)+'%';
+    return '$'+v.toFixed(f.dec);
+  }
+  function minMove(f){ f=f||{}; if(f.kind==='usd'||f.kind==='usdCompact') return 1;
+    return 1/Math.pow(10, (f.dec!=null?f.dec:2)); }
+
+  var usesLeft = cfg.series.some(function(s){ return s.scale==='left'; });
+  var usesRight = cfg.series.some(function(s){ return s.scale!=='left'; });
+  var chart = LC.createChart(el, {
+    width: el.clientWidth || 800,
+    height: el.clientHeight || (el.parentElement ? el.parentElement.clientHeight : cfg.height) || cfg.height,
+    layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
+              fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
+    grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
+    rightPriceScale: { visible: usesRight, borderColor:'#e1e7ee' },
+    leftPriceScale:  { visible: usesLeft,  borderColor:'#e1e7ee' },
+    timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
+    crosshair: { mode: LC.CrosshairMode.Normal,
+                 vertLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' },
+                 horzLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' } },
+    handleScale: true, handleScroll: true,
+  });
+
+  function clean(data){
+    var map = {};
+    for(var i=0;i<data.length;i++){ if(data[i][1]!==null && data[i][1]!==undefined) map[data[i][0]] = data[i][1]; }
+    return Object.keys(map).map(Number).sort(function(a,b){return a-b;})
+      .map(function(t){ return { time:t, value:map[t] }; });
+  }
+
+  var built = [];
+  cfg.series.forEach(function(s){
+    var scaleId = (s.scale==='left') ? 'left' : 'right';
+    var pf = { type:'custom', minMove:minMove(s.fmt),
+               formatter:function(p){ return fmtVal(s.fmt, p); } };
+    var ser;
+    if(s.kind==='area'){
+      ser = chart.addAreaSeries({ lineColor:s.color, lineWidth:2,
+        topColor:'rgba(31,78,121,0.18)', bottomColor:'rgba(31,78,121,0.02)',
+        priceScaleId:scaleId, priceFormat:pf, priceLineVisible:false });
+    } else {
+      ser = chart.addLineSeries({ color:s.color, lineWidth:2,
+        priceScaleId:scaleId, priceFormat:pf, priceLineVisible:false });
+    }
+    ser.setData(clean(s.data));
+    built.push({ s:ser, def:s });
+  });
+  chart.timeScale().fitContent();
+
+  // Crosshair tooltip: date + each series' formatted value.
+  var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
+  chart.subscribeCrosshairMove(function(p){
+    if(!p || !p.time || !p.point){ if(tip) tip.style.display='none'; return; }
+    var lines = [], any=false;
+    built.forEach(function(b){
+      var d = p.seriesData.get(b.s);
+      if(d && d.value!==undefined){ any=true;
+        lines.push('<span style="color:'+b.def.color+'">●</span> '+
+                   (b.def.name?b.def.name+': ':'')+'<b>'+fmtVal(b.def.fmt, d.value)+'</b>'); }
+    });
+    if(!any){ if(tip) tip.style.display='none'; return; }
+    var dt = new Date(p.time*1000).toISOString().slice(0,16).replace('T',' ');
+    if(tip){
+      tip.innerHTML = lines.join('<br>')+'<br><span style="color:#8a95a1">'+dt+' UTC</span>';
+      tip.style.display='block';
+      var x = p.point.x + 16, y = p.point.y + 12;
+      if(x > wrap.clientWidth - 150){ x = p.point.x - 150; }
+      tip.style.left = x+'px'; tip.style.top = y+'px';
+    }
+  });
+
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){ chart.applyOptions({ width: el.clientWidth }); }).observe(el);
+  } else {
+    window.addEventListener('resize', function(){ chart.applyOptions({ width: el.clientWidth }); });
+  }
+}
+"""
+
+
 def _autofit_js(div_id: str) -> str:
     """Plotly y-axis autofit glue, kept for the OTHER reports that still render with
     Plotly (e.g. build_scams.py's OI/funding history charts). The listing reaction

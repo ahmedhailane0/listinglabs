@@ -22,7 +22,7 @@ from build_listing_report import CSS as RCSS          # reuse reactions styling
 from build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
 from build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from listing_chart import fmt_usd_compact, fmt_subscript_price
-from interactive_chart import _autofit_js
+from interactive_chart import timeseries_html
 
 HERE = Path(__file__).parent
 SITE = HERE / "Listinglabs" / "scams"
@@ -84,36 +84,17 @@ def _price_chart(sym: str, name: str) -> str:
     series = json.loads(p.read_text(encoding="utf-8"))
     if len(series) < 2:
         return '<div class="missing">no price data</div>'
-    import datetime as dt
-    xs = [dt.datetime.fromtimestamp(t / 1000, dt.timezone.utc) for t, _v in series]
     ys = [v for _t, v in series]
     ref = min([v for v in ys if v > 0] or [1])
     dec = max(4, 2 - math.floor(math.log10(ref))) if ref > 0 else 4
-    pfmt = f".{dec}f"
-    fig = go.Figure(go.Scatter(
-        x=xs, y=ys, mode="lines", line=dict(color="#1f4e79", width=2),
-        fill="tozeroy", fillcolor="rgba(31,78,121,0.07)",
-        hovertemplate="%{x|%b %d %Y}  <b>$%{y:" + pfmt + "}</b><extra></extra>"))
-    fig.update_layout(
-        height=520, margin=dict(l=58, r=24, t=20, b=40),
-        font=dict(family="Segoe UI, -apple-system, Roboto, sans-serif", size=12, color="#1d2733"),
-        paper_bgcolor="white", plot_bgcolor="white", template="plotly_white",
-        xaxis=dict(rangeslider=dict(visible=False), showgrid=False, showline=True,
-                   linecolor="#e1e7ee", ticks="outside", tickcolor="#e1e7ee",
-                   tickfont=dict(size=11), showspikes=True, spikemode="across",
-                   spikethickness=1, spikedash="solid", spikecolor="#c5ccd3"),
-        yaxis=dict(title=dict(text="Price (USD)", font=dict(size=11, color="#6b7785")),
-                   tickprefix="$", tickformat=pfmt, gridcolor="#eef2f6", zeroline=False,
-                   tickfont=dict(size=11)),
-        hoverlabel=dict(bgcolor="white", bordercolor="#e1e7ee",
-                        font=dict(size=12, color="#1d2733")),
-        hovermode="x", showlegend=False, dragmode="pan")
-    div_id = f"chart-{sym.lower()}"
-    snippet = fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
-                          config={"displayModeBar": False, "scrollZoom": True, "responsive": True})
-    # Same interaction as the reactions charts: y-axis auto-fits the x-range in view
-    # on zoom/pan (shared engine), so the watchlist feels like one product.
-    return snippet + _autofit_js(div_id)
+    # Same engine as the Listing Reactions price charts: TradingView Lightweight
+    # Charts, so the price/time trading charts are consistent across the whole site.
+    # (The OI/funding history + donuts on this page stay on Plotly.)
+    points = [[int(t / 1000), v] for t, v in series]
+    return timeseries_html(f"chart-{sym.lower()}", [{
+        "data": points, "kind": "area", "color": "#1f4e79", "scale": "right",
+        "name": "Price", "fmt": {"kind": "price", "dec": dec}, "fill": True,
+    }], height=520)
 
 
 def _usd(v):
@@ -896,6 +877,7 @@ def _detail(rec, platforms) -> str:
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'<title>{name} ({html.escape(sym)}) — Scam Watchlist</title>'
             f'<style>{RCSS}{EXTRA_CSS}</style>'
+            f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
             f'<script src="../report/plotly.min.js"></script></head><body>{body}'
             f'{_PLOT_RESIZE_JS}</body></html>')
 
