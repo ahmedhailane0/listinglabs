@@ -691,7 +691,7 @@ def _index(cfgs: list[dict]) -> str:
     tracked = {c["token"].upper() for c in cfgs}
     body = f"""
 <header><h1>Binance Alpha &amp; Perps</h1>
-<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">CEX → Korea (74)</a><a href="../scams/index.html">Scam Watchlist</a></nav>
+<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">CEX → Korea (74)</a><a href="../scams/index.html">Manipulated</a></nav>
 <p>{len(cfgs)} tokens · click a token for its info + chart</p></header>
 {_news_strip(tracked)}
 {_filter_bar(cfgs)}

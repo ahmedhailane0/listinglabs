@@ -875,7 +875,7 @@ def _detail(rec, platforms) -> str:
 </section></main>"""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>{name} ({html.escape(sym)}) — Scam Watchlist</title>'
+            f'<title>{name} ({html.escape(sym)}) — Manipulated</title>'
             f'<style>{RCSS}{EXTRA_CSS}</style>'
             f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
             f'<script src="../report/plotly.min.js"></script></head><body>{body}'
@@ -899,10 +899,10 @@ def _index(recs) -> str:
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
     rows = "\n".join(_list_row(r) for r in recs)
     body = f"""
-<header><h1>Scam Watchlist</h1>
+<header><h1>Manipulated</h1>
 <nav class="topnav"><a href="../report/index.html">Binance Alpha &amp; Perps</a>
 <a href="../funnel/report/index.html">CEX → Korea</a>
-<a class="active" href="index.html">Scam Watchlist ({len(recs)})</a></nav>
+<a class="active" href="index.html">Manipulated ({len(recs)})</a></nav>
 <p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
@@ -913,7 +913,7 @@ def _index(recs) -> str:
 {JS}"""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>Scam Watchlist</title><style>{RCSS}{EXTRA_CSS}</style></head>'
+            f'<title>Manipulated</title><style>{RCSS}{EXTRA_CSS}</style></head>'
             f'<body>{body}</body></html>')
 
 
