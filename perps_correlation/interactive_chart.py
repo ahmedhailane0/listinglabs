@@ -1,27 +1,47 @@
-"""Build an interactive Plotly candlestick for a listing, with the listing
-events marked on it. Returned as an HTML snippet (div + script) to embed in a
-detail page; Plotly's JS is loaded once per page separately.
+"""Build an interactive **TradingView Lightweight Charts** price chart for a
+listing, with the listing events + announcement marked on it. Returned as an
+HTML snippet (div + script) to embed in a detail page; the Lightweight Charts
+library is loaded once per page separately (vendored, see build_listing_report).
 
-Features: zoom / pan / hover, a timeframe switcher (5m / 15m / 1h / 4h), and a
-show/hide toggle for the listing markers + announcement arrow.
+Why Lightweight Charts (not Plotly): it's a purpose-built financial charting
+library — ~160KB, robust, with native series markers and a crosshair. The old
+Plotly path was heavy and its custom y-autofit glue was flaky.
+
+Features: zoom / pan / crosshair tooltip, a timeframe switcher (5m / 15m / 1h /
+4h), listing markers (one per venue, colored, with a short label) and an
+announcement marker.
+
+SYNC FIX (the important bit): most tracked tokens only have a *date* for their
+Binance Alpha listing — stored as a `00:00:00Z` placeholder — so a naive marker
+lands at midnight, hours off from the real price reaction. Here we **derive the
+real Alpha listing moment from the data**: the on-chain pool's first candle is
+the pool's birth ≈ the listing. So a placeholder Alpha event is snapped to the
+first candle, and unresolvable midnight CEX events are dropped from the chart
+(they stay in the Listing Events table). See `_resolved_events`.
 """
 from __future__ import annotations
 
 import json
 import math
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from pathlib import Path
 
-import plotly.graph_objects as go
-
 from listing_chart import parse_iso
+from venues import venue_color
 
 HERE = Path(__file__).parent
 CACHE = HERE.parent / "cache"
 
-from venues import venue_color
-
 TIMEFRAMES = [("5m", 5), ("15m", 15), ("1h", 60), ("4h", 240)]
+
+# Listings are date-stamped; the price data may start a few hours into that day,
+# so clamp precise markers within ~2 days of the data edge onto the edge instead
+# of dropping them. Events genuinely far outside stay clipped (table only).
+TOL_MS = 2 * 86400 * 1000
+
+SHORT = {"Binance Alpha": "Alpha", "Binance Spot": "BN Spot", "Binance Perp": "Perp",
+         "Coinbase Spot": "Coinbase", "Coinbase INTX": "CB-INTX", "Upbit": "Upbit",
+         "Bithumb": "Bithumb", "Coinone": "Coinone"}
 
 
 def _load_rows(token: str) -> list | None:
@@ -32,46 +52,50 @@ def _load_rows(token: str) -> list | None:
     return rows or None
 
 
-def _aggregate(rows: list, minutes: int) -> tuple[list, list, list, list, list]:
-    """Bucket 5m OHLC rows into `minutes` candles (open=first, close=last)."""
-    bucket_ms = minutes * 60_000
-    buckets: dict[int, list] = {}
-    for ts, o, h, l, c in rows:
-        key = (ts // bucket_ms) * bucket_ms
-        b = buckets.get(key)
-        if b is None:
-            buckets[key] = [o, h, l, c]
+def _is_placeholder(iso: str) -> bool:
+    """A date-only listing entry, stored at midnight UTC — not a real observed time."""
+    return iso.endswith("00:00:00Z") or iso.endswith("00:00:00+00:00")
+
+
+def first_candle_dt(token: str) -> datetime | None:
+    """Timestamp of the on-chain pool's first candle ≈ the real Alpha listing
+    moment (the pool is born when the token starts trading). Used to snap
+    placeholder Alpha events onto the actual price reaction."""
+    rows = _load_rows(token)
+    if not rows:
+        return None
+    return datetime.fromtimestamp(rows[0][0] / 1000, tz=timezone.utc)
+
+
+def _resolved_events(cfg: dict, rows: list) -> list[tuple[dict, int]]:
+    """(event, epoch_ms) pairs to actually plot, with placeholder Alpha events
+    snapped to the first candle and unresolvable midnight events dropped.
+
+    - Binance Alpha at a `00:00Z` placeholder -> snapped to the first candle.
+    - Any other event at a `00:00Z` placeholder -> dropped (we can't place it
+      from on-chain data; it remains in the Listing Events table).
+    - Precise events -> plotted at their real time, clamped to the data edge if
+      within TOL.
+    """
+    t_lo, t_hi = rows[0][0], rows[-1][0]
+    first_dt = datetime.fromtimestamp(t_lo / 1000, tz=timezone.utc)
+    out: list[tuple[dict, int]] = []
+    for ev in cfg.get("events", []):
+        iso = ev.get("iso_time_utc")
+        if not iso:
+            continue
+        if _is_placeholder(iso):
+            if ev.get("exchange") == "Binance Alpha":
+                t = first_dt                       # snap to pool birth = listing
+            else:
+                continue                           # unresolvable -> table only
         else:
-            b[1] = max(b[1], h)
-            b[2] = min(b[2], l)
-            b[3] = c
-    xs, op, hi, lo, cl = [], [], [], [], []
-    for key in sorted(buckets):
-        o, h, l, c = buckets[key]
-        xs.append(datetime.fromtimestamp(key / 1000, tz=timezone.utc).strftime("%Y-%m-%d %H:%M"))
-        op.append(o); hi.append(h); lo.append(l); cl.append(c)
-    return xs, op, hi, lo, cl
-
-
-def _close_at_or_before(rows: list, t: datetime) -> float:
-    tms = int(t.timestamp() * 1000)
-    prev = rows[0][4]
-    for ts, _o, _h, _l, c in rows:
-        if ts > tms:
-            break
-        prev = c
-    return prev
-
-
-def _pre_move_close(rows: list, t: datetime) -> float:
-    """Close of the candle before the one containing t (foot of an in-bar move)."""
-    tms = int(t.timestamp() * 1000)
-    prev2, prev1 = rows[0][4], rows[0][4]
-    for ts, _o, _h, _l, c in rows:
-        if ts > tms:
-            break
-        prev2, prev1 = prev1, c
-    return prev2
+            t = parse_iso(iso)
+        ms = int(t.timestamp() * 1000)
+        if ms < t_lo - TOL_MS or ms > t_hi + TOL_MS:
+            continue
+        out.append((ev, min(max(ms, t_lo), t_hi)))
+    return out
 
 
 def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) -> str | None:
@@ -80,251 +104,206 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     if not rows:
         return None
 
-    # Pick price precision from the data so sub-cent tokens don't render as
-    # "$0.0000" (e.g. NEX trades around 0.0000036).
+    # Price precision from the data so sub-cent tokens don't render as "$0.0000".
     pos = [r[4] for r in rows if r[4] > 0]
     ref = min(pos) if pos else 1.0
     dec = max(4, 2 - math.floor(math.log10(ref))) if ref > 0 else 4
-    pfmt = f".{dec}f"
 
-    # Default view = the launch-reaction window, even though the cached candles now
-    # extend to "now" (refresh_klines.py keeps them current). The reaction stays the
-    # headline; users pan/scroll right to follow the token's full live history.
-    _win_lo = cfg.get("window_start_utc")
-    _win_hi = cfg.get("window_end_utc")
-    # Default view shows the FULL chart: launch (the data's left edge / window_start)
-    # through the most recent candle. A small right-pad keeps the latest point off the
-    # frame edge. fitY (below) scales the y-axis to whatever x-range is in view.
-    lo_dt = datetime.fromtimestamp(rows[0][0] / 1000, tz=timezone.utc)
-    if _win_lo:
-        try:
-            lo_dt = min(lo_dt, parse_iso(_win_lo))
-        except Exception:
-            pass
-    hi_dt = datetime.fromtimestamp(rows[-1][0] / 1000, tz=timezone.utc)
-    pad = (hi_dt - lo_dt) * 0.02 or timedelta(hours=6)
-    win_range = [lo_dt.strftime("%Y-%m-%dT%H:%M:%SZ"),
-                 (hi_dt + pad).strftime("%Y-%m-%dT%H:%M:%SZ")]
-
-    # L-2: bound the inline payload. Long histories (esp. Binance-fallback tokens with
-    # 100k+ candles) would make pages multi-MB. Keep full 5m resolution where it's
-    # actually viewed — the default window + the last 3 days — and decimate everything
-    # older to hourly. The launch reaction stays crisp; old tails shrink ~12x.
+    # Bound the inline payload. Long histories (Binance-fallback tokens with 100k+
+    # candles) would make pages multi-MB. Keep full 5m resolution for the launch
+    # window + the last 3 days; decimate older candles to hourly. ~12x smaller tail.
+    t_lo, t_hi = rows[0][0], rows[-1][0]
     if len(rows) > 4000:
-        lo_ms = int(parse_iso(win_range[0]).timestamp()*1000) if win_range else 0
-        hi_ms = int(parse_iso(win_range[1]).timestamp()*1000) if win_range else 1 << 62
-        recent_ms = rows[-1][0] - 3*86400*1000
+        recent_ms = t_hi - 3 * 86400 * 1000
+        win_hi_ms = t_lo + 7 * 86400 * 1000   # launch window ≈ first week, kept crisp
         rows = [r for r in rows
-                if (lo_ms <= r[0] <= hi_ms) or r[0] >= recent_ms
+                if (t_lo <= r[0] <= win_hi_ms) or r[0] >= recent_ms
                 or (r[0] % 3_600_000) < 300_000]
 
-    fig = go.Figure()
-    for i, (_name, mins) in enumerate(TIMEFRAMES):
-        xs, _op, _hi, _lo, cl = _aggregate(rows, mins)
-        fig.add_trace(go.Scatter(
-            x=xs, y=cl, name=f"{token} {_name}", visible=(i == 0),
-            mode="lines", line=dict(color="#1f4e79", width=2, shape="linear"),
-            fill="tozeroy", fillcolor="rgba(31,78,121,0.07)",
-            hovertemplate="%{x|%b %d %H:%M}  <b>$%{y:" + pfmt + "}</b><extra></extra>",
-        ))
+    # Compact rows for JS: [tsSeconds, o, h, l, c]. (Aggregation + marker bucketing
+    # happen client-side so the timeframe switcher is instant and the payload is one
+    # series.) Round to the data's precision to shave bytes.
+    q = dec + 2
+    js_rows = [[r[0] // 1000, round(r[1], q), round(r[2], q), round(r[3], q), round(r[4], q)]
+               for r in rows]
 
-    # Listing markers: a thin vertical guide line per event plus a hover-only dot
-    # on the price line. No always-on text labels — they overlap badly when
-    # several venues list within minutes of each other; the dot's hover shows
-    # which venue + time instead.
-    # Only mark events that fall within the price data's time range — otherwise a
-    # listing months after the charted window (or before it) would stretch the
-    # x-axis and float in empty space with no price under it.
-    t_lo, t_hi = rows[0][0], rows[-1][0]
-    TOL_MS = 2 * 86400 * 1000  # listings are date-stamped; the price data may start
-    # a few hours into that day, so clamp markers within ~2 days of the data edge
-    # onto the edge instead of dropping them. Events genuinely far outside (e.g. an
-    # Alpha listing months before any price exists) stay clipped -> events table only.
+    # Listing markers (auto-derived; see _resolved_events).
+    listing_markers = []
+    for ev, ms in _resolved_events(cfg, rows):
+        ex = ev["exchange"]
+        listing_markers.append({
+            "time": ms // 1000, "position": "aboveBar", "shape": "circle",
+            "color": venue_color(ex), "text": SHORT.get(ex, ex),
+        })
 
-    def _placed_x(t):
-        """Return (clamped_x_string, clamped_dt) if the event is within tolerance
-        of the data range, else None."""
-        ms = int(t.timestamp() * 1000)
-        if ms < t_lo - TOL_MS or ms > t_hi + TOL_MS:
-            return None
-        cms = min(max(ms, t_lo), t_hi)
-        cdt = datetime.fromtimestamp(cms / 1000, tz=timezone.utc)
-        return cdt.strftime("%Y-%m-%d %H:%M"), cdt
-
-    shapes = []
-    mx, my, mcolor, mtext = [], [], [], []
-    for i, ev in enumerate(sorted(cfg.get("events", []), key=lambda e: e["iso_time_utc"])):
-        t = parse_iso(ev["iso_time_utc"])
-        placed = _placed_x(t)
-        if placed is None:
-            continue
-        x, cdt = placed
-        color = venue_color(ev["exchange"])
-        shapes.append(dict(type="line", xref="x", yref="paper", x0=x, x1=x,
-                           y0=0, y1=1, opacity=0.5,
-                           line=dict(color=color, width=1, dash="dot")))
-        mx.append(x)
-        my.append(_close_at_or_before(rows, cdt))
-        mcolor.append(color)
-        mtext.append(f"<b>{ev['exchange']}</b><br>{t.strftime('%Y-%m-%d %H:%M')} UTC")
-    fig.add_trace(go.Scatter(
-        x=mx, y=my, mode="markers", name="Listings", visible=True,
-        marker=dict(size=9, color=mcolor, symbol="circle",
-                    line=dict(color="white", width=1.5)),
-        customdata=mtext, hovertemplate="%{customdata}<extra></extra>",
-    ))
-
-    # Announcement markers: square pins along the BOTTOM of the chart at each
-    # article's PUBLISH date (when the exchange said it would list — distinct from
-    # the listing moment above). Hover shows the date; not clickable (the article
-    # link lives in the Listing Events table's Note column). Always-on trace, kept
-    # visible across timeframe toggles like the Listings trace.
-    ax, ay, atext = [], [], []
+    # Announcement markers: where an announcement carries a date, pin it on the
+    # x-axis (belowBar arrow). Most tokens have none yet — those simply show no
+    # announcement marker (the chart stays clean rather than guessing a time).
+    ann_markers = []
     for label, a in (announcements or {}).items():
         d = a.get("date") if isinstance(a, dict) else None
         if not d:
             continue
-        placed = _placed_x(parse_iso(d))
-        if placed is None:
+        try:
+            t = parse_iso(d)
+        except Exception:
             continue
-        ax.append(placed[0])
-        ay.append(0.0)  # pinned to the x-axis via the fixed overlay axis y2 (below)
-        title = (a.get("title") or "")[:90]
-        atext.append(f"<b>{label} — listing announced</b><br>"
-                     f"{placed[1].strftime('%Y-%m-%d')}<br>{title}")
-    # Pinned to the x-axis on a fixed [0,1] overlay axis (y2) so the squares always sit
-    # ON the axis line, never floating in the plot and never drifting when the price
-    # y-axis is zoomed (audit/UX: "announcement square should stick to the X axis").
-    fig.add_trace(go.Scatter(
-        x=ax, y=ay, mode="markers", name="Announcements", visible=True, yaxis="y2",
-        marker=dict(size=11, color="#e67e22", symbol="triangle-up",
-                    line=dict(color="white", width=1)),
-        customdata=atext, hovertemplate="%{customdata}<extra></extra>",
-    ))
-
-    # announcement annotations: arrow to the foot of the move (no vertical line)
-    annotations = []
-    for ann in cfg.get("annotations", []):
-        t = parse_iso(ann["iso_time_utc"])
-        if not (t_lo <= int(t.timestamp() * 1000) <= t_hi):
+        ms = int(t.timestamp() * 1000)
+        if ms < t_lo - TOL_MS or ms > t_hi + TOL_MS:
             continue
-        annotations.append(dict(
-            x=t.strftime("%Y-%m-%d %H:%M"), y=_pre_move_close(rows, t),
-            xref="x", yref="y", text=f"{ann['label']} {t.strftime('%H:%M')}",
-            showarrow=True, arrowhead=2, arrowwidth=1, arrowcolor="#555555",
-            ax=-55, ay=-45, font=dict(size=10, color="#555555", family="serif"),
-            bgcolor="rgba(255,255,255,0.85)", bordercolor="#999999", borderpad=2))
+        ms = min(max(ms, t_lo), t_hi)
+        ann_markers.append({
+            "time": ms // 1000, "position": "belowBar", "shape": "arrowUp",
+            "color": "#e67e22", "text": f"{label} announced",
+        })
 
-    # Always-on listing labels grouped by day, so several venues listing on the
-    # same day (which would overlap into one dot) all stay visible. Labels stack
-    # vertically when groups are close in time.
-    SHORT = {"Binance Alpha": "Alpha", "Binance Spot": "BN Spot", "Binance Perp": "Perp",
-             "Coinbase Spot": "Coinbase", "Coinbase INTX": "CB-INTX", "Upbit": "Upbit",
-             "Bithumb": "Bithumb", "Coinone": "Coinone"}
-    evs = []
-    for ev in sorted(cfg.get("events", []), key=lambda e: e["iso_time_utc"]):
-        t = parse_iso(ev["iso_time_utc"])
-        placed = _placed_x(t)
-        if placed is None:
-            continue
-        evs.append((ev, t, placed[1]))  # (event, real time, clamped dt)
-    groups: list[list] = []
-    last_day = None
-    for ev, t, cdt in evs:
-        day = t.strftime("%Y-%m-%d")  # group by the real listing day
-        if groups and day == last_day:
-            groups[-1].append((ev, t, cdt))
-        else:
-            groups.append([(ev, t, cdt)])
-        last_day = day
-    span_ms = (t_hi - t_lo) or 1
-    min_dx = span_ms * 0.085
-    placed: list[tuple[int, int]] = []
-    label_anns = []  # the venue text boxes — off by default (they cluster ugly),
-                     # toggled on via the "Labels" button; the dots' hover + the
-                     # color-matched Listing Events table convey the same info.
-    for g in groups:
-        gt = g[0][2]  # clamped time for x-position
-        gx = int(gt.timestamp() * 1000)
-        used = {r for xx, r in placed if abs(xx - gx) < min_dx}
-        rung = 0
-        while rung in used:
-            rung += 1
-        placed.append((gx, rung))
-        shorts = " · ".join(SHORT.get(ev["exchange"], ev["exchange"]) for ev, *_ in g)
-        color = (venue_color("Binance Alpha") if any(ev["exchange"] == "Binance Alpha" for ev, *_ in g)
-                 else venue_color(g[0][0]["exchange"]))
-        real_date = g[0][1].strftime("%m-%d")  # real listing date for the label text
-        label_anns.append(dict(
-            x=gt.strftime("%Y-%m-%d %H:%M"), y=1.0, xref="x", yref="paper",
-            yanchor="top", yshift=-4 - rung * 24, xanchor="left", xshift=3,
-            text=f"{shorts} · {real_date}", showarrow=False,
-            font=dict(size=9, color=color), align="left",
-            bgcolor="rgba(255,255,255,0.92)", bordercolor=color, borderwidth=1, borderpad=2))
+    # Default view frames the listing activity: from the first candle to a little
+    # past the last listing/announcement marker, so every marker is on-screen by
+    # default and the reaction is the headline. Users pan/scroll right for the full
+    # live history. Bounded to [24h, 10d] so a same-day cluster still shows some
+    # price context and a far-out event doesn't blow the window open. A small left
+    # pad keeps launch markers off the price axis (Lightweight Charts happily shows
+    # empty space left of the first candle).
+    marker_secs = [m["time"] for m in listing_markers + ann_markers]
+    last_ev_ms = (max(marker_secs) * 1000) if marker_secs else t_lo
+    win_to_ms = min(t_hi,
+                    max(t_lo + 24 * 3600 * 1000, last_ev_ms + 6 * 3600 * 1000),
+                    t_lo + 10 * 86400 * 1000)
+    left_pad = max(2 * 3600 * 1000, (win_to_ms - t_lo) // 25)
+    win_from = (t_lo - left_pad) // 1000
+    win_to = win_to_ms // 1000
 
-    n_tf = len(TIMEFRAMES)
-    tf_buttons = []
-    for i, (name, _m) in enumerate(TIMEFRAMES):
-        # keep the Listings + Announcements marker traces (last two) visible across timeframes
-        tf_buttons.append(dict(label=name, method="update",
-                               args=[{"visible": [j == i for j in range(n_tf)] + [True, True]}]))
-    # Lines + dots always show; this toggles only the (clustering-prone) text
-    # labels. Default is off — see label_anns above.
-    marker_buttons = [
-        dict(label="Labels: off", method="relayout",
-             args=[{"annotations": annotations}]),
-        dict(label="Labels: on", method="relayout",
-             args=[{"annotations": annotations + label_anns}]),
-    ]
+    div_id = f"tvchart-{token.lower()}"
+    cfg_js = json.dumps({
+        "rows": js_rows, "dec": dec,
+        "listing": listing_markers, "ann": ann_markers,
+        "win": {"from": win_from, "to": win_to},
+        "tfs": TIMEFRAMES,
+    }, separators=(",", ":"))
 
-    fig.update_layout(
-        shapes=shapes, annotations=annotations,
-        height=height, margin=dict(l=58, r=24, t=64, b=44),
-        font=dict(family="Segoe UI, -apple-system, Roboto, sans-serif",
-                  size=12, color="#1d2733"),
-        paper_bgcolor="white", plot_bgcolor="white",
-        xaxis=dict(rangeslider=dict(visible=False), title=None,
-                   range=win_range, autorange=(win_range is None),
-                   showgrid=False, showline=True, linecolor="#e1e7ee",
-                   ticks="outside", tickcolor="#e1e7ee", tickfont=dict(size=11),
-                   showspikes=True, spikemode="across", spikethickness=1,
-                   spikedash="solid", spikecolor="#c5ccd3"),
-        yaxis=dict(title=dict(text="Price (USD)", font=dict(size=11, color="#6b7785")),
-                   tickprefix="$", tickformat=pfmt, showgrid=True,
-                   gridcolor="#eef2f6", zeroline=False, tickfont=dict(size=11)),
-        # fixed [0,1] overlay so the announcement pins stick to the x-axis baseline
-        yaxis2=dict(overlaying="y", side="left", range=[0, 1], visible=False,
-                    fixedrange=True),
-        hoverlabel=dict(bgcolor="white", bordercolor="#e1e7ee",
-                        font=dict(size=12, color="#1d2733")),
-        hovermode="x", template="plotly_white", showlegend=False,
-        dragmode="pan",
-        updatemenus=[
-            dict(type="buttons", direction="right", x=0, xanchor="left",
-                 y=1.12, yanchor="top", showactive=True, buttons=tf_buttons,
-                 pad=dict(r=4, t=2)),
-            dict(type="buttons", direction="right", x=1, xanchor="right",
-                 y=1.12, yanchor="top", showactive=False, buttons=marker_buttons,
-                 pad=dict(l=4, t=2)),
-        ],
+    toolbar = "".join(
+        f'<button class="tv-tf{" active" if i == 0 else ""}" data-m="{m}">{name}</button>'
+        for i, (name, m) in enumerate(TIMEFRAMES)
     )
-    div_id = f"chart-{token.lower()}"
-    # Show a curated modebar (zoom / pan / box-zoom / reset / PNG) on hover so users
-    # have real chart controls; drop the noisy/duplicate tools. It sits top-right
-    # inside the plot, clear of the custom timeframe buttons in the top margin.
-    snippet = fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
-                          config={"scrollZoom": True, "displaylogo": False,
-                                  "displayModeBar": "hover", "responsive": True,
-                                  "modeBarButtonsToRemove": ["lasso2d", "select2d",
-                                      "autoScale2d", "zoomIn2d", "zoomOut2d",
-                                      "toggleSpikelines", "hoverCompareCartesian",
-                                      "hoverClosestCartesian"]})
-    return snippet + _autofit_js(div_id)
+    return (
+        f'<div class="tvchart-wrap" style="height:{height}px">'
+        f'<div class="tv-toolbar">{toolbar}'
+        f'<button class="tv-reset" title="Reset to launch window">⤺ launch</button>'
+        f'<span class="tv-legend"><i class="dot"></i>listing '
+        f'<i class="tri"></i>announcement</span></div>'
+        f'<div id="{div_id}" class="tvchart"></div>'
+        f'<div class="tv-tip" id="{div_id}-tip"></div>'
+        f'</div>'
+        f'<script>(function(){{var CFG={cfg_js};{_CHART_JS}'
+        f'\nmount("{div_id}",CFG);}})();</script>'
+    )
+
+
+# Client-side chart builder, shared by every embedded chart on the page. Pure
+# Lightweight Charts v4 API. Aggregates the 5m rows into the active timeframe and
+# snaps markers to the matching bucket so they always land on a real data point.
+_CHART_JS = r"""
+function mount(id, cfg){
+  var el = document.getElementById(id);
+  if(!el || !window.LightweightCharts){ return; }
+  var DEC = cfg.dec, minMove = 1/Math.pow(10, DEC);
+  var LC = window.LightweightCharts;
+  var chart = LC.createChart(el, {
+    width: el.clientWidth || 800,
+    height: el.clientHeight || (el.parentElement ? el.parentElement.clientHeight : 520) || 520,
+    layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
+              fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
+    grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
+    rightPriceScale: { borderColor:'#e1e7ee' },
+    timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
+    crosshair: { mode: LC.CrosshairMode.Normal,
+                 vertLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' },
+                 horzLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' } },
+    localization: { priceFormatter: function(p){ return '$' + p.toFixed(DEC); } },
+    handleScale: true, handleScroll: true,
+  });
+  var series = chart.addAreaSeries({
+    lineColor:'#1f4e79', topColor:'rgba(31,78,121,0.18)', bottomColor:'rgba(31,78,121,0.02)',
+    lineWidth:2, priceFormat:{ type:'price', precision:DEC, minMove:minMove },
+    priceLineVisible:false, lastValueVisible:true,
+  });
+
+  function agg(rows, mins){
+    var bs = mins*60, map = {}, order = [];
+    for(var i=0;i<rows.length;i++){
+      var r = rows[i], k = Math.floor(r[0]/bs)*bs;
+      if(map[k]===undefined){ order.push(k); }
+      map[k] = r[4];                       // close = last row in the bucket
+    }
+    order.sort(function(a,b){ return a-b; });
+    return order.map(function(k){ return { time:k, value:map[k] }; });
+  }
+  function bucket(t, mins){ var bs = mins*60; return Math.floor(t/bs)*bs; }
+  function markers(mins){
+    var out = [];
+    [].concat(cfg.listing, cfg.ann).forEach(function(m){
+      out.push({ time: bucket(m.time, mins), position:m.position, color:m.color,
+                 shape:m.shape, text:m.text });
+    });
+    out.sort(function(a,b){ return a.time-b.time; });
+    return out;
+  }
+
+  var active = cfg.tfs[0][1];
+  function render(mins){
+    active = mins;
+    series.setData(agg(cfg.rows, mins));
+    series.setMarkers(markers(mins));
+  }
+  function toLaunch(){
+    if(cfg.win){ chart.timeScale().setVisibleRange({ from:cfg.win.from, to:cfg.win.to }); }
+  }
+  render(active); toLaunch();
+
+  // Crosshair tooltip (date + price), floating inside the wrap.
+  var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
+  chart.subscribeCrosshairMove(function(p){
+    if(!p || !p.time || !p.point){ if(tip) tip.style.display='none'; return; }
+    var d = p.seriesData.get(series);
+    if(!d){ if(tip) tip.style.display='none'; return; }
+    var price = (d.value!==undefined)? d.value : d.close;
+    var dt = new Date(p.time*1000).toISOString().slice(0,16).replace('T',' ');
+    if(tip){
+      tip.innerHTML = '<b>$'+price.toFixed(DEC)+'</b><br>'+dt+' UTC';
+      tip.style.display='block';
+      var x = p.point.x + 16, y = p.point.y + 12;
+      if(x > wrap.clientWidth - 130){ x = p.point.x - 130; }
+      tip.style.left = x+'px'; tip.style.top = y+'px';
+    }
+  });
+
+  // Toolbar: timeframe switch + reset-to-launch.
+  wrap.querySelectorAll('.tv-tf').forEach(function(b){
+    b.addEventListener('click', function(){
+      wrap.querySelectorAll('.tv-tf').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      render(parseInt(b.dataset.m,10));
+    });
+  });
+  var rb = wrap.querySelector('.tv-reset');
+  if(rb){ rb.addEventListener('click', toLaunch); }
+
+  // Keep width in sync with the responsive card.
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){ chart.applyOptions({ width: el.clientWidth }); }).observe(el);
+  } else {
+    window.addEventListener('resize', function(){ chart.applyOptions({ width: el.clientWidth }); });
+  }
+}
+"""
 
 
 def _autofit_js(div_id: str) -> str:
-    """On x-zoom/pan, rescale the y-axis to the data in view so zooming reveals
-    detail instead of just stretching the chart horizontally."""
+    """Plotly y-axis autofit glue, kept for the OTHER reports that still render with
+    Plotly (e.g. build_scams.py's OI/funding history charts). The listing reaction
+    charts no longer use this — they're rendered by Lightweight Charts above. On
+    x-zoom/pan, rescale the y-axis to the data in view so zooming reveals detail
+    instead of just stretching the chart horizontally."""
     return f"""
 <script>
 (function() {{
@@ -367,8 +346,6 @@ def _autofit_js(div_id: str) -> str:
     }});
   }}
   attach();
-  // Fit the y-axis to the default (launch-window) x-range on first render, so the
-  // reaction isn't squished by later all-time highs that sit off-screen to the right.
   if (gd.once) gd.once("plotly_afterplot", function() {{ try {{ fitY(); }} catch (e) {{}} }});
   else setTimeout(function() {{ try {{ fitY(); }} catch (e) {{}} }}, 200);
 }})();

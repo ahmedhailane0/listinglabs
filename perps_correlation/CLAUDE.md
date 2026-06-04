@@ -50,7 +50,8 @@ gap-fill): run `python backfill_perp_history.py` locally and commit
 `cache/perp_history/`; CI only appends forward. It anchors on Binance USD OI
 (~30d) + Bybit OI (valued at Binance daily close), OI-weighting funding.
 
-The site is static HTML/CSS + Plotly. `Listinglabs.zip` is the deploy artifact
+The site is static HTML/CSS + JS charts (TradingView Lightweight Charts for the
+reactions report; Plotly for the Scam Watchlist). `Listinglabs.zip` is the deploy artifact
 (historically uploaded to Netlify). There is **no** separate `report/` / `share/`
 copy anymore — builders write straight into `Listinglabs/`. Don't recreate the
 old split (`build_share.py`, top-level `report/`, `share/` are gone on purpose).
@@ -72,9 +73,22 @@ The most-edited file. Builds the token grid + per-token detail pages.
   the real listing, e.g. CTR's fake `Gate.io 00:00Z` before the real Alpha
   `13:00Z`). Falls back to Alpha time. Rendered by `_tge_cell` (date + UTC time,
   sorted by epoch).
-- **Charts**: each token gets an interactive Plotly candlestick from
-  `interactive_chart.chart_html()` (5m/15m/1h/4h switcher, listing markers,
-  announcement arrow). Falls back to the static PNG in `charts/` if no klines.
+- **Charts**: each token gets an interactive **TradingView Lightweight Charts**
+  area chart from `interactive_chart.chart_html()` (5m/15m/1h/4h switcher, launch
+  reset, crosshair tooltip, listing + announcement markers). Falls back to the
+  static PNG in `charts/` if no klines. The lib is vendored at
+  `vendor/lightweight-charts.standalone.production.js` and copied into
+  `Listinglabs/report/` at build (CSP blocks CDNs). **Migrated off Plotly** (which
+  was heavy + flaky); the Scam Watchlist report still uses Plotly, so
+  `build_listing_report.py` keeps emitting `report/plotly.min.js` and
+  `interactive_chart._autofit_js` is retained for it.
+- **Listing-time SYNC (important)**: most tokens only have a *date* for their
+  Alpha listing (stored as `00:00Z`), so a naive marker lands at midnight, hours
+  off the real reaction. `interactive_chart._resolved_events` **derives the real
+  Alpha moment from the data** — the on-chain pool's first candle ≈ the listing —
+  and snaps placeholder Alpha events onto it; unresolvable midnight CEX events are
+  dropped from the chart (kept in the events table). `_tge_time` uses the same
+  first-candle derivation (`first_candle_dt`) when only placeholders exist.
 - **Metrics** (`metrics.py`): Since/peak/drawdown/checkpoints, computed purely
   from `cache/<token>_klines_5m_alpha.json` relative to the Alpha listing time.
 
@@ -104,7 +118,8 @@ One file per tracked token. Schema (see `listings/ctr.json` for a full example):
 - `listing_chart.py` — pulls 5m OHLCV from the **on-chain Alpha pool via
   GeckoTerminal** (true Alpha price, CEX fallback), renders annotated PNG to
   `charts/<token>_listing_reaction.png`. Run: `python listing_chart.py listings/<t>.json`.
-- `interactive_chart.py` — same cached klines → embedded Plotly div for detail pages.
+- `interactive_chart.py` — same cached klines → embedded Lightweight Charts div for
+  detail pages (auto-derives listing times; see SYNC note above).
 - Klines cached at `../cache/<token>_klines_5m_alpha.json`.
 
 ## Venue allowlist (IMPORTANT)
