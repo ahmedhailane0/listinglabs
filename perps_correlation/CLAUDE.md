@@ -41,7 +41,11 @@ locally run `python refresh_klines.py [tokens…]` when you want fresh charts.
 the cron now runs `refresh_scam_prices.py` (keyless CoinGecko price/series + CMC
 authoritative supply — fixes the stale charts and the bogus CoinGecko supply) and
 `fetch_holders.py` (keyless **GoPlus** multichain top-holders — BNB Chain / Base /
-ETH / …; non-EVM chains degrade to "unavailable") before the build. The per-token
+ETH / …; non-EVM chains degrade to "unavailable") before the build. It also runs
+`fetch_scam_tge.py` (keyless CMC `dateAdded`, CoinGecko genesis fallback →
+`cache/scam_tge.json`) which gives each token a **TGE date**; the Manipulated
+report renders it as a TGE column + tile field and **defaults to newest-first by
+that date**, mirroring the Listing Reactions report. The per-token
 **OI + funding history chart** reads `cache/perp_history/<SYM>.json`, which
 `fetch_perp_markets.py` *appends* a live point to each run (collapsing sub-6h
 points). The trailing ~30 days are seeded by **`backfill_perp_history.py`**, which

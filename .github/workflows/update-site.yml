@@ -105,6 +105,14 @@ jobs:
         continue-on-error: true
         timeout-minutes: 5
 
+      - name: Fetch TGE dates (Manipulated tab)
+        # Keyless CMC dateAdded (CoinGecko genesis fallback) -> cache/scam_tge.json.
+        # Static per token + skips ones already cached, so this only does work when a
+        # new watchlist token appears. Drives the Manipulated report's TGE column/sort.
+        run: python fetch_scam_tge.py
+        continue-on-error: true
+        timeout-minutes: 4
+
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
 

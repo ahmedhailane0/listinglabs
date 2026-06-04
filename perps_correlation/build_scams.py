@@ -21,7 +21,7 @@ import plotly.graph_objects as go
 from build_listing_report import CSS as RCSS          # reuse reactions styling
 from build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
 from build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
-from listing_chart import fmt_usd_compact, fmt_subscript_price
+from listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from interactive_chart import timeseries_html
 
 HERE = Path(__file__).parent
@@ -34,6 +34,23 @@ ROOTDATA = HERE.parent / "cache" / "rootdata.json"
 # the same RootData + Excel caches the Listing Reactions report uses, so funding
 # is sourced identically across both reports. Falls back to scam_data's funding.
 FUNDING: dict[str, dict] = {}
+
+# symbol(upper) -> ISO date of the token's TGE / first listing (CMC dateAdded, with
+# a CoinGecko genesis fallback), from fetch_scam_tge.py -> cache/scam_tge.json. Drives
+# the TGE column + the default newest-first date sort, mirroring the Listing
+# Reactions report's TGE column.
+TGE: dict[str, str] = {}
+TGE_CACHE = HERE.parent / "cache" / "scam_tge.json"
+
+
+def _tge_dt(rec):
+    iso = TGE.get((rec.get("symbol") or "").upper())
+    if not iso:
+        return None
+    try:
+        return parse_iso(iso)
+    except Exception:
+        return None
 
 
 def _load_funding(symbols) -> dict:
@@ -238,6 +255,8 @@ def _tile(rec) -> str:
     fdv = rec.get("fdv") or rec.get("csv_fdv")
     mc = rec.get("mcap") or rec.get("csv_mc")
     px = rec.get("price") or rec.get("csv_price")
+    tge = _tge_dt(rec)
+    tge_txt = tge.strftime("%Y-%m-%d") if tge else "—"
     return f"""
     <a class="tile" href="{sym.lower()}.html" data-venues="||" data-search="{search}" data-fdv="{fdv or 0:.0f}">
       {_sparkline(sym)}
@@ -246,8 +265,8 @@ def _tile(rec) -> str:
           <span class="sym">{html.escape(sym)}</span></div>
         <div class="tile-meta">
           <span><b>Price</b> {fmt_subscript_price(px) if px else '—'}</span>
-          <span><b>MC</b> {_usd(mc)}</span>
           <span><b>FDV</b> {_usd(fdv)}</span>
+          <span><b>TGE</b> {tge_txt}</span>
         </div>
       </div>
     </a>"""
@@ -255,7 +274,16 @@ def _tile(rec) -> str:
 
 # Same columns as the Listing Reactions list view (performance from price
 # history) plus the watchlist-specific Memo (the $1B-FDV behaviour notes).
-LIST_COLS = ["#", "Token", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "Funding", "Memo"]
+LIST_COLS = ["#", "Token", "TGE", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "Funding", "Memo"]
+
+
+def _tge_cell(rec) -> str:
+    """TGE date cell (token first-listed), sorted by epoch seconds — mirrors the
+    Listing Reactions report's TGE column."""
+    t = _tge_dt(rec)
+    if t is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    return f'<td class="tge" data-s="{t.timestamp():.0f}">{t.strftime("%Y-%m-%d")}</td>'
 
 
 def _funding_cell(rec) -> str:
@@ -286,6 +314,7 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" data-venues="||" data-search="{search}" data-fdv="{fdv or 0:.0f}">'
         f'<td class="rank"></td>{tok}'
+        f"{_tge_cell(rec)}"
         f"{_num_cell(p.get('since'))}{_num_cell(p.get('p24'))}{_num_cell(p.get('p7'))}"
         f"{_num_cell(p.get('p30'))}{_num_cell(p.get('p90'))}"
         f"{_num_cell(fdv, pct=False, color=False)}{_num_cell(mc, pct=False, color=False)}"
@@ -847,6 +876,7 @@ def _detail(rec, platforms) -> str:
     {warn}
     {_links(rec)}
     <dl>
+      <dt>TGE</dt><dd>{_tge_dt(rec).strftime('%Y-%m-%d') if _tge_dt(rec) else '—'} <span class="src">first listed (CMC)</span></dd>
       <dt>Chain</dt><dd>{html.escape(rec.get('chain') or '—')}</dd>
       <dt>Contract</dt><dd class="mono">{html.escape(rec.get('contract') or '—')}</dd>
       <dt>Price</dt><dd>{fmt_subscript_price(rec['price']) if rec.get('price') else '—'}</dd>
@@ -1054,9 +1084,15 @@ def main():
         return
     data = json.loads(DATA.read_text(encoding="utf-8"))
     FUNDING.update(_load_funding([r["symbol"].upper() for r in data.values()]))
+    if TGE_CACHE.exists():
+        TGE.update(json.loads(TGE_CACHE.read_text(encoding="utf-8")))
     platforms = _load_platforms()
-    # order by FDV desc (matches the CSV's rough ordering)
-    recs = sorted(data.values(), key=lambda r: -(r.get("fdv") or r.get("csv_fdv") or 0))
+    # Default order: by TGE date, newest first (tokens without a known date last) —
+    # mirrors the Listing Reactions report's newest-first ordering. The list is still
+    # client-side re-sortable by any column header.
+    recs = sorted(data.values(),
+                  key=lambda r: (_tge_dt(r).timestamp() if _tge_dt(r) else float("-inf")),
+                  reverse=True)
     SITE.mkdir(parents=True, exist_ok=True)
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     for r in recs:
