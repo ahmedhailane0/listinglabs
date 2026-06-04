@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import html
 import json
+import math
 from pathlib import Path
 
 import plotly.graph_objects as go
@@ -87,7 +88,6 @@ def _price_chart(sym: str, name: str) -> str:
     xs = [dt.datetime.fromtimestamp(t / 1000, dt.timezone.utc) for t, _v in series]
     ys = [v for _t, v in series]
     ref = min([v for v in ys if v > 0] or [1])
-    import math
     dec = max(4, 2 - math.floor(math.log10(ref))) if ref > 0 else 4
     pfmt = f".{dec}f"
     fig = go.Figure(go.Scatter(
@@ -339,6 +339,22 @@ def _reaction_block(rec) -> str:
 PERP = HERE.parent / "cache" / "perp_markets"
 PERP_HIST = HERE.parent / "cache" / "perp_history"
 HOLDERS = HERE.parent / "cache" / "scam_holders"
+PLATFORMS = HERE.parent / "cache" / "scam_platforms.json"
+
+# Pretty chain names for the bubble-map chain picker (CG platform key -> label).
+CHAIN_NAMES = {
+    "ethereum": "Ethereum", "binance-smart-chain": "BNB Chain", "base": "Base",
+    "polygon-pos": "Polygon", "arbitrum-one": "Arbitrum",
+    "optimistic-ethereum": "Optimism", "avalanche": "Avalanche", "fantom": "Fantom",
+    "cronos": "Cronos", "solana": "Solana", "mantle": "Mantle",
+    "the-open-network": "TON", "hyperliquid": "Hyperliquid", "stable": "Stable",
+}
+# CG platform key -> Bubblemaps legacy chain code (kept in sync with fetch_holders).
+CG_PLATFORM_TO_BMAPS = {
+    "ethereum": "eth", "binance-smart-chain": "bsc", "base": "base",
+    "polygon-pos": "poly", "arbitrum-one": "arbi", "avalanche": "avax",
+    "fantom": "ftm", "cronos": "cro", "solana": "sol",
+}
 
 # Venue allowlist (see CLAUDE.md). Cached perp snapshots may still contain
 # dropped venues (BingX/MEXC) until re-fetched, so the render filters to this set
@@ -367,22 +383,57 @@ def _load_perp(sym):
 
 def _allowed_perp(perp):
     """Filter a perp snapshot to ALLOWED_PERP_VENUES and recompute total OI +
-    per-venue share from the survivors, so dropped venues vanish from cached files
-    immediately (no re-fetch needed) and the shares still sum to 100%."""
+    per-venue share, so dropped venues vanish from cached files immediately (no
+    re-fetch needed). The summed OI of the untracked venues (`others_oi_usd`, set
+    by the CoinGecko fetch path) is folded back in as a single 'Others' row pinned
+    last, so the total + shares reflect the WHOLE market while only the venues we
+    trust are listed individually."""
     if not perp:
         return perp
     venues = [v for v in (perp.get("venues") or []) if v.get("venue") in ALLOWED_PERP_VENUES]
+    others = perp.get("others_oi_usd") or 0.0
+    n_others = perp.get("n_others") or 0
+    if others > 0:
+        venues = venues + [{"venue": "Others", "oi_usd": others, "funding": None,
+                            "funding_annualized": None, "n_others": n_others,
+                            "is_others": True}]
     total = sum(v["oi_usd"] for v in venues) or 0.0
     for v in venues:
         v["oi_share_pct"] = (v["oi_usd"] / total * 100) if total else None
     out = dict(perp)
-    out.update(venues=venues, total_oi_usd=total, n_venues=len(venues))
+    out.update(venues=venues, total_oi_usd=total, n_venues=len(venues),
+               others_oi_usd=others, n_others=n_others)
     return out
 
 
 def _load_holders(sym):
     p = HOLDERS / f"{sym.upper()}.json"
     return json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
+
+
+def _load_platforms():
+    return json.loads(PLATFORMS.read_text(encoding="utf-8")) if PLATFORMS.exists() else {}
+
+
+def _chains_for(rec, platforms):
+    """{chain: contract} for a token: the platforms cache merged with the
+    scam_data chain+contract (kept in sync with fetch_holders._chains_for)."""
+    sym = rec["symbol"].upper()
+    chains = dict(platforms.get(sym) or {})
+    ch, c = rec.get("chain"), rec.get("contract")
+    if ch and c and ch not in chains:
+        chains[ch] = c
+    return chains
+
+
+def _load_holders_chain(sym, chain):
+    """Per-chain holder file written by the multichain fetch_holders; falls back
+    to the legacy single-file when the per-chain one isn't present yet."""
+    p = HOLDERS / f"{sym.upper()}__{chain}.json"
+    if p.exists():
+        return json.loads(p.read_text(encoding="utf-8"))
+    legacy = _load_holders(sym)
+    return legacy if (legacy and legacy.get("chain") == chain) else None
 
 
 def _compact(v):
@@ -439,17 +490,26 @@ def _perp_table(perp) -> str:
     if not perp or not perp.get("venues"):
         return ('<div class="missing">No perp markets found on the tracked '
                 'exchanges (keyless public APIs).</div>')
-    n = len(perp["venues"])
+    venues = perp["venues"]
     head = ("<tr><th>Exchange</th><th>OI (USD)</th><th>Share</th>"
             "<th>Funding</th><th>Every</th><th>Annualized</th><th>OI/24h vol</th></tr>")
-    # "Share" is each venue's % of the LISTED-venue total (rows sum to 100%). The
-    # All row's 100% therefore means "100% of the venues we track", NOT 100% of the
-    # entire market — see the note below.
-    all_row = (f'<tr class="allrow"><td>All listed ({n})</td>'
+    # "Share" is each row's % of the WHOLE-market total (rows sum to 100%). The
+    # tracked majors are listed individually; everything else is the Others row.
+    all_row = (f'<tr class="allrow"><td>All venues ({len(venues)})</td>'
                f'<td>{_usd(perp["total_oi_usd"])}</td>'
                f'<td>100%</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>')
     rows = [all_row]
-    for v in perp["venues"]:
+    for v in venues:
+        if v.get("is_others"):
+            k = v.get("n_others") or 0
+            label = f'Others ({k})' if k else 'Others'
+            rows.append(
+                f'<tr class="otherrow"><td class="venue">{label}'
+                f'<span class="htag">untracked</span></td>'
+                f'<td>{_usd(v["oi_usd"])}</td>'
+                f'<td>{v["oi_share_pct"]:.1f}%</td>'
+                f'<td>—</td><td class="iv">—</td><td>—</td><td>—</td></tr>')
+            continue
         iv = f"{v.get('interval_h', 8):g}h"
         ovr = f"{v['oi_vol_ratio']:.3f}" if v.get("oi_vol_ratio") is not None else "—"
         rows.append(
@@ -459,11 +519,12 @@ def _perp_table(perp) -> str:
             f'<td>{_fund_span(v.get("funding"))}</td><td class="iv">{iv}</td>'
             f'<td>{_fund_span(v.get("funding_annualized"), annual=True)}</td>'
             f'<td>{ovr}</td></tr>')
-    note = ('<p class="note">Shares are each venue’s % of the <b>major venues we '
-            'track</b> (Binance, OKX, Bybit, KuCoin, Bitget, Gate) — they sum to '
-            '100%. Smaller / low-quality venues (BingX, MEXC, LBank, XT…) are '
-            'excluded by design, as their reported open interest is often inflated, so '
-            'this is the <b>reputable-venue</b> total, not the entire market.</p>')
+    note = ('<p class="note">Shares are each row’s % of the <b>total CEX-perp</b> open '
+            'interest — they sum to 100%. The major venues we track (Binance, OKX, '
+            'Bybit, KuCoin, Bitget, Gate) are listed individually; <b>Others</b> '
+            'aggregates the OI of all the smaller centralized exchanges (BingX, MEXC, '
+            'LBank, XT…) we don’t list one by one. <b>DEX / on-chain perps</b> '
+            '(Hyperliquid, dYdX, gTrade…) are excluded.</p>')
     return (f'<div class="tablewrap"><table class="perp"><thead>{head}</thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div>{note}')
 
@@ -479,15 +540,38 @@ def _holder_tag(hd) -> str:
     return ""
 
 
-def _holders_block(rec) -> str:
-    h = _load_holders(rec["symbol"])
+# Chains the Top-holders picker may offer, on top of the token's own primary
+# chain: only the two majors (per user request — keep it simple). The token's
+# real home chain is always shown; ETH / BNB are added when it's also there.
+HOLDER_PICKER_EXTRA = ("ethereum", "binance-smart-chain")
+
+
+def _bubblemaps_link(chain, contract) -> str:
+    """Link out to Bubblemaps' interactive cluster map for this chain's contract.
+    Their canvas can't be embedded (CSP frame-ancestors blocks iframing), so a
+    link is all we surface. '' when Bubblemaps doesn't cover the chain."""
+    code = CG_PLATFORM_TO_BMAPS.get(chain or "")
+    if not (code and contract):
+        return ""
+    url = f"https://app.bubblemaps.io/{code}/token/{contract}"
+    return (f'<a class="bmap-btn" href="{html.escape(url)}" target="_blank" '
+            f'rel="noopener">Open cluster map on Bubblemaps ↗</a>')
+
+
+def _holders_panel(rec, chain) -> str:
+    """Top-10 holders table + donut for ONE chain (the per-chain holder file).
+    `chain` drives the holder source, the address explorer, and the unavailable
+    message; token counts/USD use the token's global supply × price (one number —
+    approximate on a bridged token's secondary chain, by design)."""
+    sym = rec["symbol"]
+    h = _load_holders_chain(sym, chain) if chain else _load_holders(sym)
     if not h or not h.get("available"):
-        chain = html.escape(rec.get("chain") or "this chain")
+        nm = html.escape(CHAIN_NAMES.get(chain, chain) if chain else (rec.get("chain") or "this chain"))
         return ('<div class="missing">Top-holder data unavailable on '
-                f'{chain} — no keyless on-chain holder source covers this chain.</div>')
+                f'{nm} — no keyless on-chain holder source covers this chain.</div>')
     tot = rec.get("total_supply") or rec.get("max_supply")
     px = rec.get("price")
-    base = ADDR_EXPLORERS.get(rec.get("chain") or "")
+    base = ADDR_EXPLORERS.get(chain or rec.get("chain") or "")
     rows = []
     for hd in h["holders"]:
         share = hd["share"]
@@ -513,11 +597,60 @@ def _holders_block(rec) -> str:
     head = "<tr><th>#</th><th>Holder</th><th>Tokens</th><th>USD</th><th>Share</th></tr>"
     note = ('<p class="note">Retail = 100% − top-10 holders. Top-10 includes any '
             f'CEX/contract/burn wallets (simple definition). Source: {src}.</p>')
-    donut = _donut_holders(rec, h)
+    donut = _donut_holders(rec, h, chain)
+    bmap = _bubblemaps_link(chain or rec.get("chain"), h.get("contract") or rec.get("contract"))
+    bmap_row = f'<div class="bmap-row">{bmap}</div>' if bmap else ""
     table = (f'<div class="badges">{tb} {rb}{hc_badge}</div>'
              f'<div class="tablewrap"><table class="holders"><thead>{head}</thead>'
-             f'<tbody>{"".join(rows)}</tbody></table></div>{note}')
+             f'<tbody>{"".join(rows)}</tbody></table></div>{note}{bmap_row}')
     return f'<div class="hol-grid">{table}{donut}</div>' if donut else table
+
+
+def _holder_picker_chains(rec, platforms) -> list:
+    """Chains the Top-holders picker offers: the token's own primary chain first,
+    then Ethereum / BNB Chain when the token is also deployed there. Empty → fall
+    back to the primary (or None) so the panel renders an unavailable message."""
+    chains = _chains_for(rec, platforms)
+    primary = rec.get("chain")
+    picker = [primary] if primary in chains else []
+    for c in HOLDER_PICKER_EXTRA:
+        if c in chains and c not in picker:
+            picker.append(c)
+    return picker
+
+
+def _holders_switch_js(sym) -> str:
+    s = sym.lower()
+    return ("<script>(function(){"
+            f"var w=document.getElementById('hwrap-{s}');if(!w)return;"
+            "var ps=[].slice.call(w.querySelectorAll('.hpanel'));"
+            "function act(i){ps.forEach(function(p){var on=(+p.dataset.idx===i);"
+            "p.style.display=on?'':'none';if(on&&window.Plotly){"
+            "p.querySelectorAll('.plotly-graph-div').forEach(function(d){"
+            "try{Plotly.Plots.resize(d);}catch(e){}});}});}"
+            f"var s=document.getElementById('hsel-{s}');"
+            "if(s)s.addEventListener('change',function(){act(+s.value);});act(0);"
+            "})();</script>")
+
+
+def _holders_block(rec, platforms) -> str:
+    """Top-10 holders: a per-chain picker (token's home chain + ETH/BNB when
+    present) swapping table+donut panels. One chain → no picker, just the panel."""
+    sym = rec["symbol"]
+    picker = _holder_picker_chains(rec, platforms)
+    if len(picker) <= 1:
+        return _holders_panel(rec, picker[0] if picker else rec.get("chain"))
+    opts, panels = [], []
+    for idx, chain in enumerate(picker):
+        nm = html.escape(CHAIN_NAMES.get(chain, chain))
+        opts.append(f'<option value="{idx}">{nm}</option>')
+        hide = "" if idx == 0 else ' style="display:none"'
+        panels.append(f'<div class="hpanel" data-idx="{idx}"{hide}>{_holders_panel(rec, chain)}</div>')
+    sel = (f'<div class="chainsel"><label>Chain <select id="hsel-{sym.lower()}">'
+           f'{"".join(opts)}</select></label>'
+           f'<span class="chaincount">{len(picker)} chains</span></div>')
+    return (f'<div id="hwrap-{sym.lower()}">{sel}'
+            f'<div class="hpanels">{"".join(panels)}</div>{_holders_switch_js(sym)}</div>')
 
 
 # ── time-series + donut charts ────────────────────────────────────────────────
@@ -588,8 +721,10 @@ def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -
                        config={"displayModeBar": False, "responsive": True})
 
 
-def _donut_holders(rec, h) -> str:
-    """Top-10 holders + a 'Retail (rest)' slice."""
+def _donut_holders(rec, h, chain=None) -> str:
+    """Top-10 holders + a 'Retail (rest)' slice. `chain` keeps the Plotly div id
+    unique when the holders block stacks one panel per chain (else duplicate ids
+    break the switcher)."""
     holders = h.get("holders") or []
     if not holders:
         return ""
@@ -606,7 +741,8 @@ def _donut_holders(rec, h) -> str:
         values.append(retail)
     top10 = h.get("top10_share")
     center = f"Top-10<br>{top10:.0f}%" if top10 is not None else None
-    return _donut(f"dh-{rec['symbol'].lower()}", labels, values,
+    suffix = f"-{CG_PLATFORM_TO_BMAPS.get(chain, chain)}" if chain else ""
+    return _donut(f"dh-{rec['symbol'].lower()}{suffix}", labels, values,
                   "Holder distribution", center=center)
 
 
@@ -619,8 +755,11 @@ def _donut_oi(rec, perp) -> str:
     labels = [v["venue"] for v in venues]
     values = [v["oi_usd"] for v in venues]
     total = perp.get("total_oi_usd") or sum(values)
+    # tracked venues keep the palette in order; the Others slice is muted grey.
+    colors = ["#c5ccd3" if v.get("is_others") else _DONUT_COLORS[i % len(_DONUT_COLORS)]
+              for i, v in enumerate(venues)]
     return _donut(f"doi-{rec['symbol'].lower()}", labels, values,
-                  "OI by exchange", center=f"OI<br>{_usd(total)}", usd=True)
+                  "OI by exchange", center=f"OI<br>{_usd(total)}", usd=True, colors=colors)
 
 
 def _donut_supply(rec) -> str:
@@ -672,7 +811,30 @@ def _supply_valuation_block(rec) -> str:
             f'<div class="donut-grid">{"".join(donuts)}</div></section>')
 
 
-def _detail(rec) -> str:
+# Keep every Plotly chart sized to its container on ANY layout change — browser
+# zoom, window/tab resize, CSS reflow, or a hidden panel becoming visible. Plotly's
+# own `responsive:true` only listens for window resize, so charts that share a
+# fluid grid got clipped (rendered at a stale width) on zoom/reflow. A
+# ResizeObserver on each graph div, debounced with rAF (avoids the observer-loop
+# warning), redraws it whenever its box actually changes; offsetParent!==null skips
+# display:none panels (they fire again when shown).
+_PLOT_RESIZE_JS = (
+    "<script>(function(){"
+    "if(!('ResizeObserver' in window))return;var raf;"
+    "var ro=new ResizeObserver(function(es){if(!window.Plotly)return;"
+    "cancelAnimationFrame(raf);raf=requestAnimationFrame(function(){"
+    "es.forEach(function(e){var d=e.target;"
+    "if(d.classList.contains('plotly-graph-div')&&d.offsetParent!==null){"
+    "try{Plotly.Plots.resize(d);}catch(err){}}});});});"
+    "function obs(){document.querySelectorAll('.plotly-graph-div')"
+    ".forEach(function(d){ro.observe(d);});}"
+    "if(document.readyState==='loading')"
+    "document.addEventListener('DOMContentLoaded',obs);else obs();"
+    "})();</script>"
+)
+
+
+def _detail(rec, platforms) -> str:
     sym = rec["symbol"]
     name = html.escape(rec.get("name", sym))
     fund_amt, fund_inv = _funding_str(rec)
@@ -728,17 +890,18 @@ def _detail(rec) -> str:
 {_supply_valuation_block(rec)}
 <section class="card span">
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
-  {_holders_block(rec)}
+  {_holders_block(rec, platforms)}
 </section></main>"""
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'<title>{name} ({html.escape(sym)}) — Scam Watchlist</title>'
             f'<style>{RCSS}{EXTRA_CSS}</style>'
-            f'<script src="../report/plotly.min.js"></script></head><body>{body}</body></html>')
+            f'<script src="../report/plotly.min.js"></script></head><body>{body}'
+            f'{_PLOT_RESIZE_JS}</body></html>')
 
 
-def _filter_bar(n) -> str:
-    return f"""
+def _filter_bar() -> str:
+    return """
 <div class="filters">
   <input id="search" type="search" placeholder="Search token…" autocomplete="off">
   <label class="fdv"><input type="checkbox" id="fdvchk"> FDV &gt; $
@@ -759,7 +922,7 @@ def _index(recs) -> str:
 <a href="../funnel/report/index.html">CEX → Korea</a>
 <a class="active" href="index.html">Scam Watchlist ({len(recs)})</a></nav>
 <p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour</p></header>
-{_filter_bar(len(recs))}
+{_filter_bar()}
 <div id="views" class="view-grid">
   <main class="grid">{tiles}</main>
   <div class="listwrap"><table class="list" id="ltab"><thead><tr>{head}</tr></thead>
@@ -806,6 +969,11 @@ section.card.span h3 .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-l
 .info dl dd{min-width:0;overflow-wrap:anywhere}
 .badges{margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap}
 table.perp,table.holders{width:100%;border-collapse:collapse;font-size:13px}
+/* min-widths so the wide detail tables SCROLL inside .tablewrap on phones instead
+   of crushing every column to nothing (desktop containers exceed these, so no
+   scroll there). Mirrors the index list table's approach. */
+table.perp{min-width:520px}
+table.holders{min-width:430px}
 table.perp th,table.holders th{text-align:right;padding:7px 10px;color:#6b7785;font-weight:600;
   border-bottom:2px solid #e1e7ee;font-size:12px}
 table.perp th:first-child,table.holders th:nth-child(2){text-align:left}
@@ -813,6 +981,10 @@ table.perp td,table.holders td{text-align:right;padding:7px 10px;border-bottom:1
 table.perp td.venue,table.holders td:nth-child(2){text-align:left}
 table.perp td.iv{color:#8a96a3}
 table.perp tr.allrow td{font-weight:700;background:#f7f9fb}
+/* Others = aggregate of untracked venues; muted so it reads as a catch-all */
+table.perp tr.otherrow td{color:#8a96a3;background:#fbfcfd}
+table.perp tr.otherrow td.venue{color:#6b7785}
+table.perp tr.otherrow .htag{margin-left:7px}
 table.holders td.mono,table.holders a.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 section.card.span .missing{color:#8a96a3;font-style:italic;padding:8px 0}
 section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
@@ -835,9 +1007,27 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 section.card.span .plotly-graph-div{max-width:100%}
 .hist-h{margin:18px 0 4px;font-size:14px;color:#1d2733}
 .hist-h .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:6px}
+/* ── Top-holders chain picker + Bubblemaps link ──────────────────────────── */
+.chainsel{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:13px;color:#42505e}
+.chainsel select{font:inherit;padding:5px 8px;border:1px solid #d7dee6;border-radius:7px;
+  background:#fff;color:#1d2733;cursor:pointer}
+.chainsel .chaincount{color:#8a96a3;font-size:12px}
+.bmap-row{margin-top:14px}
+.bmap-btn{display:inline-block;padding:9px 14px;border-radius:8px;background:#1f4e79;color:#fff;
+  font-size:13px;font-weight:600;text-decoration:none}
+.bmap-btn:hover{background:#163a5b}
 @media(max-width:640px){
   section.card.span{padding:16px 14px}
+  section.card.span h3{font-size:14px}
   .info dl{grid-template-columns:78px 1fr}
+  /* roomier tap targets + a full-width Bubblemaps button that's easy to thumb */
+  .chainsel{flex-wrap:wrap;gap:8px 12px}
+  .chainsel select{padding:8px 10px}
+  .bmap-row{margin-top:16px}
+  .bmap-btn{display:block;text-align:center;padding:11px 14px}
+  /* keep the chart-switch / hover scroll from feeling cramped */
+  table.perp,table.holders{font-size:12.5px}
+  table.perp th,table.holders th,table.perp td,table.holders td{padding:7px 8px}
 }
 """
 
@@ -882,12 +1072,13 @@ def main():
         return
     data = json.loads(DATA.read_text(encoding="utf-8"))
     FUNDING.update(_load_funding([r["symbol"].upper() for r in data.values()]))
+    platforms = _load_platforms()
     # order by FDV desc (matches the CSV's rough ordering)
     recs = sorted(data.values(), key=lambda r: -(r.get("fdv") or r.get("csv_fdv") or 0))
     SITE.mkdir(parents=True, exist_ok=True)
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     for r in recs:
-        (SITE / f"{r['symbol'].lower()}.html").write_text(_detail(r), encoding="utf-8")
+        (SITE / f"{r['symbol'].lower()}.html").write_text(_detail(r, platforms), encoding="utf-8")
     print(f"wrote {SITE/'index.html'} + {len(recs)} detail pages")
 
 

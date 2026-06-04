@@ -354,8 +354,12 @@ def _assemble(sym: str, spot_price, raw) -> dict:
         v["oi_share_pct"] = (v["oi_usd"] / total * 100) if total else None
         v["oi_vol_ratio"] = (v["oi_usd"] / v["vol24h_usd"]) if v.get("vol24h_usd") else None
     venues.sort(key=lambda v: -v["oi_usd"])
+    # others_oi_usd / n_others: summed OI of perp venues we DON'T track individually
+    # (filled by the CoinGecko path; 0 on the direct path, which only queries the
+    # allowlisted exchanges). The Scam Watchlist folds it back in as an "Others" row.
     return {"symbol": sym, "total_oi_usd": total, "n_venues": len(venues),
-            "venues": venues, "fetched_at": int(time.time())}
+            "venues": venues, "others_oi_usd": 0.0, "n_others": 0,
+            "fetched_at": int(time.time())}
 
 
 def fetch_token(symbol: str, spot_price, bulk_maps=None) -> dict:
@@ -402,6 +406,27 @@ CG_MARKET = {"Binance (Futures)": "Binance", "OKX (Futures)": "OKX",
              "Bybit (Futures)": "Bybit", "KuCoin Futures": "KuCoin",
              "Gate (Futures)": "Gate", "Bitget Futures": "Bitget"}
 
+# On-chain / DEX perp venues. The Scam Watchlist's "Others" row aggregates the OI
+# of OTHER CEX perps only (the centralized venues we don't list individually) — it
+# deliberately EXCLUDES Hyperliquid and DEX/on-chain perps, whose OI is a different
+# animal. Matched case-insensitively as substrings against CoinGecko's market name,
+# so "Aster (Futures)" / "gTrade (Arbitrum)" / "dYdX Chain" all hit.
+CG_DEX_PERPS = {
+    "hyperliquid", "dydx", "gmx", "gtrade", "gains network", "aevo", "apex",
+    "paradex", "vertex", "drift", "jupiter", "lighter", "edgex", "extended",
+    "derive", "aster", "pacifica", "grvt", "vest", "ostium", "evedex", "orderly",
+    "antarctic", "standx", "decibel", "katana", "strike finance", "flash trade",
+    "sunperp", "gate dex", "sodex", "variational", "synfutures", "rabbitx",
+    "helix", "injective", "nftperp", "kwenta", "hmx", "mux", "vela", "unidex",
+    "dexalot", "levana", "bluefin", "myx", "avantis", "holdstation", "satori",
+    "hibachi", "mango", "zeta", "perpetual protocol",
+}
+
+
+def _is_dex_perp(market: str) -> bool:
+    ml = (market or "").lower()
+    return any(dx in ml for dx in CG_DEX_PERPS)
+
 
 def _cg_interval_map(wanted):
     """Per-token funding interval (hours) from KuCoin's bulk feed — one call,
@@ -426,15 +451,32 @@ def fetch_all_cg(tokens) -> dict:
     except Exception:
         deriv = []
     intervals = _cg_interval_map(wanted)
-    # group: token -> {venue: norm_dict} (keep the larger-OI ticker per venue)
-    by_tok = {}
+    # group: token -> {venue: norm_dict} (keep the larger-OI ticker per venue).
+    # others: token -> {market: max OI} for every UNTRACKED perp venue, so we can
+    # report the rest-of-market OI as a single "Others" aggregate (deduped to the
+    # largest ticker per exchange, mirroring the per-venue handling above).
+    by_tok, others = {}, {}
     for t in deriv:
         idx = (t.get("index_id") or "").upper()
-        venue = CG_MARKET.get(t.get("market"))
-        if idx not in wanted or not venue:
+        if idx not in wanted:
             continue
         oi, price = _f(t.get("open_interest")), _f(t.get("price"))
         if not oi:
+            continue
+        mkt = t.get("market") or "?"
+        venue = CG_MARKET.get(t.get("market"))
+        if not venue:
+            # untracked venue → the CEX "Others" aggregate, but skip DEX/on-chain
+            # perps (Hyperliquid et al.) — Others is OTHER CEX perps only.
+            if _is_dex_perp(mkt):
+                continue
+            # collision guard: ignore tickers whose mark is wildly off this token's
+            # spot (a different project trading under the same ticker on that venue).
+            sp = spot.get(idx)
+            if sp and price and not (0.5 <= price / sp <= 2.0):
+                continue
+            slot = others.setdefault(idx, {})
+            slot[mkt] = max(slot.get(mkt, 0.0), oi)
             continue
         fr = _f(t.get("funding_rate"))            # CoinGecko quotes funding in %
         d = {"oi_usd": oi, "oi_coins": (oi / price) if price else None, "mark": price,
@@ -447,6 +489,9 @@ def fetch_all_cg(tokens) -> dict:
     for sym in wanted:
         raw = [(v, d) for v, d in (by_tok.get(sym) or {}).items()]
         res = _assemble(sym, spot.get(sym), raw)
+        o = others.get(sym) or {}
+        res["others_oi_usd"] = sum(o.values())
+        res["n_others"] = len(o)
         res["source"] = "coingecko"
         out[sym] = res
     return out
@@ -456,7 +501,6 @@ def fetch_all(tokens) -> dict:
     """tokens: list of (symbol, spot). Pre-fetch the bulk venue maps ONCE (~10
     calls total), then assemble every token — the per-symbol venues run in
     parallel across tokens. ~120 calls/run vs ~600 for naive per-symbol."""
-    wanted = {s.upper() for s, _ in tokens}
     bulk_maps = {"Bybit": _bulk_bybit(), "KuCoin": _bulk_kucoin(), "Gate": _bulk_gate(),
                  "Bitget": _bulk_bitget()}
     out = {}
@@ -515,6 +559,9 @@ def _print(res):
         iv = f"{v.get('interval_h',8):g}h"
         print(f"  {v['venue']:9} {v['oi_usd']/1e6:>10.2f}M {v['oi_share_pct']:>6.1f}% "
               f"{fund:>10} {iv:>6} {ann:>9} {ovr:>7}")
+    if res.get("others_oi_usd"):
+        print(f"  {'Others':9} {res['others_oi_usd']/1e6:>10.2f}M  "
+              f"({res.get('n_others', 0)} untracked venues)")
 
 
 def main(argv):
