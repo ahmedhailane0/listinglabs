@@ -130,6 +130,7 @@ def build_config(sym: str, rec: dict) -> dict:
         "total_supply": _num(rec.get("totalSupply")),
         "cmc_slug": slug,
         "category": "",
+        "new": True,                          # NEW badge in the report; clear when no longer recent
         "window_start_utc": _iso(lt - 3600_000) if lt else None,
         "window_end_utc": _iso(lt + 48 * 3600_000) if lt else None,
         "events": [],

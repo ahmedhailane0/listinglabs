@@ -443,9 +443,10 @@ def _list_row(cfg: dict) -> str:
     p = _perf(cfg) or {}
     fdv, mcap = cfg.get("fdv_usd"), cfg.get("mcap_usd")
     oi = (OI.get(cfg["token"].upper()) or {}).get("oi_pct_mcap")
+    new_badge = '<span class="newbadge">NEW</span>' if cfg.get("new") else ''
     tok_cell = (f'<td class="tok" data-s="{search}">'
                 f'<a href="{_slug(cfg)}.html">{_sparkline(cfg)}'
-                f'<span class="lname">{name} <span class="sym">{sym}</span></span></a></td>')
+                f'<span class="lname">{name} <span class="sym">{sym}</span>{new_badge}</span></a></td>')
     return (
         f'<tr class="lrow" data-venues="{html.escape(venues)}" data-search="{search}">'
         f'<td class="rank"></td>'
@@ -790,6 +791,9 @@ table.list td.tok a { display: flex; align-items: center; gap: 10px; }
 table.list td.tok .thumb { width: 64px; height: 26px; border: 0; background: none; flex: 0 0 auto; }
 table.list td.tok .lname { font-weight: 600; }
 table.list td.tok .sym { color: #8a96a3; font-weight: 400; font-size: 12px; }
+table.list td.tok .newbadge { display: inline-block; margin-left: 6px; padding: 1px 5px;
+  font-size: 9px; font-weight: 700; line-height: 1.4; letter-spacing: .04em; color: #fff;
+  background: #1a8f4c; border-radius: 4px; vertical-align: middle; }
 table.list td .sub { display: block; font-size: 11px; color: #8a96a3; font-weight: 400; }
 table.list .pos { color: #1a8f4c; } table.list .neg { color: #c0392b; }
 

@@ -26,6 +26,12 @@ permissions:
   pages: write                  # to publish to GitHub Pages
   id-token: write               # required by the Pages deploy action
 
+# GitHub forces JS actions onto Node 24 on 2026-06-16 and removes Node 20 on
+# 2026-09-16. Opt in now so every action (incl. the Pages actions, which have no
+# Node-24 release yet) runs on Node 24 and the deprecation warnings stop.
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,10 +40,10 @@ jobs:
         working-directory: perps_correlation
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.13"
 
