@@ -84,6 +84,11 @@ jobs:
         # token already in cache/scam_data.json. Without this, the watchlist charts
         # froze ~2 days behind (nothing refreshed scam_prices in the cron).
         run: python refresh_scam_prices.py
+        env:
+          SCAM_LIMIT: "13"   # tokens touched per run (CoinGecko 429s the CI IP).
+                             # Walks MOST-STALE-FIRST and writes after every token,
+                             # so each run advances the tail and a timeout just
+                             # resumes next run. 26 tokens -> full cycle in ~2 runs.
         continue-on-error: true
         timeout-minutes: 6
 

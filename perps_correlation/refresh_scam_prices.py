@@ -21,6 +21,7 @@ value we already have. This is what keeps the watchlist charts from going stale
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -93,16 +94,30 @@ def main(argv) -> int:
     PRICES.mkdir(parents=True, exist_ok=True)
     data = json.loads(OUT.read_text(encoding="utf-8"))
     want = {a.upper() for a in argv} or None
+
+    # Round-robin so a throttled/timed-out CI run never starves the tail: walk
+    # tokens MOST-STALE-FIRST (oldest/absent `refreshed_at` go first) and cap each
+    # run at SCAM_LIMIT tokens. The script writes after every token, so a timeout is
+    # harmless — the next run simply picks up the tokens that have waited longest.
+    # An explicit token list (CLI args) bypasses both the cap and the ordering.
+    order = list(data.items())
+    if want:
+        order = [(s, r) for s, r in order if s.upper() in want]
+    else:
+        order.sort(key=lambda kv: kv[1].get("refreshed_at") or 0)
+        limit = int(os.environ.get("SCAM_LIMIT") or 0)
+        if limit > 0:
+            order = order[:limit]
+
     n = 0
-    for sym, rec in data.items():
-        if want and sym.upper() not in want:
-            continue
+    for sym, rec in order:
         try:
             data[sym] = refresh_one(rec)
         except Exception as e:
             print(f"{sym:9} refresh error: {e}", flush=True)
             continue
         r = data[sym]
+        r["refreshed_at"] = time.time()   # stamp so the next run rotates past it
         print(f"{sym:9} px={r.get('price')} mc={r.get('mcap')} fdv={r.get('fdv')} "
               f"circ={r.get('circ_supply')} tot={r.get('total_supply')} "
               f"src={r.get('supply_source')}", flush=True)
