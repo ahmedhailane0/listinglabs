@@ -157,13 +157,11 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
             "color": "#e67e22", "text": f"{label} announced",
         })
 
-    # Default view frames the listing activity: from the first candle to a little
-    # past the last listing/announcement marker, so every marker is on-screen by
-    # default and the reaction is the headline. Users pan/scroll right for the full
-    # live history. Bounded to [24h, 10d] so a same-day cluster still shows some
-    # price context and a far-out event doesn't blow the window open. A small left
-    # pad keeps launch markers off the price axis (Lightweight Charts happily shows
-    # empty space left of the first candle).
+    # The DEFAULT view shows the FULL history fitted to the frame ("All", like
+    # CoinMarketCap) — not the launch window — so the chart reads as one continuous
+    # price history instead of a zoomed-in launch with the rest crammed off-screen.
+    # The "launch" button still jumps to the reaction window below (win_*), and the
+    # "all" button returns to the full fit.
     marker_secs = [m["time"] for m in listing_markers + ann_markers]
     last_ev_ms = (max(marker_secs) * 1000) if marker_secs else t_lo
     win_to_ms = min(t_hi,
@@ -173,22 +171,37 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     win_from = (t_lo - left_pad) // 1000
     win_to = win_to_ms // 1000
 
+    # Pick a default candle resolution from the total span so the full-history view
+    # is evenly spaced and clean (Lightweight Charts packs points by index, so a fine
+    # resolution over a long span — esp. mixed-resolution decimated data — looks
+    # "chunky"). Coarser timeframe for longer history.
+    span_days = (t_hi - t_lo) / 86_400_000
+    if span_days <= 2:
+        def_tf = 0     # 5m
+    elif span_days <= 10:
+        def_tf = 1     # 15m
+    elif span_days <= 45:
+        def_tf = 2     # 1h
+    else:
+        def_tf = 3     # 4h
+
     div_id = f"tvchart-{token.lower()}"
     cfg_js = json.dumps({
         "rows": js_rows, "dec": dec,
         "listing": listing_markers, "ann": ann_markers,
         "win": {"from": win_from, "to": win_to},
-        "tfs": TIMEFRAMES,
+        "tfs": TIMEFRAMES, "def_tf": def_tf,
     }, separators=(",", ":"))
 
     toolbar = "".join(
-        f'<button class="tv-tf{" active" if i == 0 else ""}" data-m="{m}">{name}</button>'
+        f'<button class="tv-tf{" active" if i == def_tf else ""}" data-m="{m}">{name}</button>'
         for i, (name, m) in enumerate(TIMEFRAMES)
     )
     return (
         f'<div class="tvchart-wrap" style="height:{height}px">'
         f'<div class="tv-toolbar">{toolbar}'
-        f'<button class="tv-reset" title="Reset to launch window">⤺ launch</button>'
+        f'<button class="tv-reset tv-all active" title="Show full history">all</button>'
+        f'<button class="tv-reset tv-launch" title="Zoom to the launch reaction">⤺ launch</button>'
         f'<span class="tv-legend"><i class="dot"></i>listing '
         f'<i class="tri"></i>announcement</span></div>'
         f'<div id="{div_id}" class="tvchart"></div>'
@@ -249,16 +262,18 @@ function mount(id, cfg){
     return out;
   }
 
-  var active = cfg.tfs[0][1];
+  var active = cfg.tfs[cfg.def_tf || 0][1];
   function render(mins){
     active = mins;
     series.setData(agg(cfg.rows, mins));
     series.setMarkers(markers(mins));
   }
+  function toAll(){ chart.timeScale().fitContent(); }
   function toLaunch(){
     if(cfg.win){ chart.timeScale().setVisibleRange({ from:cfg.win.from, to:cfg.win.to }); }
   }
-  render(active); toLaunch();
+  // Default = full history fitted to the frame ("All", like CoinMarketCap).
+  render(active); toAll();
 
   // Crosshair tooltip (date + price), floating inside the wrap.
   var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
@@ -277,7 +292,7 @@ function mount(id, cfg){
     }
   });
 
-  // Toolbar: timeframe switch + reset-to-launch.
+  // Toolbar: timeframe (candle resolution) switch.
   wrap.querySelectorAll('.tv-tf').forEach(function(b){
     b.addEventListener('click', function(){
       wrap.querySelectorAll('.tv-tf').forEach(function(x){ x.classList.remove('active'); });
@@ -285,8 +300,14 @@ function mount(id, cfg){
       render(parseInt(b.dataset.m,10));
     });
   });
-  var rb = wrap.querySelector('.tv-reset');
-  if(rb){ rb.addEventListener('click', toLaunch); }
+  // Range buttons: all (full history) / launch (reaction window). Highlight which.
+  var ab = wrap.querySelector('.tv-all'), lb = wrap.querySelector('.tv-launch');
+  function setRange(activeBtn){
+    [ab, lb].forEach(function(x){ if(x) x.classList.remove('active'); });
+    if(activeBtn) activeBtn.classList.add('active');
+  }
+  if(ab){ ab.addEventListener('click', function(){ toAll(); setRange(ab); }); }
+  if(lb){ lb.addEventListener('click', function(){ toLaunch(); setRange(lb); }); }
 
   // Keep width in sync with the responsive card.
   if(window.ResizeObserver){

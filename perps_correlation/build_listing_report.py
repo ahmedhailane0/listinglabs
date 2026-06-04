@@ -896,8 +896,8 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
               background: #fff; border: 1px solid #d9e1ea; border-radius: 6px;
               padding: 3px 10px; line-height: 1.4; }
 .tv-tf:hover, .tv-reset:hover { border-color: #1f4e79; color: #1f4e79; }
-.tv-tf.active { background: #1f4e79; border-color: #1f4e79; color: #fff; }
-.tv-reset { margin-left: 4px; }
+.tv-tf.active, .tv-reset.active { background: #1f4e79; border-color: #1f4e79; color: #fff; }
+.tv-all { margin-left: 10px; }
 .tv-legend { margin-left: auto; font-size: 11px; color: #8a95a1;
              display: inline-flex; align-items: center; gap: 5px; }
 .tv-legend .dot { width: 9px; height: 9px; border-radius: 50%; background: #1f4e79;
