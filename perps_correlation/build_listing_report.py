@@ -17,7 +17,7 @@ import json
 from pathlib import Path
 
 from listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
-from interactive_chart import chart_html
+from interactive_chart import chart_html, first_candle_dt, _is_placeholder
 from venues import venue_color, venue_url
 import metrics
 
@@ -69,13 +69,20 @@ def _is_sweep(ev: dict) -> bool:
 def _tge_time(cfg: dict):
     """Best estimate of the token's generation/first-listing moment.
 
-    Earliest *precisely observed* venue event (sweep artifacts excluded). Falls
-    back to the Binance Alpha time, then the window start.
+    Earliest *precisely observed* venue event — excluding both sweep artifacts and
+    bare `00:00Z` date placeholders (which sit at midnight and predate the real
+    listing). When only placeholders exist, derive the Alpha listing from the
+    on-chain pool's first candle (the pool's birth ≈ the listing); finally fall
+    back to the recorded Alpha time / window start.
     """
     precise = [parse_iso(ev["iso_time_utc"]) for ev in cfg.get("events", [])
-               if ev.get("iso_time_utc") and not _is_sweep(ev)]
+               if ev.get("iso_time_utc") and not _is_sweep(ev)
+               and not _is_placeholder(ev["iso_time_utc"])]
     if precise:
         return min(precise)
+    derived = first_candle_dt(cfg["token"])
+    if derived:
+        return derived
     return _alpha_time(cfg)
 
 
@@ -496,7 +503,7 @@ def _detail(cfg: dict) -> str:
     interactive = chart_html(cfg, announcements=ANN.get(_slug(cfg)))
     if interactive:
         chart_block = interactive
-        extra_head = "<script src=\"plotly.min.js\"></script>"
+        extra_head = "<script src=\"lightweight-charts.standalone.production.js\"></script>"
     else:
         chart = _chart_rel(cfg)
         chart_block = (f"<img src=\"{chart}\" alt=\"{token} chart\">"
@@ -884,6 +891,29 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
 .chart > .plotly-graph-div, .chart > div { width: 100%; }
 .missing { color: #b00; font-style: italic; }
 
+/* TradingView Lightweight Charts embed */
+.tvchart-wrap { position: relative; width: 100%; display: flex; flex-direction: column; }
+.tvchart { flex: 1 1 auto; width: 100%; min-height: 0; }
+.tv-toolbar { display: flex; align-items: center; gap: 6px; padding: 0 0 8px;
+              flex-wrap: wrap; }
+.tv-tf, .tv-reset { font: inherit; font-size: 12px; cursor: pointer; color: #44515f;
+              background: #fff; border: 1px solid #d9e1ea; border-radius: 6px;
+              padding: 3px 10px; line-height: 1.4; }
+.tv-tf:hover, .tv-reset:hover { border-color: #1f4e79; color: #1f4e79; }
+.tv-tf.active { background: #1f4e79; border-color: #1f4e79; color: #fff; }
+.tv-reset { margin-left: 4px; }
+.tv-legend { margin-left: auto; font-size: 11px; color: #8a95a1;
+             display: inline-flex; align-items: center; gap: 5px; }
+.tv-legend .dot { width: 9px; height: 9px; border-radius: 50%; background: #1f4e79;
+             display: inline-block; border: 1.5px solid #fff; box-shadow: 0 0 0 1px #1f4e79; }
+.tv-legend .tri { width: 0; height: 0; display: inline-block; margin-left: 8px;
+             border-left: 5px solid transparent; border-right: 5px solid transparent;
+             border-bottom: 8px solid #e67e22; }
+.tv-tip { position: absolute; pointer-events: none; display: none; z-index: 6;
+          background: #fff; border: 1px solid #e1e7ee; border-radius: 6px;
+          padding: 4px 8px; font-size: 12px; color: #1d2733; white-space: nowrap;
+          box-shadow: 0 2px 8px rgba(0,0,0,.10); }
+
 /* ============================================================
    Responsive layer — fluid grids, flexible media, breakpoints
    ============================================================ */
@@ -935,6 +965,14 @@ def main() -> None:
         FUNDING.update(json.loads(FUNDING_CACHE.read_text(encoding="utf-8")))
     cfgs = [json.loads(p.read_text(encoding="utf-8")) for p in LISTINGS.glob("*.json")]
     cfgs.sort(key=_alpha_time, reverse=True)
+    # Vendor the TradingView Lightweight Charts lib (CSP blocks external scripts, so
+    # it must be served same-origin — same model the old Plotly bundle used). The
+    # listing reaction charts use this.
+    import shutil
+    lib = HERE / "vendor" / "lightweight-charts.standalone.production.js"
+    shutil.copyfile(lib, OUT_DIR / "lightweight-charts.standalone.production.js")
+    # Keep emitting plotly.min.js too: the Scam Watchlist report (build_scams.py)
+    # still renders its OI/funding history with Plotly and links ../report/plotly.min.js.
     from plotly.offline import get_plotlyjs
     (OUT_DIR / "plotly.min.js").write_text(get_plotlyjs(), encoding="utf-8")
     (OUT_DIR / "style.css").write_text(CSS, encoding="utf-8")
