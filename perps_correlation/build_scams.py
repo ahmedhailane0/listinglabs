@@ -950,18 +950,22 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (12 cols: #, Token, Since, 24h, 7d, 30d, 90d,
-   FDV, MC, OI%, Funding, Memo). Fixed layout reads widths from the header row. */
-#ltab{table-layout:fixed}
+/* deterministic column widths (13 cols: #, Token, TGE, Since, 24h, 7d, 30d, 90d,
+   FDV, MC, OI%, Funding, Memo). Fixed layout reads widths from the header row.
+   A min-width keeps every column readable — when the viewport is narrower the
+   wrapper (.listwrap, overflow-x:auto) scrolls horizontally instead of crunching
+   the columns (esp. Memo). */
+#ltab{table-layout:fixed;min-width:1080px}
 #ltab th{overflow:hidden}
-#ltab th:nth-child(1){width:3%}
-#ltab th:nth-child(2){width:18%;text-align:left}
-#ltab th:nth-child(3),#ltab th:nth-child(4),#ltab th:nth-child(5),
-#ltab th:nth-child(6),#ltab th:nth-child(7){width:6%}
-#ltab th:nth-child(8),#ltab th:nth-child(9){width:8%}
-#ltab th:nth-child(10){width:6%}
-#ltab th:nth-child(11){width:10%}
-#ltab th:nth-child(12){width:13%;text-align:left}
+#ltab th:nth-child(1){width:3%}                                   /* # */
+#ltab th:nth-child(2){width:17%;text-align:left}                  /* Token */
+#ltab th:nth-child(3){width:8%;text-align:left}                   /* TGE */
+#ltab th:nth-child(4),#ltab th:nth-child(5),#ltab th:nth-child(6),
+#ltab th:nth-child(7),#ltab th:nth-child(8){width:5.5%}           /* Since,24h,7d,30d,90d */
+#ltab th:nth-child(9),#ltab th:nth-child(10){width:8%}            /* FDV, MC */
+#ltab th:nth-child(11){width:6%}                                  /* OI% */
+#ltab th:nth-child(12){width:11%;text-align:left}                 /* Funding */
+#ltab th:nth-child(13){width:13.5%;text-align:left}               /* Memo */
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
