@@ -3454,5 +3454,137 @@
         "iso": "2025-04-23T00:00:00Z"
       }
     }
+  },
+  "acn": {
+    "symbol": "ACN",
+    "floor": "2026-03-30T08:30:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": null,
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-04-29T00:00:00Z"
+      },
+      "kucoin_futures": null,
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-04-29T00:00:00Z"
+      },
+      "bitget_perp": null,
+      "gate_spot": null,
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-03-30T00:00:00Z"
+      }
+    }
+  },
+  "babyshark": {
+    "symbol": "BABYSHARK",
+    "floor": "2026-04-14T08:00:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": null,
+      "kraken_spot": {
+        "label": "Kraken Spot",
+        "iso": "2026-05-14T00:00:00Z"
+      },
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-05-14T00:00:00Z"
+      },
+      "kucoin_futures": null,
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-05-14T00:00:00Z"
+      },
+      "bitget_perp": null,
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-05-14T00:00:00Z"
+      },
+      "gate_perp": null
+    }
+  },
+  "pharos": {
+    "symbol": "PHAROS",
+    "floor": "2026-04-13T15:00:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2026-05-14T00:00:00Z"
+      },
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "bitget_spot": null,
+      "bitget_perp": null,
+      "gate_spot": null,
+      "gate_perp": null
+    }
+  },
+  "share": {
+    "symbol": "SHARE",
+    "floor": "2026-04-08T10:00:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": null,
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-05-08T00:00:00Z"
+      },
+      "kucoin_futures": null,
+      "bitget_spot": null,
+      "bitget_perp": null,
+      "gate_spot": null,
+      "gate_perp": null
+    }
+  },
+  "zest": {
+    "symbol": "ZEST",
+    "floor": "2026-04-19T13:00:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": null,
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-05-19T00:00:00Z"
+      },
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-05-26T00:00:00Z"
+      },
+      "bitget_spot": null,
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-06-04T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-05-19T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-05-20T00:00:00Z"
+      }
+    }
   }
 }

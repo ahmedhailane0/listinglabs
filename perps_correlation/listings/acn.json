@@ -1,0 +1,40 @@
+{
+  "token": "ACN",
+  "name": "AITECH Cloud Network",
+  "chain": "eth",
+  "token_contract": "0x3e76dd57e649a263a532cc9bcc58b32a065fb2a4",
+  "gecko_pool": "0x51840edc34be8f0a391cbb180a213facf22ccd74",
+  "fdv_usd": 15561822.70715791,
+  "fdv_source": "Binance Alpha listings API, 2026-06-04 (current, not at-listing)",
+  "mcap_usd": 14160328.20041194,
+  "circulating_supply": 1819880417.2082844,
+  "total_supply": 2000000000.0,
+  "cmc_slug": null,
+  "category": "",
+  "window_start_utc": "2026-04-29T07:30:00Z",
+  "window_end_utc": "2026-05-01T08:30:00Z",
+  "events": [
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-03-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-04-29T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-04-29T08:30:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1777451400000, contract on Ethereum)."
+    }
+  ],
+  "annotations": [],
+  "not_listed": []
+}

@@ -1,0 +1,55 @@
+{
+  "token": "ZEST",
+  "name": "Zest Protocol",
+  "chain": "bsc",
+  "token_contract": "0x5506599c722389a60580b5213ea1da60d64754a1",
+  "gecko_pool": "0xce7217a1091a273e0253557f03bde40386935bda4602ab8ab5c966ee664a3295",
+  "fdv_usd": 243388135.95184004,
+  "fdv_source": "Binance Alpha listings API, 2026-06-04 (current, not at-listing)",
+  "mcap_usd": 35534667.84896864,
+  "circulating_supply": 146000000.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "zest-protocol",
+  "category": "",
+  "window_start_utc": "2026-05-19T12:00:00Z",
+  "window_end_utc": "2026-06-04T18:44:22Z",
+  "events": [
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-05-19T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-05-19T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-05-19T13:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1779195600000, contract on BSC)."
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-05-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-05-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-06-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-06-04T14:00:00Z",
+      "note": "ZESTUSDT USDT-M perp first 1h candle on Binance fapi (verified). Perp launched ~16d after Alpha listing."
+    }
+  ],
+  "annotations": [],
+  "not_listed": []
+}

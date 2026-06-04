@@ -150,6 +150,11 @@
       }
     ]
   },
+  "ACN": {
+    "amount": null,
+    "source": null,
+    "investors": []
+  },
   "AERO": {
     "amount": null,
     "source": null,
@@ -485,6 +490,11 @@
       }
     ]
   },
+  "BABYSHARK": {
+    "amount": null,
+    "source": null,
+    "investors": []
+  },
   "BARD": {
     "amount": 17000000,
     "source": "rootdata",
@@ -587,8 +597,8 @@
     "investors": []
   },
   "BILL": {
-    "amount": null,
-    "source": null,
+    "amount": 30000000.0,
+    "source": "excel",
     "investors": []
   },
   "BIRB": {
@@ -907,8 +917,8 @@
     "investors": []
   },
   "EDGE": {
-    "amount": null,
-    "source": null,
+    "amount": 4100000.0,
+    "source": "excel",
     "investors": [
       {
         "name": "Circle Ventures",
@@ -2140,6 +2150,11 @@
     "source": null,
     "investors": []
   },
+  "PHAROS": {
+    "amount": null,
+    "source": null,
+    "investors": []
+  },
   "PLUME": {
     "amount": 30000000,
     "source": "rootdata",
@@ -3056,6 +3071,11 @@
         "lead": false
       }
     ]
+  },
+  "SHARE": {
+    "amount": null,
+    "source": null,
+    "investors": []
   },
   "SIGN": {
     "amount": 54150000,
@@ -4098,6 +4118,11 @@
         "lead": false
       }
     ]
+  },
+  "ZEST": {
+    "amount": null,
+    "source": null,
+    "investors": []
   },
   "ZETA": {
     "amount": null,

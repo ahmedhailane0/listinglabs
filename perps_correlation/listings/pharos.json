@@ -1,0 +1,35 @@
+{
+  "token": "PHAROS",
+  "name": "Pharos",
+  "chain": "base",
+  "token_contract": "0x8b7dde054be9d180c1be7fae0874697374a49832",
+  "gecko_pool": "0x8a8e4170c09074b109352190d47e54d7c1f61e4e",
+  "fdv_usd": 632241170.0788696,
+  "fdv_source": "Binance Alpha listings API, 2026-06-04 (current, not at-listing)",
+  "mcap_usd": 85731902.66269472,
+  "circulating_supply": 135600000.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": null,
+  "category": "",
+  "window_start_utc": "2026-05-13T14:00:00Z",
+  "window_end_utc": "2026-05-15T15:00:00Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-05-13T15:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1778684400000, contract on Base)."
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-05-14T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-05-14T05:00:00Z",
+      "note": "PHAROSUSDT USDT-M perp first 1h candle on Binance fapi (verified). ~14h after Alpha listing."
+    }
+  ],
+  "annotations": [],
+  "not_listed": []
+}

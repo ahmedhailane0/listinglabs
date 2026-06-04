@@ -252,11 +252,11 @@ def main():
     force = "--force" in sys.argv
     only = {a.lower() for a in args} or None
 
-    cache = {} if force else (json.loads(CACHE.read_text()) if CACHE.exists() else {})
+    cache = {} if force else (json.loads(CACHE.read_text(encoding="utf-8")) if CACHE.exists() else {})
 
     files = sorted(LISTINGS.glob("*.json"))
     for fp in files:
-        cfg = json.loads(fp.read_text())
+        cfg = json.loads(fp.read_text(encoding="utf-8"))
         slug = fp.stem
         if only and slug not in only:
             continue

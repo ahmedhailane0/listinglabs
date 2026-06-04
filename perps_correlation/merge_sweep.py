@@ -38,7 +38,7 @@ def classify(exchange: str):
 
 def main():
     dry = "--dry" in sys.argv
-    cache = json.loads(CACHE.read_text())
+    cache = json.loads(CACHE.read_text(encoding="utf-8"))
     added = skipped = 0
 
     for fp in sorted(LISTINGS.glob("*.json")):
@@ -46,7 +46,7 @@ def main():
         rec = cache.get(slug)
         if not rec:
             continue
-        cfg = json.loads(fp.read_text())
+        cfg = json.loads(fp.read_text(encoding="utf-8"))
         existing = {classify(e["exchange"]) for e in cfg.get("events", [])}
         existing.discard(None)
 
@@ -72,7 +72,7 @@ def main():
             labels = ", ".join(e["exchange"] for e in new_events)
             print(f"{slug:10} +{len(new_events):2}  {labels}")
             if not dry:
-                fp.write_text(json.dumps(cfg, indent=2))
+                fp.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     print(f"\n{'DRY RUN — ' if dry else ''}added {added} events, "
           f"skipped {skipped} already-covered")
