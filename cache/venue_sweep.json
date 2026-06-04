@@ -3586,5 +3586,29 @@
         "iso": "2026-05-20T00:00:00Z"
       }
     }
+  },
+  "btw": {
+    "symbol": "BTW",
+    "floor": "2026-01-31T08:00:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": null,
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-03-02T00:00:00Z"
+      },
+      "bitget_perp": null,
+      "gate_spot": null,
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-06-04T00:00:00Z"
+      }
+    }
   }
 }

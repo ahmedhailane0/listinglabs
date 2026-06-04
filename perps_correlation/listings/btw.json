@@ -1,0 +1,40 @@
+{
+  "token": "BTW",
+  "name": "Bitway",
+  "chain": "bsc",
+  "token_contract": "0x444045b0ee1ee319a660a5e3d604ca0ffa35acaa",
+  "gecko_pool": "0x3122a3fa830e4918d6a9c09bd4769d0d95bf291548e7c7960cd7ccd9e3ac3627",
+  "fdv_usd": 313774232.7232906,
+  "fdv_source": "Binance Alpha listings API, 2026-06-04 (current, not at-listing) | NOTE: on-chain 5m only reaches 2026-04-13; Mar-2 launch candles unavailable (recent-only chart).",
+  "mcap_usd": 78596848.37381838,
+  "circulating_supply": 2504885365.878049,
+  "total_supply": 10000000000.0,
+  "cmc_slug": null,
+  "category": "",
+  "window_start_utc": "2026-06-04T13:00:00Z",
+  "window_end_utc": "2026-06-06T14:00:00Z",
+  "events": [
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-03-02T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-03-02T08:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1772438400000, contract on BSC)."
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-06-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-06-04T14:00:00Z",
+      "note": "BTWUSDT USDT-M perp first 1h candle on Binance fapi (verified). Perp launched ~94d after Alpha listing."
+    }
+  ],
+  "annotations": [],
+  "not_listed": []
+}
