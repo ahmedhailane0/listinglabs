@@ -66,7 +66,7 @@ img,svg{{max-width:100%;height:auto}}
     <span class="go">Open funnel →</span>
   </a>
   <a class="card" href="scams/index.html">
-    <h2>Scam Watchlist</h2><span class="n">tracker</span>
+    <h2>Manipulated</h2><span class="n">tracker</span>
     <p>Hand-maintained watchlist of tokens with notes on FDV behaviour
        (sustained &gt;$1B, brief spikes, uptrends). Sortable, with an
        FDV&nbsp;&gt;&nbsp;$1B filter.</p>

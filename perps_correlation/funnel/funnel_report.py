@@ -128,7 +128,7 @@ def index_html():
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Alpha→Perp→Coinbase→Korea funnel</title><style>{CSS}</style></head><body>
 <header><h1>CEX → Korea <span style="opacity:.6;font-weight:400">· Binance Alpha → Perp → Coinbase → Korea</span></h1>
-<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">Scam Watchlist</a></nav>
+<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">Manipulated</a></nav>
 <p>{len(M)} tokens · 2025-01-01 → today · click a token for its timing detail</p></header>
 {findings_block()}
 <section class="tablewrap"><h3>Funnel table <span class="hint">(click a header to sort)</span></h3>

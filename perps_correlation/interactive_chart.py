@@ -371,12 +371,19 @@ function mountTS(id, cfg){
 
   var usesLeft = cfg.series.some(function(s){ return s.scale==='left'; });
   var usesRight = cfg.series.some(function(s){ return s.scale!=='left'; });
+  // When a single price scale is in use (e.g. the price chart), drive the axis tick
+  // labels with that series' formatter via localization.priceFormatter — without it
+  // the y-axis renders blank (grid lines but no $ labels), same as the listing chart.
+  var single = !(usesLeft && usesRight);
+  var primaryFmt = (cfg.series.filter(function(s){ return s.scale!=='left'; })[0]
+                    || cfg.series[0] || {}).fmt;
   var chart = LC.createChart(el, {
     width: el.clientWidth || 800,
     height: el.clientHeight || (el.parentElement ? el.parentElement.clientHeight : cfg.height) || cfg.height,
     layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
               fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
     grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
+    localization: single ? { priceFormatter: function(p){ return fmtVal(primaryFmt, p); } } : {},
     rightPriceScale: { visible: usesRight, borderColor:'#e1e7ee' },
     leftPriceScale:  { visible: usesLeft,  borderColor:'#e1e7ee' },
     timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
@@ -396,8 +403,13 @@ function mountTS(id, cfg){
   var built = [];
   cfg.series.forEach(function(s){
     var scaleId = (s.scale==='left') ? 'left' : 'right';
-    var pf = { type:'custom', minMove:minMove(s.fmt),
-               formatter:function(p){ return fmtVal(s.fmt, p); } };
+    // 'price' kind uses the built-in price format (type:'price'), which generates the
+    // y-axis tick labels — a 'custom' format leaves the axis blank. Other kinds keep
+    // a custom formatter (they pair with localization.priceFormatter for the axis).
+    var f = s.fmt || {};
+    var pf = (f.kind === 'price')
+      ? { type:'price', precision:(f.dec!=null?f.dec:2), minMove:minMove(f) }
+      : { type:'custom', minMove:minMove(f), formatter:function(p){ return fmtVal(f, p); } };
     var ser;
     if(s.kind==='area'){
       ser = chart.addAreaSeries({ lineColor:s.color, lineWidth:2,
