@@ -78,6 +78,13 @@ def _is_listing(title_l: str) -> bool:
         "perpetual", "spot trading", "world premiere"))
 
 
+def _is_tradfi(title_l: str) -> bool:
+    """TradFi / Pre-IPO perp announcements (e.g. ANTHROPIC, tokenized US stocks)
+    are out of scope for this crypto-listing tracker, so they never become
+    signals."""
+    return any(k in title_l for k in ("tradfi", "pre-ipo", "pre ipo"))
+
+
 def _venue(title_l: str) -> str | None:
     for rx, label in _VENUE_RULES:
         if rx.search(title_l):
@@ -85,26 +92,31 @@ def _venue(title_l: str) -> str | None:
     return None
 
 
-def _extract_symbol(title: str) -> str | None:
-    """Best-effort ticker extraction from a listing headline.
+def _extract_symbols(title: str) -> list[str]:
+    """Best-effort ticker extraction from a listing headline — returns ALL
+    symbols, not just the first.
 
-    Two signals: a "(SYMBOL)" group right after a name, or a "<SYMBOL><QUOTE>"
-    perpetual/spot pair. Returns the bare token symbol (uppercase) or None.
+    Two signals: "(SYMBOL)" groups right after a name, and "<SYMBOL><QUOTE>"
+    pairs. A single headline can name several tokens, e.g. "Will Launch ZESTUSDT
+    and BTWUSDT Perpetual Contracts" -> ["ZEST", "BTW"]. Order-preserving, deduped.
     """
+    out: list[str] = []
+
+    def _add(cand: str) -> None:
+        if cand and cand not in _NOISE_SYMBOLS and cand not in out:
+            out.append(cand)
+
     # 1) "Solstice(SLX)" / "Solstice (SLX)"
     for m in re.finditer(r"\(([A-Z0-9]{2,15})\)", title):
-        cand = m.group(1)
-        if cand not in _NOISE_SYMBOLS:
-            return cand
-    # 2) "SLXUSDT", "ANTHROPICUSDT" -> strip a known quote suffix
+        _add(m.group(1))
+    # 2) "SLXUSDT", "ZESTUSDT and BTWUSDT" -> strip a known quote suffix
     for m in re.finditer(r"\b([A-Z0-9]{2,20})\b", title):
         word = m.group(1)
         for q in _QUOTE_SUFFIXES:
             if word.endswith(q) and len(word) > len(q):
-                base = word[: -len(q)]
-                if base and base not in _NOISE_SYMBOLS:
-                    return base
-    return None
+                _add(word[: -len(q)])
+                break
+    return out
 
 
 def _tracked_symbols() -> set[str]:
@@ -178,18 +190,20 @@ def main() -> int:
     signals = []
     for it in existing:
         title_l = it["title"].lower()
-        if not _is_listing(title_l):
+        if not _is_listing(title_l) or _is_tradfi(title_l):
             continue
         venue = _venue(title_l)
-        sym = _extract_symbol(it["title"])
         if not venue:
             continue
-        signals.append({
-            **it,
-            "venue": venue,
-            "symbol": sym,
-            "tracked": bool(sym and sym in tracked),
-        })
+        # one signal per named symbol — a single headline can list several
+        # ("ZESTUSDT and BTWUSDT"); fall back to a symbol-less signal otherwise.
+        for sym in (_extract_symbols(it["title"]) or [None]):
+            signals.append({
+                **it,
+                "venue": venue,
+                "symbol": sym,
+                "tracked": bool(sym and sym in tracked),
+            })
 
     FEED_PATH.write_text(json.dumps(existing, ensure_ascii=False, indent=2),
                          encoding="utf-8")
