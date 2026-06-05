@@ -46,6 +46,15 @@ OVERRIDES = {
     "HYPE": "2024-11-29T00:00:00.000Z",   # Hyperliquid TGE / airdrop
     "MON":  "2025-11-24T00:00:00.000Z",   # Monad mainnet + MON token TGE
     "AERO": "2023-08-28T00:00:00.000Z",   # Aerodrome Finance launch on Base
+    # No CMC slug in scam_data, or CMC's dateLaunched is the project-founding date
+    # (not the token TGE) / a same-symbol collision. Dates verified from the launch
+    # announcements + the correct CMC slug.
+    "H":      "2025-06-25T00:00:00.000Z",  # Humanity Protocol TGE (Binance Alpha 06-25)
+    "NAORIS": "2025-07-31T00:00:00.000Z",  # Naoris Protocol TGE
+    "STABLE": "2025-11-06T00:00:00.000Z",  # Stable (CMC slug "stable")
+    "GWEI":   "2026-01-21T00:00:00.000Z",  # ETHGas (CMC slug "eth-gas", dateLaunched)
+    "SIREN":  "2025-02-07T00:00:00.000Z",  # Siren (CMC slug "siren-bsc", dateLaunched)
+    "GENIUS": "2026-04-13T00:00:00.000Z",  # Genius Terminal TGE (Binance Alpha 04-13)
 }
 
 

@@ -596,10 +596,9 @@ def _list_row(cfg: dict) -> str:
     p = _perf(cfg) or {}
     fdv, mcap = _mk(cfg, "fdv_usd"), _mk(cfg, "mcap_usd")
     oi = (OI.get(cfg["token"].upper()) or {}).get("oi_pct_mcap")
-    new_badge = '<span class="newbadge">NEW</span>' if cfg.get("new") else ''
     tok_cell = (f'<td class="tok" data-s="{search}">'
                 f'<a href="{_slug(cfg)}.html">{_sparkline(cfg)}'
-                f'<span class="lname">{name} <span class="sym">{sym}</span>{new_badge}</span></a></td>')
+                f'<span class="lname">{name} <span class="sym">{sym}</span></span></a></td>')
     return (
         f'<tr class="lrow" data-venues="{html.escape(venues)}" data-search="{search}">'
         f'<td class="rank"></td>'
