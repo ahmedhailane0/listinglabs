@@ -208,7 +208,12 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
         f'<div class="tv-tip" id="{div_id}-tip"></div>'
         f'</div>'
         f'<script>(function(){{var CFG={cfg_js};{_CHART_JS}'
-        f'\nmount("{div_id}",CFG);}})();</script>'
+        # Defer to after layout: the script runs inline during parse, when the flex/grid
+        # column width isn't settled yet, so el.clientWidth reads too wide and Lightweight
+        # Charts builds the plot+price-scale ~64px wider than the card — pushing the y-axis
+        # off the card edge where overflow:hidden clips it (the "no price labels" bug).
+        f'\nrequestAnimationFrame(function(){{requestAnimationFrame(function(){{'
+        f'mount("{div_id}",CFG);}});}});}})();</script>'
     )
 
 
@@ -222,12 +227,18 @@ function mount(id, cfg){
   var DEC = cfg.dec, minMove = 1/Math.pow(10, DEC);
   var LC = window.LightweightCharts;
   var chart = LC.createChart(el, {
-    width: el.clientWidth || 800,
-    height: el.clientHeight || (el.parentElement ? el.parentElement.clientHeight : 520) || 520,
+    // autoSize lets Lightweight Charts measure the container itself and fit the
+    // plot + price axis INSIDE it. Without it we passed el.clientWidth read before
+    // the flex/grid layout had settled, so the chart rendered ~64px too wide and the
+    // price-scale column spilled past the card's right edge where .card{overflow:hidden}
+    // clipped it — which is why the y-axis price labels were invisible.
+    autoSize: true,   // size to the container; do NOT also pass width/height (that
+                      // pins an initial size that fights autoSize and let the price
+                      // scale overflow the card).
     layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
               fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
     grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
-    rightPriceScale: { borderColor:'#e1e7ee' },
+    rightPriceScale: { visible:true, borderColor:'#e1e7ee' },
     timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
     crosshair: { mode: LC.CrosshairMode.Normal,
                  vertLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' },
@@ -274,6 +285,13 @@ function mount(id, cfg){
   }
   // Default = full history fitted to the frame ("All", like CoinMarketCap).
   render(active); toAll();
+  // Keep the chart sized to its (responsive) container. autoSize handles most of it;
+  // this is a belt-and-braces resize for browsers/timing where the first measure is
+  // stale. (The y-axis-labels-invisible bug was actually the page's global
+  // `table{table-layout:fixed}` leaking into LWC's internal table — fixed in CSS.)
+  if(window.ResizeObserver){
+    new ResizeObserver(function(){ if(el.clientWidth){ chart.resize(el.clientWidth, el.clientHeight); } }).observe(el);
+  }
 
   // Crosshair tooltip (date + price), floating inside the wrap.
   var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
@@ -309,22 +327,24 @@ function mount(id, cfg){
   if(ab){ ab.addEventListener('click', function(){ toAll(); setRange(ab); }); }
   if(lb){ lb.addEventListener('click', function(){ toLaunch(); setRange(lb); }); }
 
-  // Keep width in sync with the responsive card.
-  if(window.ResizeObserver){
-    new ResizeObserver(function(){ chart.applyOptions({ width: el.clientWidth }); }).observe(el);
-  } else {
-    window.addEventListener('resize', function(){ chart.applyOptions({ width: el.clientWidth }); });
-  }
+  // Sizing is handled by autoSize:true (above), which fits the plot + price axis to
+  // the container — no manual ResizeObserver needed (the manual one set width to a
+  // stale el.clientWidth and pushed the price scale off the card).
 }
 """
 
 
-def timeseries_html(div_id: str, series: list[dict], height: int = 520) -> str:
+def timeseries_html(div_id: str, series: list[dict], height: int = 520,
+                    ranges: list[tuple] | None = None) -> str:
     """Generic Lightweight Charts time-series embed, reused by other reports for
     their price / value-over-time *trading* charts (e.g. the Scam Watchlist price
     chart and OI+funding history). Renders one or more line/area series, optionally
     on dual (left/right) price scales, with a crosshair tooltip and auto-resize.
-    No markers / timeframe switcher — that's the listing-reaction chart's job above.
+
+    `ranges`: optional [(label, days|None), …] -> a toolbar of range buttons (e.g.
+    1M / 3M / All), giving the same kind of zoom controls the listing-reaction chart
+    has. (These series are daily, so a 5m/1h resolution switcher doesn't apply — a
+    range selector is the equivalent control.) None days = fit all.
 
     series: list of dicts, each:
       {"data": [[t_seconds, value], ...],   # ascending; gaps allowed (omit points)
@@ -335,14 +355,25 @@ def timeseries_html(div_id: str, series: list[dict], height: int = 520) -> str:
        "fmt":  {"kind": "usd"|"usdCompact"|"percent"|"price", "dec": 4},
        "fill": True}                         # area only
     """
-    cfg_js = json.dumps({"height": height, "series": series}, separators=(",", ":"))
+    cfg_js = json.dumps({"height": height, "series": series, "ranges": ranges or []},
+                        separators=(",", ":"))
+    toolbar = ""
+    if ranges:
+        btns = "".join(
+            f'<button class="tv-reset tv-range{" active" if d is None else ""}" '
+            f'data-days="{"" if d is None else d}">{lbl}</button>'
+            for lbl, d in ranges)
+        toolbar = f'<div class="tv-toolbar">{btns}</div>'
     return (
         f'<div class="tvchart-wrap" style="height:{height}px">'
+        f'{toolbar}'
         f'<div id="{div_id}" class="tvchart"></div>'
         f'<div class="tv-tip" id="{div_id}-tip"></div>'
         f'</div>'
         f'<script>(function(){{var CFG={cfg_js};{_TS_JS}'
-        f'\nmountTS("{div_id}",CFG);}})();</script>'
+        # Defer to after layout (see chart_html) so the price scale fits the card.
+        f'\nrequestAnimationFrame(function(){{requestAnimationFrame(function(){{'
+        f'mountTS("{div_id}",CFG);}});}});}})();</script>'
     )
 
 
@@ -378,8 +409,10 @@ function mountTS(id, cfg){
   var primaryFmt = (cfg.series.filter(function(s){ return s.scale!=='left'; })[0]
                     || cfg.series[0] || {}).fmt;
   var chart = LC.createChart(el, {
-    width: el.clientWidth || 800,
-    height: el.clientHeight || (el.parentElement ? el.parentElement.clientHeight : cfg.height) || cfg.height,
+    // autoSize: fit plot + price axis inside the container (see _CHART_JS note —
+    // without it the price scale spilled past the card and got clipped, hiding the
+    // y-axis labels).
+    autoSize: true,   // size to container; no explicit width/height (see _CHART_JS).
     layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
               fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
     grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
@@ -424,8 +457,24 @@ function mountTS(id, cfg){
   });
   chart.timeScale().fitContent();
 
+  var wrap = el.parentElement;
+  // Range buttons (e.g. 1M / 3M / All) — the zoom controls equivalent to the
+  // listing chart's timeframe switcher (these series are daily, so resolution
+  // switching doesn't apply). Default = All (fitContent above).
+  function lastT(){ var m=0; built.forEach(function(b){ var d=b.def.data; if(d&&d.length){ var t=d[d.length-1][0]; if(t>m)m=t; } }); return m; }
+  (wrap.querySelectorAll('.tv-range')||[]).forEach(function(b){
+    b.addEventListener('click', function(){
+      wrap.querySelectorAll('.tv-range').forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      var days = b.dataset.days;
+      if(!days){ chart.timeScale().fitContent(); return; }
+      var to = lastT(); if(!to) return;
+      chart.timeScale().setVisibleRange({ from: to - parseInt(days,10)*86400, to: to });
+    });
+  });
+
   // Crosshair tooltip: date + each series' formatted value.
-  var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
+  var tip = document.getElementById(id+'-tip');
   chart.subscribeCrosshairMove(function(p){
     if(!p || !p.time || !p.point){ if(tip) tip.style.display='none'; return; }
     var lines = [], any=false;
@@ -446,11 +495,7 @@ function mountTS(id, cfg){
     }
   });
 
-  if(window.ResizeObserver){
-    new ResizeObserver(function(){ chart.applyOptions({ width: el.clientWidth }); }).observe(el);
-  } else {
-    window.addEventListener('resize', function(){ chart.applyOptions({ width: el.clientWidth }); });
-  }
+  // Sizing handled by autoSize:true (above).
 }
 """
 

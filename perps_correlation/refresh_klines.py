@@ -155,6 +155,22 @@ def refresh_one(cfg: dict) -> tuple[str, str]:
     except Exception:
         gt_failed = True
 
+    # Contamination guard: a token's on-chain pool can start returning a DIFFERENT
+    # price band (reused/low-liquidity pool, flipped base/quote, wrong token) — which
+    # historically merged in and pinned charts at a bogus level (e.g. LINEA at ~$1.00).
+    # If the fresh candles' median diverges wildly from the last trusted cached close,
+    # reject them and fall through to the Binance-spot path. (A real move never gaps
+    # >8x between an existing candle and the very next fetched one.)
+    if fresh and old:
+        try:
+            fresh_med = sorted(r[4] for r in fresh if r[4] > 0)[len(fresh) // 2]
+            last_good = old[-1][4]
+            if last_good > 0 and fresh_med > 0 and (
+                    fresh_med / last_good > 8 or last_good / fresh_med > 8):
+                fresh, gt_failed = [], True   # treat as a dead/bad pool -> Binance fallback
+        except Exception:
+            pass
+
     # Fallback: on-chain pool gone/empty (audit L-1) -> try Binance spot so the chart
     # still tracks current price. Merged by timestamp with the on-chain launch history.
     fb = ""

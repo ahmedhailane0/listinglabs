@@ -50,7 +50,13 @@ LISTING_OK = ("will list", "gets listed", "get listed", "listed on", "to list",
               "listing of", "lists ", "launches ", "will be available")
 LISTING_NEG = ("on convert", "web3 wallet", "wallet adds", "trading bot",
                "copy trading", "via ondo global", "tokenized", "trading competition",
-               "airdrop", "trading bots")
+               "airdrop", "trading bots",
+               # non-listing notices the report must never show as a "listing
+               # announcement" (kept conservative — only phrases that do NOT co-occur
+               # with a genuine listing headline)
+               "delist", "will be removed", "removal of", "seed tag", "monitoring tag",
+               "leverage adjust", "margin tier", "maintenance", "will suspend",
+               "suspension of", "simple earn", "to be delisted")
 
 
 def listing_intent(title: str) -> bool:

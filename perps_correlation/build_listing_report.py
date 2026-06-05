@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import html
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 
 from listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
@@ -30,6 +31,8 @@ ANN_CACHE = HERE.parent / "cache" / "announcements.json"
 OI_CACHE = HERE / "oi_cmc.json"
 FUNDING_CACHE = HERE.parent / "cache" / "funding.json"
 BWENEWS_SIGNALS = HERE.parent / "cache" / "bwenews_signals.json"
+MARKET_CACHE = HERE.parent / "cache" / "token_market.json"
+PERP_ANNOUNCE_CACHE = HERE.parent / "cache" / "perp_announce.json"
 
 # token symbol (upper) -> {"oi_usd", "n_pairs", "top": [...], "fetched_utc", ...}.
 # CURRENT/live open interest from CMC, summed across perp pairs. Populated in
@@ -40,12 +43,41 @@ OI: dict[str, dict] = {}
 # "investors": [{"name","url","lead"}]}. Built by build_funding.py. Populated in main().
 FUNDING: dict[str, dict] = {}
 
+# token symbol (upper) -> {"price","fdv_usd","mcap_usd","circulating_supply",
+# "total_supply","max_supply","date_launched","fetched_utc"}. Live CMC snapshot from
+# fetch_token_market.py so FDV/MC/supply match CoinMarketCap instead of the stale
+# hand-entered values in listings/*.json. Populated in main().
+MARKET: dict[str, dict] = {}
+
+
+def _mk(cfg: dict, key: str):
+    """Live CMC value for `key` if present, else the static listings/*.json value.
+
+    Keeps FDV / market cap / supply in step with CoinMarketCap (the live snapshot)
+    while degrading gracefully to the stored value for tokens with no slug / a
+    failed fetch."""
+    rec = MARKET.get(cfg["token"].upper()) or {}
+    v = rec.get(key)
+    if v:
+        return v
+    return cfg.get(key)
+
+
+def _market_asof(cfg: dict) -> str:
+    rec = MARKET.get(cfg["token"].upper()) or {}
+    return (rec.get("fetched_utc") or "")[:10]
+
 # slug -> {exchange_label: {"url": str, "title": str}}. Exact announcement URLs
 # resolved from venue APIs; falls back to scoped search when absent.
 ANN: dict[str, dict] = {}
 
 # slug -> {"website": str|None, "twitter": str|None}. Populated in main().
 SOCIALS: dict[str, dict] = {}
+
+# token symbol (upper) -> {"announce_utc": isoZ, "title", "url"}. Precise Binance
+# Futures perp-listing announcement time (fetch_perp_announce.py) — drives the
+# auto-generated "BN perp announce" spike annotations. Populated in main().
+PERP_ANNOUNCE: dict[str, dict] = {}
 
 def _alpha_time(cfg: dict):
     for ev in cfg.get("events", []):
@@ -218,8 +250,97 @@ def _events_rows(cfg: dict) -> str:
     return "\n".join(rows)
 
 
+def _load_klines(cfg: dict) -> list | None:
+    p = KLINES / f"{_slug(cfg)}_klines_5m_alpha.json"
+    if not p.exists():
+        return None
+    return json.loads(p.read_text(encoding="utf-8")).get("rows") or None
+
+
+def _perp_open_time(cfg: dict):
+    """Precise Binance Perp contract-open time from the events (skip placeholders)."""
+    for ev in cfg.get("events", []):
+        if ev.get("exchange") == "Binance Perp" and ev.get("iso_time_utc") and not _is_sweep(ev):
+            t = parse_iso(ev["iso_time_utc"])
+            if not (t.hour == 0 and t.minute == 0):   # midnight = date-only placeholder
+                return t
+    return None
+
+
+def _auto_annotations(cfg: dict) -> list[dict]:
+    """Auto-generate the CTR-style "BN perp announce" annotation: the precise Binance
+    Futures perp-listing announcement time + the on-chain Alpha price spike it caused
+    + the lead before the contract opened. Computed from the precise announce time
+    (cache/perp_announce.json) and the token's own 5m candles. Returns [] when there's
+    no precise time, no candles covering it, or no meaningful spike — never guesses."""
+    rec = PERP_ANNOUNCE.get(cfg["token"].upper())
+    if not rec or not rec.get("announce_utc"):
+        return []
+    # Don't duplicate a hand-written perp-announce annotation (e.g. CTR's curated one).
+    for a in cfg.get("annotations", []):
+        blob = f"{a.get('label', '')} {a.get('note', '')}".lower()
+        if "perp" in blob and "announce" in blob:
+            return []
+    try:
+        ann_t = parse_iso(rec["announce_utc"])
+    except Exception:
+        return []
+    rows = _load_klines(cfg)
+    if not rows:
+        return []
+    ann_ms = int(ann_t.timestamp() * 1000)
+    if ann_ms < rows[0][0] or ann_ms > rows[-1][0]:
+        return []                               # announcement outside the price data
+    pre = None
+    for ts, _o, _h, _l, c in rows:
+        if ts <= ann_ms:
+            pre = c
+        else:
+            break
+    if not pre or pre <= 0:
+        return []
+    win_hi = ann_ms + 2 * 3600 * 1000           # spike window: 2h after the release
+    best, best_ts = pre, ann_ms
+    for ts, _o, h, _l, c in rows:
+        if ann_ms <= ts <= win_hi and h > best:
+            best, best_ts = h, ts
+    spike = (best - pre) / pre * 100
+    if spike < 5:                               # nothing worth calling a reaction
+        return []
+    spike_dt = datetime.fromtimestamp(best_ts / 1000, tz=timezone.utc)
+    open_t = _perp_open_time(cfg)
+    lead = ""
+    if open_t and open_t > ann_t:
+        mins = int((open_t - ann_t).total_seconds() / 60)
+        lead = (f", ~{mins}min before the {open_t.strftime('%H:%M')} contract open"
+                if mins < 120 else
+                f", ~{mins / 60:.1f}h before the {open_t.strftime('%H:%M')} contract open")
+    title = (rec.get("title") or "Binance Futures perp listing").strip()
+    note = (f"Binance Futures announcement '{title}' (releaseDate "
+            f"{ann_t.strftime('%H:%M')} UTC). On-chain Alpha price spiked "
+            f"{spike:+.0f}% on the {spike_dt.strftime('%H:%M')} candle{lead}.")
+    return [{"label": "BN perp announce", "iso_time_utc": rec["announce_utc"], "note": note}]
+
+
+def _all_annotations(cfg: dict) -> list[dict]:
+    """Hand-written annotations first, then any auto-generated ones."""
+    return list(cfg.get("annotations", [])) + _auto_annotations(cfg)
+
+
+def _chart_announcements(cfg: dict) -> dict:
+    """Announcement markers for the chart. Uses the precise Binance perp-announce
+    time (cache/perp_announce.json) in place of the day-resolution one, so the marker
+    lands on the actual release candle, matching the spike annotation."""
+    base = dict(ANN.get(_slug(cfg)) or {})
+    rec = PERP_ANNOUNCE.get(cfg["token"].upper())
+    if rec and rec.get("announce_utc"):
+        base.pop("Binance Perp", None)         # drop the imprecise day marker
+        base["Binance perp"] = {"date": rec["announce_utc"], "title": rec.get("title", "")}
+    return base
+
+
 def _annotations(cfg: dict) -> str:
-    anns = cfg.get("annotations", [])
+    anns = _all_annotations(cfg)
     if not anns:
         return ""
     items = []
@@ -249,7 +370,8 @@ def _page(title: str, body: str, extra_head: str = "") -> str:
 
 
 def _tile(cfg: dict) -> str:
-    fdv = fmt_usd_compact(cfg["fdv_usd"]) if cfg.get("fdv_usd") else "—"
+    fdv_v = _mk(cfg, "fdv_usd")
+    fdv = fmt_usd_compact(fdv_v) if fdv_v else "—"
     alpha = _alpha_time(cfg).strftime("%Y-%m-%d")
     n_venues = len({e["exchange"] for e in cfg.get("events", [])})
     thumb = _sparkline(cfg)
@@ -313,9 +435,11 @@ def _links(cfg: dict) -> str:
     cmc = _cmc_url(cfg)
     if cmc:
         data.append(f"<a href=\"{cmc}\" target=\"_blank\" rel=\"noopener\">CoinMarketCap</a>")
-    chain, pool = cfg.get("chain"), cfg.get("gecko_pool")
-    if chain and pool:
-        data.append(f"<a href=\"https://www.geckoterminal.com/{chain}/pools/{pool}\" target=\"_blank\" rel=\"noopener\">GeckoTerminal</a>")
+    # GeckoTerminal link intentionally dropped (it's an internal data source, not a
+    # destination users want). The contract explorer link stays — it's the single
+    # contract link kept at the top of the page (the inline Contract field below the
+    # links was removed).
+    chain = cfg.get("chain")
     exp = _explorer_url(chain, cfg.get("token_contract", "")) if chain else None
     if exp:
         data.append(f"<a href=\"{exp}\" target=\"_blank\" rel=\"noopener\">Contract ↗</a>")
@@ -328,16 +452,38 @@ def _links(cfg: dict) -> str:
     return "".join(blocks)
 
 
+def _fmt_count(n: float) -> str:
+    """Compact token-count label (e.g. 10B, 1.5B, 720M, 500K)."""
+    a = abs(n)
+    if a >= 1e12:
+        return f"{n / 1e12:.2f}T"
+    if a >= 1e9:
+        return f"{n / 1e9:.2f}B"
+    if a >= 1e6:
+        return f"{n / 1e6:.1f}M"
+    if a >= 1e3:
+        return f"{n / 1e3:.0f}K"
+    return f"{n:,.0f}"
+
+
 def _supply_lines(cfg: dict) -> str:
     out = []
-    mcap = cfg.get("mcap_usd")
+    asof = _market_asof(cfg)
+    src = (f"<span class=\"src\">current — CoinMarketCap, as of {asof}</span>"
+           if asof else f"<span class=\"src\">{html.escape(cfg.get('mcap_source', ''))}</span>")
+    mcap = _mk(cfg, "mcap_usd")
     if mcap:
-        out.append(f"<dt>Market cap</dt><dd>{fmt_usd_compact(mcap)} "
-                   f"<span class=\"src\">{html.escape(cfg.get('mcap_source', ''))}</span> "
-                   f"{_cmc_tag(cfg)}</dd>")
-    fdv, circ, total = cfg.get("fdv_usd"), cfg.get("circulating_supply"), cfg.get("total_supply")
+        out.append(f"<dt>Market cap</dt><dd>{fmt_usd_compact(mcap)} {src} {_cmc_tag(cfg)}</dd>")
+    fdv = _mk(cfg, "fdv_usd")
+    circ, total = _mk(cfg, "circulating_supply"), _mk(cfg, "total_supply")
     if mcap and fdv:
         out.append(f"<dt>FDV / MC</dt><dd>{fdv / mcap:.1f}×</dd>")
+    # Actual supply numbers (the report previously showed only the float %). Exact
+    # count in the hover title; compact label inline.
+    if circ:
+        out.append(f"<dt>Circ. supply</dt><dd title=\"{circ:,.0f}\">{_fmt_count(circ)} tokens</dd>")
+    if total:
+        out.append(f"<dt>Total supply</dt><dd title=\"{total:,.0f}\">{_fmt_count(total)} tokens</dd>")
     if circ and total:
         out.append(f"<dt>Float</dt><dd>{circ / total * 100:.1f}% circulating</dd>")
     out.append(_oi_lines(cfg))
@@ -448,7 +594,7 @@ def _list_row(cfg: dict) -> str:
     name = html.escape(cfg.get("name", cfg["token"]))
     sym = html.escape(cfg["token"])
     p = _perf(cfg) or {}
-    fdv, mcap = cfg.get("fdv_usd"), cfg.get("mcap_usd")
+    fdv, mcap = _mk(cfg, "fdv_usd"), _mk(cfg, "mcap_usd")
     oi = (OI.get(cfg["token"].upper()) or {}).get("oi_pct_mcap")
     new_badge = '<span class="newbadge">NEW</span>' if cfg.get("new") else ''
     tok_cell = (f'<td class="tok" data-s="{search}">'
@@ -496,11 +642,13 @@ def _reaction_block(cfg: dict) -> str:
 
 def _detail(cfg: dict) -> str:
     token = cfg["token"]
-    fdv = fmt_usd_compact(cfg["fdv_usd"]) if cfg.get("fdv_usd") else "—"
-    win = (f"{parse_iso(cfg['window_start_utc']).strftime('%Y-%m-%d %H:%M')} → "
-           f"{parse_iso(cfg['window_end_utc']).strftime('%Y-%m-%d %H:%M')} UTC")
+    fdv_v = _mk(cfg, "fdv_usd")
+    fdv = fmt_usd_compact(fdv_v) if fdv_v else "—"
+    asof = _market_asof(cfg)
+    fdv_src = (f"current — CoinMarketCap, as of {asof}" if asof
+               else cfg.get("fdv_source", ""))
     not_listed = ", ".join(cfg.get("not_listed", [])) or "—"
-    interactive = chart_html(cfg, announcements=ANN.get(_slug(cfg)))
+    interactive = chart_html(cfg, announcements=_chart_announcements(cfg))
     if interactive:
         chart_block = interactive
         extra_head = "<script src=\"lightweight-charts.standalone.production.js\"></script>"
@@ -518,11 +666,9 @@ def _detail(cfg: dict) -> str:
     {_links(cfg)}
     <dl>
       <dt>Chain</dt><dd>{html.escape(cfg.get('chain', '—'))}</dd>
-      <dt>Contract</dt><dd class="mono">{html.escape(cfg.get('token_contract', '—'))}</dd>
-      <dt>FDV</dt><dd>{fdv} <span class="src">{html.escape(cfg.get('fdv_source', ''))}</span> {_cmc_tag(cfg)}</dd>
+      <dt>FDV</dt><dd>{fdv} <span class="src">{html.escape(fdv_src)}</span> {_cmc_tag(cfg)}</dd>
       {_supply_lines(cfg)}
       {_funding_lines(cfg)}
-      <dt>Window</dt><dd>{win}</dd>
       <dt>Not listed</dt><dd class="note">{html.escape(not_listed)}</dd>
     </dl>
     {_reaction_block(cfg)}
@@ -894,6 +1040,15 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
 /* TradingView Lightweight Charts embed */
 .tvchart-wrap { position: relative; width: 100%; display: flex; flex-direction: column; }
 .tvchart { flex: 1 1 auto; width: 100%; min-height: 0; }
+/* CRITICAL: Lightweight Charts lays its panes out in an internal <table>. The page's
+   global `table { width:100%; table-layout:fixed }` (for the listing-events table)
+   was leaking into it, forcing fixed layout and collapsing the price-scale column to
+   0 width — which is why the y-axis price labels were invisible. Reset table styles
+   inside the chart so LWC controls its own layout. */
+.tvchart table { width: auto; table-layout: auto; border-collapse: separate;
+                 margin: 0; font-size: inherit; }
+.tvchart tr, .tvchart td, .tvchart th { border: 0; padding: 0; background: none;
+                 vertical-align: baseline; width: auto; overflow: visible; }
 .tv-toolbar { display: flex; align-items: center; gap: 6px; padding: 0 0 8px;
               flex-wrap: wrap; }
 .tv-tf, .tv-reset { font: inherit; font-size: 12px; cursor: pointer; color: #44515f;
@@ -958,11 +1113,26 @@ def main() -> None:
     if SOCIALS_CACHE.exists():
         SOCIALS.update(json.loads(SOCIALS_CACHE.read_text(encoding="utf-8")))
     if ANN_CACHE.exists():
-        ANN.update(json.loads(ANN_CACHE.read_text(encoding="utf-8")))
+        # Only surface LISTING announcements (spot / alpha / perp / futures listings),
+        # never other notices (delistings, seed/monitoring tags, leverage/maintenance,
+        # etc.). The fetcher already filters with listing_intent; this re-applies it at
+        # render so a stale cache entry can't leak a non-listing announcement.
+        from fetch_announcements import listing_intent
+        raw = json.loads(ANN_CACHE.read_text(encoding="utf-8"))
+        for slug, evs in raw.items():
+            kept = {ex: a for ex, a in evs.items()
+                    if not (isinstance(a, dict) and a.get("title"))
+                    or listing_intent(a["title"])}
+            if kept:
+                ANN[slug] = kept
     if OI_CACHE.exists():
         OI.update(json.loads(OI_CACHE.read_text(encoding="utf-8")).get("tokens", {}))
     if FUNDING_CACHE.exists():
         FUNDING.update(json.loads(FUNDING_CACHE.read_text(encoding="utf-8")))
+    if MARKET_CACHE.exists():
+        MARKET.update(json.loads(MARKET_CACHE.read_text(encoding="utf-8")).get("tokens", {}))
+    if PERP_ANNOUNCE_CACHE.exists():
+        PERP_ANNOUNCE.update(json.loads(PERP_ANNOUNCE_CACHE.read_text(encoding="utf-8")))
     cfgs = [json.loads(p.read_text(encoding="utf-8")) for p in LISTINGS.glob("*.json")]
     cfgs.sort(key=_alpha_time, reverse=True)
     # Vendor the TradingView Lightweight Charts lib (CSP blocks external scripts, so

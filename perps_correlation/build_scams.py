@@ -111,7 +111,7 @@ def _price_chart(sym: str, name: str) -> str:
     return timeseries_html(f"chart-{sym.lower()}", [{
         "data": points, "kind": "area", "color": "#1f4e79", "scale": "right",
         "name": "Price", "fmt": {"kind": "price", "dec": dec}, "fill": True,
-    }], height=520)
+    }], height=520, ranges=[("1M", 30), ("3M", 90), ("6M", 180), ("All", None)])
 
 
 def _usd(v):
@@ -458,8 +458,11 @@ def _compact(v):
 
 
 def _badge(text, risk):
-    fg, bg = ("#c0392b", "#fdecea") if risk else ("#1e7e34", "#eafaf0")
-    return f'<span class="badge" style="color:{fg};background:{bg}">{html.escape(text)}</span>'
+    # Greater/lesser threshold flags (circulation-ratio ≥/<30%, retail ≥/<1%) are
+    # rendered NEUTRAL for now — no green/red — per request; the comparison text +
+    # ⚠ marker still convey the signal. (`risk` is kept in the signature so callers
+    # are unchanged and colour can be re-enabled later.)
+    return f'<span class="badge" style="color:#42505e;background:#eef2f6">{html.escape(text)}</span>'
 
 
 def _fund_span(x, annual=False):
@@ -876,9 +879,8 @@ def _detail(rec, platforms) -> str:
     {warn}
     {_links(rec)}
     <dl>
-      <dt>TGE</dt><dd>{_tge_dt(rec).strftime('%Y-%m-%d') if _tge_dt(rec) else '—'} <span class="src">first listed (CMC)</span></dd>
+      <dt>TGE</dt><dd>{_tge_dt(rec).strftime('%Y-%m-%d') if _tge_dt(rec) else '—'} <span class="src">token launch (CMC)</span></dd>
       <dt>Chain</dt><dd>{html.escape(rec.get('chain') or '—')}</dd>
-      <dt>Contract</dt><dd class="mono">{html.escape(rec.get('contract') or '—')}</dd>
       <dt>Price</dt><dd>{fmt_subscript_price(rec['price']) if rec.get('price') else '—'}</dd>
       <dt>Market cap</dt><dd>{_usd(mc)}</dd>
       <dt>FDV</dt><dd>{_usd(fdv)}</dd>

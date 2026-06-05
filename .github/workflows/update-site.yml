@@ -106,12 +106,29 @@ jobs:
         timeout-minutes: 5
 
       - name: Fetch TGE dates (Manipulated tab)
-        # Keyless CMC dateAdded (CoinGecko genesis fallback) -> cache/scam_tge.json.
-        # Static per token + skips ones already cached, so this only does work when a
-        # new watchlist token appears. Drives the Manipulated report's TGE column/sort.
+        # Keyless CMC dateLaunched (the real launch; CoinGecko genesis / dateAdded
+        # fallbacks) -> cache/scam_tge.json. Static per token + skips ones already
+        # cached, so this only does work when a new watchlist token appears. Drives
+        # the Manipulated report's TGE column/sort.
         run: python fetch_scam_tge.py
         continue-on-error: true
         timeout-minutes: 4
+
+      - name: Refresh live FDV / market cap / supply (reactions tokens)
+        # Keyless CMC detail per listings/*.json -> cache/token_market.json so the
+        # reactions report's FDV/MC/supply match CoinMarketCap instead of the stale
+        # hand-entered values. build_listing_report prefers these live numbers.
+        run: python fetch_token_market.py
+        continue-on-error: true
+        timeout-minutes: 6
+
+      - name: Fetch precise Binance perp-announce times (spike annotations)
+        # Keyless Binance Futures CMS detail (publishDate, ms-precise) -> per token
+        # cache/perp_announce.json. Drives the auto-generated "BN perp announce" Alpha
+        # spike annotations. Static per token; only chases ones not already cached.
+        run: python fetch_perp_announce.py
+        continue-on-error: true
+        timeout-minutes: 6
 
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip

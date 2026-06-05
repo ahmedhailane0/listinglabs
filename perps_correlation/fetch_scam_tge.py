@@ -1,22 +1,32 @@
-"""Fetch a TGE date (token first-listed / generation) per Manipulated-watchlist
+"""Fetch a TGE date (token generation / real launch) per Manipulated-watchlist
 token, so the report can show + sort by it like the Listing Reactions report's
 TGE column.
 
-Source: CoinMarketCap's keyless web data-api `dateAdded` (when CMC first listed
-the token ≈ its public debut), with a CoinGecko `genesis_date` fallback. Both are
-keyless and CI-safe — any failure is skipped, never raises.
+Source priority (all keyless + CI-safe; any failure is skipped, never raises):
+  1. a hand-curated OVERRIDE for tokens whose true TGE no API exposes cleanly;
+  2. CoinMarketCap `dateLaunched` — the token's REAL launch date;
+  3. CoinGecko `genesis_date`;
+  4. CoinMarketCap `dateAdded` — LAST resort only.
+
+Why not `dateAdded` first (the old behaviour): `dateAdded` is when CMC *created
+the page*, which is routinely months-to-years before the token launches (e.g. CMC
+had LINEA's page in 2023-07 but LINEA launched 2025-09; Monad's in 2024-07 but it
+launched 2025-11). That made the TGE column "completely wrong" for many tokens.
+`dateLaunched` is the actual launch and fixes the bulk of them.
 
 Writes cache/scam_tge.json: { "SYMBOL": "YYYY-MM-DDTHH:MM:SS.000Z", ... }
 
-The data is static (a token's listing date never changes), so existing entries are
-kept and only missing symbols are fetched — cheap to re-run when new watchlist
-tokens are added.
+The data is static (a token's launch never changes), so existing entries are kept
+and only missing symbols are fetched — cheap to re-run when new watchlist tokens
+are added. Use `--force` to recompute every token (needed once after changing the
+source priority so the old dateAdded values get replaced).
 
-Run: python fetch_scam_tge.py
+Run: python fetch_scam_tge.py [--force]
 """
 from __future__ import annotations
 
 import json
+import sys
 import time
 from pathlib import Path
 
@@ -29,16 +39,28 @@ OUT = CACHE / "scam_tge.json"
 
 H = {"User-Agent": "Mozilla/5.0 verifysheet/scam-tge", "Accept": "application/json"}
 
+# Hand-curated true TGE dates for tokens where CMC exposes no `dateLaunched` and
+# `dateAdded` is wrong (it predates the real launch). Verified from public launch
+# records. Keyed by watchlist symbol.
+OVERRIDES = {
+    "HYPE": "2024-11-29T00:00:00.000Z",   # Hyperliquid TGE / airdrop
+    "MON":  "2025-11-24T00:00:00.000Z",   # Monad mainnet + MON token TGE
+    "AERO": "2023-08-28T00:00:00.000Z",   # Aerodrome Finance launch on Base
+}
 
-def cmc_date_added(slug: str) -> str | None:
+
+def cmc_dates(slug: str) -> dict:
+    """Return {'launched': iso|None, 'added': iso|None} from CMC's detail page."""
     try:
         r = requests.get("https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail",
                          params={"slug": slug}, headers=H, timeout=20)
         if r.status_code == 200:
-            return ((r.json().get("data") or {}).get("dateAdded")) or None
+            d = r.json().get("data") or {}
+            return {"launched": d.get("dateLaunched") or None,
+                    "added": d.get("dateAdded") or None}
     except Exception:
         pass
-    return None
+    return {"launched": None, "added": None}
 
 
 def cg_genesis(cg_id: str) -> str | None:
@@ -57,24 +79,43 @@ def cg_genesis(cg_id: str) -> str | None:
 
 
 def main() -> None:
+    force = "--force" in sys.argv
     data = json.loads(DATA.read_text(encoding="utf-8"))
     out: dict = {}
-    if OUT.exists():
+    if OUT.exists() and not force:
         try:
             out = json.loads(OUT.read_text(encoding="utf-8"))
         except Exception:
             out = {}
 
     for sym, rec in data.items():
-        if out.get(sym):                      # static — keep what we already have
+        if out.get(sym) and not force:        # static — keep what we already have
             continue
-        date = cmc_date_added(rec["cmc_slug"]) if rec.get("cmc_slug") else None
-        if not date and rec.get("cg_id"):
-            date = cg_genesis(rec["cg_id"])
-            time.sleep(2.0)                   # CoinGecko is rate-limited
+        # 1) curated override wins
+        date = OVERRIDES.get(sym)
+        src = "override"
+        if not date and rec.get("cmc_slug"):
+            d = cmc_dates(rec["cmc_slug"])
+            # 2) real launch date
+            if d["launched"]:
+                date, src = d["launched"], "dateLaunched"
+            else:
+                # 3) CoinGecko genesis, then 4) dateAdded (last resort)
+                if rec.get("cg_id"):
+                    g = cg_genesis(rec["cg_id"])
+                    time.sleep(2.0)           # CoinGecko is rate-limited
+                    if g:
+                        date, src = g, "cg_genesis"
+                if not date and d["added"]:
+                    date, src = d["added"], "dateAdded(fallback)"
+        elif not date and rec.get("cg_id"):
+            g = cg_genesis(rec["cg_id"])
+            time.sleep(2.0)
+            if g:
+                date, src = g, "cg_genesis"
         if date:
             out[sym] = date
-            print(f"  {sym}: {date}")
+            print(f"  {sym}: {date[:10]}  ({src})")
         else:
             print(f"  {sym}: no date")
         time.sleep(1.0)
