@@ -133,6 +133,13 @@ jobs:
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
 
+      - name: Upload the site as a Pages artifact
+        # Uploaded BEFORE the commit-back so the deploy always has its artifact, even
+        # if persisting the refreshed cache hits a transient git race below.
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: perps_correlation/Listinglabs
+
       - name: Commit refreshed data back to the repo
         # cache/   = accumulated candles + the news feed (must persist between runs)
         # listings/ = venue events auto-added by apply_signals.py from BWEnews
@@ -141,22 +148,32 @@ jobs:
         # deploy) and charts/ PNGs aren't regenerated here, so neither is committed —
         # that would be pure churn. The commit also keeps the scheduled workflow from
         # being auto-disabled for inactivity.
+        #
+        # Resilient push: a concurrent run (or a manual push) can advance main between
+        # checkout and here, which previously made `git push` reject and FAIL THE BUILD
+        # (so the deploy was skipped). Now we rebase onto origin/main and retry; and the
+        # step is best-effort (continue-on-error) so persisting the cache can never block
+        # the deploy.
         working-directory: .
+        continue-on-error: true
         run: |
           git config user.name  "listinglabs-bot"
           git config user.email "actions@users.noreply.github.com"
           git add cache perps_correlation/listings
           if git diff --cached --quiet; then
             echo "No data changes to commit."
-          else
-            git commit -m "chore: auto-refresh candles + apply listing signals [skip ci]"
-            git push
+            exit 0
           fi
-
-      - name: Upload the site as a Pages artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: perps_correlation/Listinglabs
+          git commit -m "chore: auto-refresh candles + apply listing signals [skip ci]"
+          for i in 1 2 3 4 5; do
+            if git push; then
+              echo "pushed on attempt $i"; exit 0
+            fi
+            echo "push rejected — rebasing onto origin/main (attempt $i)"
+            git pull --rebase --autostash origin main || true
+            sleep $(( (RANDOM % 5) + 2 ))
+          done
+          echo "::warning::could not push refreshed cache after retries; deploy continues"
 
   deploy:
     needs: build
