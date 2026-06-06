@@ -46,7 +46,7 @@
   },
   "ctr": {
     "symbol": "CTR",
-    "floor": "2026-04-26T13:00:00+00:00",
+    "floor": "2026-04-26T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
@@ -78,11 +78,14 @@
         "label": "Gate.io Perp",
         "iso": "2026-05-26T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "nex": {
     "symbol": "NEX",
-    "floor": "2026-04-20T14:00:00+00:00",
+    "floor": "2026-04-20T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
@@ -114,6 +117,9 @@
       },
       "gate_spot": null,
       "gate_perp": null
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "2z": {
@@ -405,7 +411,8 @@
         "label": "Gate.io Perp",
         "iso": "2025-02-10T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "bard": {
     "symbol": "BARD",
@@ -546,6 +553,9 @@
         "label": "Gate.io Perp",
         "iso": "2026-05-07T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "birb": {
@@ -682,7 +692,7 @@
   },
   "chip": {
     "symbol": "CHIP",
-    "floor": "2026-03-17T07:15:00+00:00",
+    "floor": "2026-03-17T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -726,6 +736,9 @@
         "label": "Gate.io Perp",
         "iso": "2026-04-17T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "dood": {
@@ -820,7 +833,7 @@
   },
   "edge": {
     "symbol": "EDGE",
-    "floor": "2026-03-01T00:00:00+00:00",
+    "floor": "2026-01-30T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -1195,6 +1208,9 @@
         "label": "Gate.io Perp",
         "iso": "2026-01-21T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "home": {
@@ -1369,6 +1385,10 @@
         "label": "Gate.io Perp",
         "iso": "2025-11-26T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-06T15:04:56.106513Z",
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "kat": {
@@ -1421,7 +1441,7 @@
   },
   "kite": {
     "symbol": "KITE",
-    "floor": "2025-09-29T10:30:00+00:00",
+    "floor": "2025-09-29T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -1459,6 +1479,10 @@
         "label": "Gate.io Perp",
         "iso": "2025-10-29T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-06T15:04:56.106513Z",
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "kmno": {
@@ -1915,6 +1939,11 @@
         "label": "Gate.io Perp",
         "iso": "2026-04-21T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-06T15:04:56.106513Z",
+      "kraken_futures": "2026-06-06T15:04:56.106513Z",
+      "kucoin_spot": "2026-06-06T15:04:56.106513Z"
     }
   },
   "pepe": {
@@ -2092,6 +2121,10 @@
         "label": "Gate.io Perp",
         "iso": "2026-03-25T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-06T15:04:56.106513Z",
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "prompt": {
@@ -2260,6 +2293,11 @@
         "iso": "2026-05-28T00:00:00Z"
       },
       "gate_perp": null
+    },
+    "checked": {
+      "kraken_spot": "2026-06-06T15:04:56.106513Z",
+      "kraken_futures": "2026-06-06T15:04:56.106513Z",
+      "kucoin_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "recall": {
@@ -2530,6 +2568,9 @@
         "label": "Gate.io Perp",
         "iso": "2025-04-28T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "skr": {
@@ -2679,7 +2720,8 @@
         "label": "Gate.io Perp",
         "iso": "2025-06-17T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "spx": {
     "symbol": "SPX",
@@ -2941,7 +2983,7 @@
   },
   "virtual": {
     "symbol": "VIRTUAL",
-    "floor": "2024-10-29T00:00:00+00:00",
+    "floor": "2024-09-29T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -2988,7 +3030,8 @@
         "label": "Gate.io Perp",
         "iso": "2024-11-21T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "vvv": {
     "symbol": "VVV",
@@ -3030,7 +3073,8 @@
         "label": "Gate.io Perp",
         "iso": "2025-01-28T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "wal": {
     "symbol": "WAL",
@@ -3265,7 +3309,7 @@
   },
   "zama": {
     "symbol": "ZAMA",
-    "floor": "2025-12-10T09:00:00+00:00",
+    "floor": "2025-12-10T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -3309,6 +3353,9 @@
         "label": "Gate.io Perp",
         "iso": "2026-01-09T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-06T15:04:56.106513Z"
     }
   },
   "zeta": {
