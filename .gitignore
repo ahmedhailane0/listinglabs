@@ -37,3 +37,9 @@ perps_correlation/*.log
 perps_correlation/**/*.log
 perps_correlation/*.ipynb
 perps_correlation/*.docx
+# Heavy LOCAL-ONLY caches the live site doesn't need. The small derived JSON the
+# panels actually read (cache/token_unlocks.json) IS committed; the ~hundreds-of-MB
+# raw DefiLlama per-protocol dump that fetch_token_unlocks.py downloads to build it
+# is local-only (refreshed by hand, like backfill_perp_history.py). Never commit it.
+cache/_unlocks_protocols/
+cache/audit_run.log

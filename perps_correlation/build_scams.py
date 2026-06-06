@@ -23,6 +23,14 @@ from build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions li
 from build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from interactive_chart import timeseries_html
+import news_panel
+import unlocks_panel
+
+
+def _panel_ident(rec) -> dict:
+    """Normalized identity passed to the news/unlocks panels (report-agnostic)."""
+    return {"symbol": rec.get("symbol"), "name": rec.get("name"),
+            "cmc_slug": rec.get("cmc_slug"), "cg_id": rec.get("cg_id")}
 
 HERE = Path(__file__).parent
 SITE = HERE / "Listinglabs" / "scams"
@@ -895,6 +903,7 @@ def _detail(rec, platforms) -> str:
   </div>
   <div class="chart">{_price_chart(sym, name)}</div>
 </section>
+<div class="extras">{news_panel.render(_panel_ident(rec))}{unlocks_panel.render(_panel_ident(rec))}</div>
 <section class="card span">
   <h3>Perp markets <span class="asof">open interest &amp; funding · {perp_asof}</span></h3>
   {_perp_table(perp)}
