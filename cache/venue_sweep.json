@@ -820,7 +820,7 @@
   },
   "edge": {
     "symbol": "EDGE",
-    "floor": "2025-03-03T00:00:00+00:00",
+    "floor": "2026-03-01T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -840,7 +840,7 @@
       },
       "kraken_spot": {
         "label": "Kraken Spot",
-        "iso": "2025-04-02T00:00:00Z"
+        "iso": "2026-03-01T00:00:00Z"
       },
       "kraken_futures": null,
       "kucoin_spot": {
@@ -858,12 +858,25 @@
       "bitget_perp": null,
       "gate_spot": {
         "label": "Gate.io Spot",
-        "iso": "2025-04-02T00:00:00Z"
+        "iso": "2026-03-01T00:00:00Z"
       },
       "gate_perp": {
         "label": "Gate.io Perp",
-        "iso": "2025-04-03T00:00:00Z"
+        "iso": "2026-03-01T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-06T14:48:41.153412Z",
+      "okx_perp": "2026-06-06T14:48:41.153412Z",
+      "bybit_spot": "2026-06-06T14:48:41.153412Z",
+      "bybit_perp": "2026-06-06T14:48:41.153412Z",
+      "kraken_spot": "2026-06-06T14:48:41.153412Z",
+      "kraken_futures": "2026-06-06T14:48:41.153412Z",
+      "kucoin_spot": "2026-06-06T14:48:41.153412Z",
+      "kucoin_futures": "2026-06-06T14:48:41.153412Z",
+      "bitget_spot": "2026-06-06T14:48:41.153412Z",
+      "gate_spot": "2026-06-06T14:48:41.153412Z",
+      "gate_perp": "2026-06-06T14:48:41.153412Z"
     }
   },
   "elsa": {
@@ -2563,24 +2576,36 @@
   },
   "slx": {
     "symbol": "SLX",
-    "floor": "2026-04-25T12:00:00+00:00",
+    "floor": "2026-04-25T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
-      "okx_perp": null,
+      "okx_perp": {
+        "label": "OKX Perp",
+        "iso": "2026-06-01T00:00:00Z"
+      },
       "bybit_spot": null,
-      "bybit_perp": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2026-06-01T00:00:00Z"
+      },
       "kraken_spot": {
         "label": "Kraken Spot",
         "iso": "2026-05-25T00:00:00Z"
       },
       "kraken_futures": null,
       "kucoin_spot": null,
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-06-01T00:00:00Z"
+      },
       "bitget_spot": {
         "label": "Bitget Spot",
         "iso": "2026-05-25T00:00:00Z"
       },
-      "bitget_perp": null,
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-06-01T00:00:00Z"
+      },
       "gate_spot": {
         "label": "Gate.io Spot",
         "iso": "2026-05-25T00:00:00Z"
@@ -2589,6 +2614,20 @@
         "label": "Gate.io Perp",
         "iso": "2026-05-26T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-06T14:48:41.153412Z",
+      "okx_perp": "2026-06-06T14:48:41.153412Z",
+      "bybit_spot": "2026-06-06T14:48:41.153412Z",
+      "bybit_perp": "2026-06-06T14:48:41.153412Z",
+      "kraken_spot": "2026-06-06T14:48:41.153412Z",
+      "kraken_futures": "2026-06-06T14:48:41.153412Z",
+      "kucoin_spot": "2026-06-06T14:48:41.153412Z",
+      "kucoin_futures": "2026-06-06T14:48:41.153412Z",
+      "bitget_spot": "2026-06-06T14:48:41.153412Z",
+      "bitget_perp": "2026-06-06T14:48:41.153412Z",
+      "gate_spot": "2026-06-06T14:48:41.153412Z",
+      "gate_perp": "2026-06-06T14:48:41.153412Z"
     }
   },
   "spk": {
@@ -3457,12 +3496,15 @@
   },
   "zest": {
     "symbol": "ZEST",
-    "floor": "2026-04-19T13:00:00+00:00",
+    "floor": "2026-04-19T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
       "bybit_spot": null,
-      "bybit_perp": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2026-06-05T00:00:00Z"
+      },
       "kraken_spot": null,
       "kraken_futures": null,
       "kucoin_spot": {
@@ -3486,20 +3528,39 @@
         "label": "Gate.io Perp",
         "iso": "2026-05-20T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-06T14:48:41.153412Z",
+      "okx_perp": "2026-06-06T14:48:41.153412Z",
+      "bybit_spot": "2026-06-06T14:48:41.153412Z",
+      "bybit_perp": "2026-06-06T14:48:41.153412Z",
+      "kraken_spot": "2026-06-06T14:48:41.153412Z",
+      "kraken_futures": "2026-06-06T14:48:41.153412Z",
+      "kucoin_spot": "2026-06-06T14:48:41.153412Z",
+      "kucoin_futures": "2026-06-06T14:48:41.153412Z",
+      "bitget_perp": "2026-06-06T14:48:41.153412Z",
+      "gate_spot": "2026-06-06T14:48:41.153412Z",
+      "gate_perp": "2026-06-06T14:48:41.153412Z"
     }
   },
   "btw": {
     "symbol": "BTW",
-    "floor": "2026-01-31T08:00:00+00:00",
+    "floor": "2026-01-31T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
       "bybit_spot": null,
-      "bybit_perp": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2026-06-05T00:00:00Z"
+      },
       "kraken_spot": null,
       "kraken_futures": null,
       "kucoin_spot": null,
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-06-05T00:00:00Z"
+      },
       "bitget_spot": {
         "label": "Bitget Spot",
         "iso": "2026-03-02T00:00:00Z"
@@ -3510,6 +3571,18 @@
         "label": "Gate.io Perp",
         "iso": "2026-06-04T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-06T14:48:41.153412Z",
+      "okx_perp": "2026-06-06T14:48:41.153412Z",
+      "bybit_spot": "2026-06-06T14:48:41.153412Z",
+      "bybit_perp": "2026-06-06T14:48:41.153412Z",
+      "kraken_spot": "2026-06-06T14:48:41.153412Z",
+      "kraken_futures": "2026-06-06T14:48:41.153412Z",
+      "kucoin_spot": "2026-06-06T14:48:41.153412Z",
+      "kucoin_futures": "2026-06-06T14:48:41.153412Z",
+      "bitget_spot": "2026-06-06T14:48:41.153412Z",
+      "gate_perp": "2026-06-06T14:48:41.153412Z"
     }
   }
 }

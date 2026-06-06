@@ -1,0 +1,6232 @@
+[
+  {
+    "token": "2Z",
+    "floor": "2025-09-01T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-07T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "AERO",
+    "floor": "2024-01-07T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-07-03T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-12-13T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-07-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-03-05T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-04-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-12-06T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-03-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-03-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ALLO",
+    "floor": "2025-10-12T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-11-11T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ASTER",
+    "floor": "2025-08-20T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-09-22T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-19T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-10-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-09-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-19T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-10-06T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ATH",
+    "floor": "2024-05-13T01:40:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-06-12T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-06-13T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-06-12T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-06-13T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-11-12T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-11-15T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-06-12T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-06-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-06-12T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-06-12T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "AVNT",
+    "floor": "2025-08-10T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-07T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-09-22T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-09-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "B3",
+    "floor": "2025-01-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-02-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-02-12T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-03-14T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-03-14T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-02-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-02-18T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-02-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-02-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BARD",
+    "floor": "2025-08-17T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-16T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-18T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BIGTIME",
+    "floor": "2023-09-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2023-10-11T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2023-10-12T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2023-10-12T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-06-25T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2023-10-12T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2023-10-12T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2023-10-12T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2023-10-11T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BILL",
+    "floor": "2026-04-04T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-05-06T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-05-04T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-05-06T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-05-04T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-05-04T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-05-06T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-05-04T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-05-06T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-05-07T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BIRB",
+    "floor": "2025-12-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-02-03T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-01-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BREV",
+    "floor": "2025-11-30T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-12-30T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-12-30T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-12-30T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-01-06T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-12-30T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "BTW",
+    "floor": "2026-01-31T00:00:00Z",
+    "missing": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-06-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-06-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      }
+    ],
+    "present": [
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-03-02T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-06-04T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "CFG",
+    "floor": "2025-07-05T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-08-26T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-03-17T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-07-05T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2026-02-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-07-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-03-16T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-07-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-03-16T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-05-03T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ],
+        "note": "first candle predates floor \u2014 possible ticker collision"
+      }
+    ]
+  },
+  {
+    "token": "CHIP",
+    "floor": "2026-03-17T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-04-24T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-04-16T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-04-22T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-04-16T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-04-17T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "CTR",
+    "floor": "2026-04-26T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-05-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-05-28T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "DOOD",
+    "floor": "2025-04-09T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-05-12T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-05-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "DRIFT",
+    "floor": "2024-04-16T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-05-16T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-05-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-07-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-05-16T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-05-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-05-16T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-05-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "EDGE",
+    "floor": "2026-03-01T00:00:00Z",
+    "missing": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-03-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-03-01T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-03-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-03-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-05-06T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-04-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-03-31T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-03-31T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-03-31T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-03-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ELSA",
+    "floor": "2025-12-21T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-01-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-01-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-01-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ERA",
+    "floor": "2025-06-17T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ESP",
+    "floor": "2026-01-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-02-10T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-02-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-02-12T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2026-02-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-02-12T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-02-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-02-12T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-02-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "EUL",
+    "floor": "2025-06-07T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-14T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-06-07T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-07T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-13T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-06-07T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-13T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "FLOCK",
+    "floor": "2025-03-30T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-03-30T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-03-30T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-01-09T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-06T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-03-30T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-03-30T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-03-30T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "FLUID",
+    "floor": "2024-12-23T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-12-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-24T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-24T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "G",
+    "floor": "2024-06-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-07-26T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-08-06T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-07-25T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-01-22T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-02-05T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-08-19T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-08-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-07-24T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-08-15T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "GWEI",
+    "floor": "2025-12-22T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-05-18T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-01-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "HOME",
+    "floor": "2025-05-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-06-13T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-06-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "HYPER",
+    "floor": "2025-03-23T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-04-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "IP",
+    "floor": "2025-01-08T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-02-07T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-03-10T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-03-07T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-02-13T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "IRYS",
+    "floor": "2025-10-26T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-05-27T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-05-27T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-11-27T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-11-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-11-26T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-11-25T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-05-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-11-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "KAT",
+    "floor": "2026-01-31T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-03-18T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-03-02T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-03-02T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-03-18T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2026-03-27T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-03-18T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-03-02T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-03-18T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-03-18T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-03-02T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "KITE",
+    "floor": "2025-09-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-11-03T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-04-09T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-11-03T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-11-03T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-11-03T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "KMNO",
+    "floor": "2024-10-21T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-05-30T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-05-30T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-10-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-10-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-10-21T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-10-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-10-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-11-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "LA",
+    "floor": "2025-05-05T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-06-13T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-06-04T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-06-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-04T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-06-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-06-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-06-04T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "LINEA",
+    "floor": "2025-08-02T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-09-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-09-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-09-24T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "MET",
+    "floor": "2025-09-10T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-10T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-11-03T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-11-07T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-11T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "MOG",
+    "floor": "2024-09-08T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-09-08T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-11-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-09-08T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-09-08T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-09-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-09-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "MOODENG",
+    "floor": "2024-08-28T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-11-15T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-10-03T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-10-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-12-18T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-10-31T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-09-27T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-10-04T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-09-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-10-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "MORPHO",
+    "floor": "2024-10-22T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-11-25T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-11-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-11-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-11-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "NEWT",
+    "floor": "2025-05-20T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-06-24T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-06-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-06-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-06-24T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-06-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "NEX",
+    "floor": "2026-04-20T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-05-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-05-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-05-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-05-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-05-20T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-05-21T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ONDO",
+    "floor": "2023-12-19T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-07-29T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-08-06T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-01-18T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-01-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-16T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-04-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-01-18T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-01-24T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-01-18T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-01-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "OPG",
+    "floor": "2026-03-22T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-04-23T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-04-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-04-23T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-04-23T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-04-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PEPE",
+    "floor": "2023-03-20T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2023-05-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2023-05-03T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2023-09-11T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2023-09-11T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-16T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2023-05-25T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2023-05-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2023-05-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2023-04-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2023-04-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PLUME",
+    "floor": "2025-01-03T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-01-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-01-24T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-01-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-01-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-01-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-01-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "POPCAT",
+    "floor": "2024-06-23T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-08-29T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-06-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-06-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-09-19T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-06-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-08-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-08-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-06-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-06-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PRL",
+    "floor": "2026-02-23T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-03-27T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-03-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-03-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-03-25T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-03-25T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-03-25T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PROMPT",
+    "floor": "2025-03-11T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-02T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-04-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-04-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PROVE",
+    "floor": "2025-07-06T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-08T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-08-29T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-08-22T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "PUMP",
+    "floor": "2025-06-10T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-07-18T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-07-14T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-07-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "QAIT",
+    "floor": "2026-04-28T15:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-05-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-05-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "RECALL",
+    "floor": "2025-09-15T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-30T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-10-16T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ROBO",
+    "floor": "2026-01-26T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-03-05T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-02-27T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-02-27T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-02-25T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-03-03T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-02-27T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-02-26T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-02-27T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-02-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-02-25T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SAFE",
+    "floor": "2024-03-24T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-04-23T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-04-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-04-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-16T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-10-29T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-04-23T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-04-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-04-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SAPIEN",
+    "floor": "2025-07-21T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-11-06T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-02T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-08-20T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SENT",
+    "floor": "2025-10-15T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-01-27T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-11-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-01-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SIGN",
+    "floor": "2025-03-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-04-17T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-04-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SKR",
+    "floor": "2025-12-21T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-01-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-01-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-01-20T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SLX",
+    "floor": "2026-04-25T00:00:00Z",
+    "missing": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-06-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-06-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-06-01T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-06-01T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      }
+    ],
+    "present": [
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-05-25T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-05-25T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-05-25T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SPK",
+    "floor": "2025-05-17T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-06-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-06-30T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-06-17T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SPX",
+    "floor": "2024-10-12T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-07-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-10-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-12-11T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-12-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-12-04T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-12-11T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-12-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-12-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "SXT",
+    "floor": "2025-04-02T08:30:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-05-03T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-05-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "TOSHI",
+    "floor": "2024-11-24T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-07T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-01-14T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-12-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-02-21T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-02-12T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-12-03T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-17T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-30T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-11-24T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-11-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "TOWNS",
+    "floor": "2025-07-06T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-08-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "TREE",
+    "floor": "2025-06-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-07-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "TRUST",
+    "floor": "2025-10-05T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-11-14T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-11-05T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "VIRTUAL",
+    "floor": "2024-09-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-28T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-12-11T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-11-20T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-11-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-02-12T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-01-20T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-11-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-12-04T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-09-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-11-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "VVV",
+    "floor": "2024-12-29T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-03-21T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-01-28T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-02-27T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-02-12T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-01-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-02-14T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-01-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-01-28T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "WAL",
+    "floor": "2025-02-24T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-05-08T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-03-28T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-03-27T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "WET",
+    "floor": "2025-11-04T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-12-04T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-12-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "XAN",
+    "floor": "2025-08-30T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-08T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-29T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "XPL",
+    "floor": "2025-07-23T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-08-28T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-08-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-09-26T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-25T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-08-22T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "YB",
+    "floor": "2025-09-10T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-12T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-10-11T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-10-11T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-10-15T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-10-10T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZAMA",
+    "floor": "2025-12-10T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-01-09T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-01-09T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-01-09T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-02-02T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-01-09T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZEST",
+    "floor": "2026-04-19T00:00:00Z",
+    "missing": [
+      {
+        "venue": "Bybit Perp",
+        "iso": "2026-06-05T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      }
+    ],
+    "present": [
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2026-05-19T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2026-05-26T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Perp",
+        "iso": "2026-06-04T00:00:00Z",
+        "key": [
+          "Bitget",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2026-05-19T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2026-05-20T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZETA",
+    "floor": "2024-01-01T08:20:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2024-06-16T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2024-05-15T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2024-02-01T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZKC",
+    "floor": "2025-08-15T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-09-15T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZKP",
+    "floor": "2025-11-19T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Perp",
+        "iso": "2026-01-07T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-12-19T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-12-22T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-12-19T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-12-19T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-12-19T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-12-26T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-12-21T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  },
+  {
+    "token": "ZORA",
+    "floor": "2025-03-24T00:00:00Z",
+    "missing": [],
+    "present": [
+      {
+        "venue": "OKX Spot",
+        "iso": "2025-10-17T00:00:00Z",
+        "key": [
+          "OKX",
+          "spot"
+        ]
+      },
+      {
+        "venue": "OKX Perp",
+        "iso": "2025-10-10T00:00:00Z",
+        "key": [
+          "OKX",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bybit Spot",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "Bybit",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Bybit Perp",
+        "iso": "2025-04-25T00:00:00Z",
+        "key": [
+          "Bybit",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Kraken Spot",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Kraken Futures",
+        "iso": "2025-10-23T00:00:00Z",
+        "key": [
+          "Kraken",
+          "perp"
+        ]
+      },
+      {
+        "venue": "KuCoin Spot",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "spot"
+        ]
+      },
+      {
+        "venue": "KuCoin Futures",
+        "iso": "2025-07-25T00:00:00Z",
+        "key": [
+          "KuCoin",
+          "perp"
+        ]
+      },
+      {
+        "venue": "Bitget Spot",
+        "iso": "2025-08-11T00:00:00Z",
+        "key": [
+          "Bitget",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Spot",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "spot"
+        ]
+      },
+      {
+        "venue": "Gate.io Perp",
+        "iso": "2025-04-23T00:00:00Z",
+        "key": [
+          "Gate",
+          "perp"
+        ]
+      }
+    ],
+    "suspect": []
+  }
+]

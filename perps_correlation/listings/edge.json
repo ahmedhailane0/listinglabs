@@ -16,6 +16,26 @@
   "window_end_utc": "2026-04-07T00:00:00Z",
   "events": [
     {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-03-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-03-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-03-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-03-20T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-03-31T00:00:00Z"
     },

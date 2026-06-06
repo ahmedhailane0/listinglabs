@@ -130,6 +130,22 @@ jobs:
         continue-on-error: true
         timeout-minutes: 6
 
+      - name: Sweep new CEX listings (candle-verified) + merge into configs
+        # Catches major-venue listings that land AFTER a token's first sweep —
+        # the gap that previously stayed invisible until a manual re-sweep. Self-
+        # healing: sweep_venues re-probes venues cached as ABSENT (active tokens
+        # daily) and NEVER caches a venue it couldn't reach (so a 451 can't hide a
+        # real listing). --ci skips OKX/Bybit (they 451 GitHub's datacenter IP,
+        # like the klines gap-fill); those stay LOCAL-only — run a plain
+        # `python sweep_venues.py` locally to fill OKX/Bybit, then push. Newest
+        # tokens first (they're the ones still gaining venues), capped per run.
+        # merge_sweep only ADDS; curated / candle-verified events always win.
+        run: |
+          python sweep_venues.py --ci --limit 20
+          python merge_sweep.py
+        continue-on-error: true     # a flaky exchange call must never block the build
+        timeout-minutes: 6
+
       - name: Build the site (RSS poll + reports + landing)
         run: python build_all.py --no-zip
 

@@ -48,6 +48,11 @@
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-06-04T14:00:00Z",
       "note": "ZESTUSDT USDT-M perp first 1h candle on Binance fapi (verified). Perp launched ~16d after Alpha listing."
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-06-05T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
     }
   ],
   "annotations": [],

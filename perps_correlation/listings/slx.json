@@ -41,21 +41,41 @@
       "note": "SLX_USDT first 5m candle on Gate.io USDT-M futures (16h after Alpha)."
     },
     {
+      "exchange": "OKX Perp",
+      "iso_time_utc": "2026-06-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-06-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-06-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-06-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Upbit",
       "iso_time_utc": "2026-06-01T02:45:01Z",
-      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for Solstice(SLX) (KRW, BTC, USDT Market) Upbit 上新: [交易] Solstice (SLX) 市场支持（韩元、比特币、USDT市场） SLX_978 Ma\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16223",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for Solstice(SLX) (KRW, BTC, USDT Market) Upbit \u4e0a\u65b0: [\u4ea4\u6613] Solstice (SLX) \u5e02\u573a\u652f\u6301\uff08\u97e9\u5143\u3001\u6bd4\u7279\u5e01\u3001USDT\u5e02\u573a\uff09 SLX_978 Ma\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16223",
       "source": "bwenews"
     },
     {
       "exchange": "Bithumb",
       "iso_time_utc": "2026-06-01T02:59:25Z",
-      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [新增市场] Solstice (SLX) 韩元市场新增 SLX MarketCap: 45.4M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 202\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16224",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [\ub9c8\ucf13 \ucd94\uac00 Bithumb\u4e0a\u65b0: [\u65b0\u589e\u5e02\u573a] Solstice (SLX) \u97e9\u5143\u5e02\u573a\u65b0\u589e SLX MarketCap: 45.4M (Auto match could be wrong, \u81ea\u52a8\u5339\u914d\u53ef\u80fd\u4e0d\u51c6\u786e) \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014 202\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16224",
       "source": "bwenews"
     },
     {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-06-01T06:15:08Z",
-      "note": "Auto-added from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined SLXUSDT Perpetual Contract (2026-06-01) 币安重要公告: 币安合约交易平台将上线 U 本位 SLXUSDT 永续合约（2026-06-\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16225",
+      "note": "Auto-added from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined SLXUSDT Perpetual Contract (2026-06-01) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u4ea4\u6613\u5e73\u53f0\u5c06\u4e0a\u7ebf U \u672c\u4f4d SLXUSDT \u6c38\u7eed\u5408\u7ea6\uff082026-06-\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16225",
       "source": "bwenews"
     }
   ],
