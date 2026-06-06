@@ -92,16 +92,26 @@ def _fmt_pct(pct) -> str:
     return f"{v:.1f}%" if v >= 0.1 else f"{v:.2f}%"
 
 
+_HEAD = ('<section class="extra-card unlockcard">'
+         '<h3>Token unlocks <span class="asof">via DefiLlama</span></h3>')
+
+
+def _empty() -> str:
+    """The panel is ALWAYS shown — when we have no schedule for the token, say so
+    explicitly rather than hiding it, so an unlock is never silently missed."""
+    return _HEAD + '<p class="empty">No unlock data available at the moment.</p></section>'
+
+
 def render(ident: dict) -> str:
     sym = (ident or {}).get("symbol")
     if not sym:
-        return ""
+        return _empty()
     rec = _DATA.get(str(sym).strip().upper())
     if not rec:
-        return ""
+        return _empty()
     events = rec.get("events") or []
     if not events:
-        return ""
+        return _empty()
 
     nxt = rec.get("next_unlock") or events[0]
 
@@ -139,12 +149,11 @@ def render(ident: dict) -> str:
         )
 
     if not rows:
-        return ""
+        return _empty()
 
     return (
-        '<section class="extra-card unlockcard">'
-        '<h3>Token unlocks <span class="asof">via DefiLlama</span></h3>'
-        f'<div class="unlock-next">{next_line}</div>'
+        _HEAD
+        + f'<div class="unlock-next">{next_line}</div>'
         '<ul class="unlocklist">' + "".join(rows) + "</ul>"
         "</section>"
     )
