@@ -156,6 +156,108 @@ def fetch_prices(gecko_ids):
     return out
 
 
+# ── Source 2: CryptoRank (keyless) ───────────────────────────────────────────
+# CryptoRank's v0 API is keyless (already used by fetch_cryptorank.py). The per-
+# allocation vesting SCHEDULE isn't in the JSON API, but it IS server-rendered into
+# the vesting page's __NEXT_DATA__:
+#   props.pageProps.vestingInfo.allocations[] =
+#       {name, tokens (absolute alloc size), batches:[{date, unlock_percent}]}
+#   where unlock_percent is % OF THAT ALLOCATION (batches sum to 100 per alloc).
+# (props.pageProps.fallbackUpcomingTokens is an UNRELATED promo widget — ignore it.)
+# This covers many tokens DefiLlama lacks (LINEA/PLUME/WAL/SAPIEN/HOME…), no key.
+import re as _re
+
+CR_BASE = "https://api.cryptorank.io/v0"
+CR_VESTING_URL = "https://cryptorank.io/price/{slug}/vesting"
+
+
+def cr_slug(sym, name):
+    """Resolve a CryptoRank slug, requiring an exact symbol match (collision guard)."""
+    for q in (name, sym):
+        if not q:
+            continue
+        try:
+            r = requests.get(f"{CR_BASE}/search", params={"query": q},
+                             headers=UA, timeout=15)
+            if r.status_code != 200:
+                continue
+            for c in r.json().get("coins", []):
+                if (c.get("symbol") or "").upper() == sym.upper():
+                    return c.get("key")
+        except Exception:
+            continue
+    return None
+
+
+def cr_coin_meta(slug):
+    """(total_supply, price) from the keyless v0 coin payload."""
+    try:
+        d = _get_json(f"{CR_BASE}/coins/{slug}").get("data") or {}
+    except Exception:
+        return None, None
+    price = d.get("price")
+    if isinstance(price, dict):            # v0 returns {"USD":..,"BTC":..,"ETH":..}
+        price = price.get("USD")
+    return (d.get("totalSupply") or d.get("maxSupply")), price
+
+
+def _iso_ms(s):
+    try:
+        return int(datetime.fromisoformat(s.replace("Z", "+00:00")).timestamp() * 1000)
+    except Exception:
+        return None
+
+
+def cr_future_events(slug, total, price):
+    """Parse the SSR vesting page -> future monthly unlock events (same monthly
+    shape as DefiLlama's future_events)."""
+    try:
+        h = requests.get(CR_VESTING_URL.format(slug=slug), headers=UA, timeout=25).text
+    except Exception:
+        return []
+    m = _re.search(r'<script id="__NEXT_DATA__" type="application/json">(.*?)</script>',
+                   h, _re.S)
+    if not m:
+        return []
+    try:
+        pp = json.loads(m.group(1))["props"]["pageProps"]
+    except Exception:
+        return []
+    allocs = ((pp.get("vestingInfo") or {}).get("allocations")) or []
+    now_ms = NOW * 1000
+    by_month = defaultdict(lambda: defaultdict(float))
+    month_ts = {}
+    for a in allocs:
+        atok = a.get("tokens")
+        label = a.get("name")
+        for b in a.get("batches") or []:
+            pct = b.get("unlock_percent")
+            ms = _iso_ms(b.get("date") or "")
+            if ms is None or not pct or ms <= now_ms:
+                continue
+            toks = float(atok) * float(pct) / 100.0 if atok else 0.0
+            dt = datetime.fromtimestamp(ms / 1000, timezone.utc)
+            mk = (dt.year, dt.month)
+            by_month[mk][label] += toks
+            if mk not in month_ts or ms < month_ts[mk]:
+                month_ts[mk] = ms
+    events = []
+    for mk in sorted(by_month):
+        cats = by_month[mk]
+        toks = sum(cats.values())
+        dom = max(cats, key=cats.get) if cats else None
+        pct = (toks / total * 100.0) if (total and toks) else None
+        usd = (toks * price) if (price and toks) else None
+        events.append({
+            "ts": int(month_ts[mk] / 1000),
+            "tokens": round(toks, 2) if toks else None,
+            "usd": round(usd, 2) if usd else None,
+            "pct_supply": round(pct, 4) if pct is not None else None,
+            "label": dom,
+        })
+    return events
+
+
 def load_token_universe():
     """Return list of ident dicts {symbol, name, cmc_slug, cg_id} (cg_id may be '')."""
     tokens = []
@@ -314,8 +416,37 @@ def main():
         out[sym_u] = {
             "next_unlock": events[0],
             "events": events,
+            "source": "DefiLlama",
             "source_url": f"https://defillama.com/unlocks/{entry['slug']}",
         }
+
+    print(f"token_unlocks: DefiLlama covered {len(out)} tokens; "
+          f"trying CryptoRank for the rest…")
+
+    # --- Source 2: CryptoRank (keyless SSR) fills tokens DefiLlama lacks ---
+    cr_added = 0
+    for t in tokens:
+        sym_u = t["symbol"].strip().upper()
+        if sym_u in out:
+            continue                       # DefiLlama is primary (already verified)
+        slug = cr_slug(t["symbol"], t.get("name") or "")
+        time.sleep(0.2)
+        if not slug:
+            continue
+        total, price = cr_coin_meta(slug)
+        time.sleep(0.2)
+        events = cr_future_events(slug, total, price)
+        time.sleep(0.25)
+        if not events:
+            continue
+        out[sym_u] = {
+            "next_unlock": events[0],
+            "events": events,
+            "source": "CryptoRank",
+            "source_url": f"https://cryptorank.io/price/{slug}/vesting",
+        }
+        cr_added += 1
+    print(f"token_unlocks: CryptoRank filled {cr_added} more tokens")
 
     with_future = len(out)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
