@@ -153,8 +153,11 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
             continue
         ms = min(max(ms, t_lo), t_hi)
         ann_markers.append({
+            # No on-chart text — the label would clutter the plot (and crowds badly
+            # when a token has several announcements). The marker is just a dot; the
+            # `label` rides along so the crosshair tooltip can reveal it on hover.
             "time": ms // 1000, "position": "belowBar", "shape": "arrowUp",
-            "color": "#e67e22", "text": f"{label} announced",
+            "color": "#e67e22", "text": "", "label": label,
         })
 
     # The DEFAULT view shows the FULL history fitted to the frame ("All", like
@@ -273,11 +276,21 @@ function mount(id, cfg){
     return out;
   }
 
+  // Announcement bucket-time -> label, rebuilt per timeframe. Announcement markers
+  // carry no on-chart text (see chart_html); this lets the crosshair tooltip reveal
+  // "Announcement" when the cursor lands on the marker's candle.
+  var annMap = {};
+  function buildAnnMap(mins){
+    annMap = {};
+    (cfg.ann || []).forEach(function(m){ annMap[bucket(m.time, mins)] = m.label || 'announcement'; });
+  }
+
   var active = cfg.tfs[cfg.def_tf || 0][1];
   function render(mins){
     active = mins;
     series.setData(agg(cfg.rows, mins));
     series.setMarkers(markers(mins));
+    buildAnnMap(mins);
   }
   function toAll(){ chart.timeScale().fitContent(); }
   function toLaunch(){
@@ -302,7 +315,9 @@ function mount(id, cfg){
     var price = (d.value!==undefined)? d.value : d.close;
     var dt = new Date(p.time*1000).toISOString().slice(0,16).replace('T',' ');
     if(tip){
-      tip.innerHTML = '<b>$'+price.toFixed(DEC)+'</b><br>'+dt+' UTC';
+      var ann = annMap[p.time];
+      var annLine = ann ? '<br><span style="color:#e67e22">📣 '+ann+'</span>' : '';
+      tip.innerHTML = '<b>$'+price.toFixed(DEC)+'</b><br>'+dt+' UTC'+annLine;
       tip.style.display='block';
       var x = p.point.x + 16, y = p.point.y + 12;
       if(x > wrap.clientWidth - 130){ x = p.point.x - 130; }

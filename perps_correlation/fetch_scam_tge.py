@@ -55,6 +55,7 @@ OVERRIDES = {
     "GWEI":   "2026-01-21T00:00:00.000Z",  # ETHGas (CMC slug "eth-gas", dateLaunched)
     "SIREN":  "2025-02-07T00:00:00.000Z",  # Siren (CMC slug "siren-bsc", dateLaunched)
     "GENIUS": "2026-04-13T00:00:00.000Z",  # Genius Terminal TGE (Binance Alpha 04-13)
+    "BTW":    "2026-03-02T00:00:00.000Z",  # Bitway TGE = Binance Alpha listing (CMC dateAdded too recent)
 }
 
 
