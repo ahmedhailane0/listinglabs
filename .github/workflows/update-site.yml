@@ -130,22 +130,6 @@ jobs:
         continue-on-error: true
         timeout-minutes: 6
 
-      - name: Fetch per-token news (detail-page feed)
-        # Keyless CMC content API (content/v3/news?coins=<id>) per tracked token ->
-        # cache/token_news.json. Drives the scrollable News panel on both reports'
-        # detail pages. Incremental + capped; a flaky call must never block the build.
-        run: python fetch_token_news.py
-        continue-on-error: true
-        timeout-minutes: 6
-
-      # NOTE: token unlocks (cache/token_unlocks.json, drives the Token-unlocks
-      # panel) are refreshed LOCALLY, not here. fetch_token_unlocks.py downloads
-      # ~hundreds of MB of raw DefiLlama per-protocol data to build the small
-      # output JSON; that raw dump is git-ignored and would re-download every run,
-      # so — like backfill_perp_history.py — it's a local-only step: run
-      # `python fetch_token_unlocks.py` locally and commit cache/token_unlocks.json.
-      # Unlock schedules change slowly (monthly), so periodic local refresh is fine.
-
       - name: Sweep new CEX listings (candle-verified) + merge into configs
         # Catches major-venue listings that land AFTER a token's first sweep —
         # the gap that previously stayed invisible until a manual re-sweep. Self-
@@ -173,7 +157,7 @@ jobs:
           path: perps_correlation/Listinglabs
 
       - name: Commit refreshed data back to the repo
-        # cache/   = accumulated candles + the news feed (must persist between runs)
+        # cache/   = accumulated candles (must persist between runs)
         # listings/ = venue events auto-added by apply_signals.py from BWEnews
         # Both must be committed so the autonomous state survives. Listinglabs/ is
         # redeployed as a Pages artifact every run (the git copy is never read by

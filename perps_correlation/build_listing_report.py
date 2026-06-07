@@ -21,14 +21,6 @@ from listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from interactive_chart import chart_html, first_candle_dt, _is_placeholder
 from venues import venue_color, venue_url
 import metrics
-import news_panel
-import unlocks_panel
-
-
-def _panel_ident(cfg: dict) -> dict:
-    """Normalized identity passed to the news/unlocks panels (report-agnostic)."""
-    return {"symbol": cfg.get("token"), "name": cfg.get("name"),
-            "cmc_slug": cfg.get("cmc_slug"), "cg_id": cfg.get("cg_id")}
 
 HERE = Path(__file__).parent
 LISTINGS = HERE / "listings"
@@ -688,7 +680,6 @@ def _detail(cfg: dict) -> str:
   </div>
   <div class="chart">{chart_block}</div>
 </section>
-<div class="extras">{news_panel.render(_panel_ident(cfg))}{unlocks_panel.render(_panel_ident(cfg))}</div>
 </main>"""
     return _page(f"{cfg.get('name', token)} ({token})", body, extra_head)
 
@@ -984,29 +975,6 @@ table.list .pos { color: #1a8f4c; } table.list .neg { color: #c0392b; }
 
 /* detail card */
 main:not(.grid) { padding: 24px 32px; }
-/* News + Token-unlocks detail panels (shared by both reports via RCSS). Each is a
-   self-contained full-width card (NOT .card, which is a 2-col grid). .newsfeed /
-   .unlocklist are fixed-height scroll boxes: newest first, scroll down for older. */
-.extras { display: flex; flex-wrap: wrap; gap: 20px; margin: 20px 0 0; }
-.extra-card { flex: 1 1 340px; min-width: 0; background: #fff; border: 1px solid #e1e7ee;
-              border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,.05); padding: 18px 22px; }
-.extra-card h3 { margin: 0 0 10px; font-size: 15px; }
-.extra-card h3 .asof { font-weight: 400; color: #8a96a3; font-size: 11.5px; }
-.newsfeed, .unlocklist { list-style: none; margin: 0; padding: 0; overflow-y: auto;
-              border: 1px solid #e1e7ee; border-radius: 8px; }
-.newsfeed { max-height: 320px; }
-.unlocklist { max-height: 240px; }
-.newsfeed li { padding: 9px 12px; border-bottom: 1px solid #eef2f6; }
-.newsfeed li:last-child, .unlocklist li:last-child { border-bottom: 0; }
-.newsfeed a { color: #1f4e79; font-weight: 600; text-decoration: none; }
-.newsfeed a:hover { text-decoration: underline; }
-.newsfeed .src { display: block; color: #8a96a3; font-size: 11.5px; margin-top: 2px; }
-.extra-card .empty { color: #8a96a3; font-style: italic; padding: 8px 2px; }
-.unlock-next { margin: 0 0 10px; font-size: 13.5px; }
-.unlocklist li { display: flex; justify-content: space-between; gap: 12px;
-              padding: 7px 12px; border-bottom: 1px solid #eef2f6; font-size: 13px; }
-.unlocklist .ud { color: #42505e; flex: 0 0 auto; }
-.unlocklist .ut { color: #1d2733; text-align: right; }
 .card { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px;
         background: #fff; border: 1px solid #e1e7ee; border-radius: 10px;
         box-shadow: 0 1px 3px rgba(0,0,0,.05); overflow: hidden; }
