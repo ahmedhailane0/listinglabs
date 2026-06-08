@@ -48,7 +48,12 @@ report renders it as a TGE column + tile field and **defaults to newest-first by
 that date**, mirroring the Listing Reactions report. The per-token
 **OI + funding history chart** reads `cache/perp_history/<SYM>.json`, which
 `fetch_perp_markets.py` *appends* a live point to each run (collapsing sub-6h
-points). The trailing ~30 days are seeded by **`backfill_perp_history.py`**, which
+points). When a run's live fetch comes back empty (CoinGecko's aggregator 451/429s
+the CI IP on most runs) or the coverage guard keeps the cached snapshot, it now
+**carries the last good cached snapshot forward** (stamped now, tagged
+`src:"carry"`) so the trend chart gets a point every run instead of multi-day
+gaps. A carry only fills a real >6h gap and never overwrites a recent real
+reading; a genuine fetch within 6h collapses the carry. The trailing ~30 days are seeded by **`backfill_perp_history.py`**, which
 is **LOCAL-ONLY** (Binance/Bybit history endpoints 451 the CI IP, like the klines
 gap-fill): run `python backfill_perp_history.py` locally and commit
 `cache/perp_history/`; CI only appends forward. It anchors on Binance USD OI
