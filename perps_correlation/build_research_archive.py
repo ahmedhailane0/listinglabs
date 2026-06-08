@@ -32,6 +32,7 @@ import csv
 import datetime as dt
 import glob
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -39,9 +40,14 @@ import metrics
 
 HERE = Path(__file__).parent
 ROOT = HERE.parent                      # verifysheet/  (repo root)
-CACHE = ROOT / "cache"
-OUT = ROOT / "research"                 # LOCAL-ONLY (git-ignored by the whitelist)
-LISTINGS = HERE / "listings"
+# Path/date overrides let backfill_missing_days.py reconstruct a PAST day: it points
+# CACHE/LISTINGS at a historical cache (extracted from that day's git commit) and
+# sets ARCHIVE_ASOF to the day being rebuilt, while OUT still points at the real
+# research/ so the recovered rows land in the canonical CSVs.
+CACHE = Path(os.environ.get("ARCHIVE_CACHE") or (ROOT / "cache"))
+OUT = Path(os.environ.get("ARCHIVE_OUT") or (ROOT / "research"))   # LOCAL-ONLY (git-ignored)
+LISTINGS = Path(os.environ.get("ARCHIVE_LISTINGS") or (HERE / "listings"))
+ASOF = os.environ.get("ARCHIVE_ASOF") or ""   # "YYYY-MM-DD" => backfill mode for that day
 
 ALLOWED_PERP_VENUES = {"Binance", "OKX", "Bybit", "KuCoin", "Bitget", "Gate"}
 
@@ -313,14 +319,18 @@ def _write_csv(path, cols, rows):
 
 
 def _append_daily_csv(path, date_str, cols, rows):
-    """Append today's rows to a per-tab accumulating CSV; re-running the same day
-    replaces that day (idempotent), so each token gets one row per day."""
+    """Append a day's rows to a per-tab accumulating CSV; re-running for a date
+    replaces that date (idempotent), so each token gets one row per day. Kept sorted
+    by (date, symbol) so a backfilled past day lands in chronological order, not at
+    the end."""
     existing = []
     if path.exists():
         with path.open(encoding="utf-8", newline="") as f:
             existing = [row for row in csv.DictReader(f) if row.get("date") != date_str]
-    _write_csv(path, cols, existing + rows)
-    return len(existing) + len(rows)
+    merged = existing + rows
+    merged.sort(key=lambda r: (r.get("date") or "", r.get("symbol") or ""))
+    _write_csv(path, cols, merged)
+    return len(merged)
 
 
 def _cleanup_legacy():
@@ -380,16 +390,20 @@ def main():
     ingest_oi_cmc(records)
 
     now = dt.datetime.now(dt.timezone.utc)
-    date_str = now.strftime("%Y-%m-%d")
-    stamp = now.strftime("%Y-%m-%dT%H:%M:%SZ")
+    backfill = bool(ASOF)               # rebuilding a past day, not "now"
+    date_str = ASOF if backfill else now.strftime("%Y-%m-%d")
+    stamp = (f"{date_str}T00:00:00Z" if backfill
+             else now.strftime("%Y-%m-%dT%H:%M:%SZ"))
     for r in records.values():
         r["captured_at"] = stamp
 
     OUT.mkdir(parents=True, exist_ok=True)
-    _cleanup_legacy()
-    (OUT / "README.md").write_text(README, encoding="utf-8")
+    if not backfill:
+        _cleanup_legacy()
+        (OUT / "README.md").write_text(README, encoding="utf-8")
 
-    print(f"research archive -> {OUT}  (captured {date_str})")
+    mode = f"BACKFILL {date_str}" if backfill else f"captured {date_str}"
+    print(f"research archive -> {OUT}  ({mode})")
     for tab, label in TABS.items():
         recs = {sym: r for sym, r in records.items() if tab in r["reports"]}
         if not recs:
@@ -397,14 +411,16 @@ def main():
         d = OUT / tab
         (d / "daily").mkdir(parents=True, exist_ok=True)
         blob = json.dumps(recs, indent=2, ensure_ascii=False, default=_jsonable)
-        (d / "latest.json").write_text(blob, encoding="utf-8")
         (d / "daily" / f"{date_str}.json").write_text(blob, encoding="utf-8")
         cols = TAB_COLS[tab]
         rows = [_row(tab, date_str, r) for r in recs.values()]
-        _write_csv(d / "latest.csv", cols, rows)
+        # latest.* = the CURRENT snapshot; a recovered past day must never overwrite it.
+        if not backfill:
+            (d / "latest.json").write_text(blob, encoding="utf-8")
+            _write_csv(d / "latest.csv", cols, rows)
         total = _append_daily_csv(d / "daily.csv", date_str, cols, rows)
         print(f"  {label:22} {len(recs):3} tokens -> {tab}/ "
-              f"(latest.json/.csv, daily/{date_str}.json, daily.csv {total} rows)")
+              f"(daily/{date_str}.json, daily.csv {total} rows)")
 
 
 if __name__ == "__main__":
