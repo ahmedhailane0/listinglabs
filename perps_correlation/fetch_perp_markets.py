@@ -515,12 +515,19 @@ def fetch_all(tokens) -> dict:
     return out
 
 
-def _append_history(res) -> None:
+def _append_history(res, when=None, carry=False) -> None:
     """Append an OI + OI-weighted-funding snapshot to cache/perp_history/<SYM>.json
     so the Scam Watchlist can plot how each token's perp OI and funding rate evolve
     over time ("document them after they pass"). Points within 6h of the previous
     one collapse, so the ~20-min cron caps the series at ~4 points/day rather than
-    bloating it. Only call this when the perp snapshot was actually accepted."""
+    bloating it. Only call this when the perp snapshot was actually accepted.
+
+    `carry=True` logs the SAME snapshot stamped `when` (= now) to carry the last
+    good cached reading forward when this run's live fetch came back empty (the
+    CoinGecko aggregator 451/429s the CI IP on most runs). Without it the trend
+    chart grew multi-day holes. A carry point is tagged {"src":"carry"} and is only
+    added when there's an actual >6h gap — it never overwrites a recent real
+    reading, so a genuine fetch always wins."""
     if not res:
         return
     sym = res["symbol"]
@@ -530,8 +537,10 @@ def _append_history(res) -> None:
               if v.get("funding") is not None and v.get("oi_usd"))
     den = sum(v["oi_usd"] for v in venues
               if v.get("funding") is not None and v.get("oi_usd"))
-    t = res.get("fetched_at") or int(time.time())
+    t = when or res.get("fetched_at") or int(time.time())
     pt = {"t": t, "total_oi_usd": total, "funding_avg": (num / den) if den else None}
+    if carry:
+        pt["src"] = "carry"
     HIST.mkdir(parents=True, exist_ok=True)
     p = HIST / f"{sym}.json"
     series = []
@@ -540,12 +549,28 @@ def _append_history(res) -> None:
             series = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             series = []
-    if series and (t - (series[-1].get("t") or 0)) < 6 * 3600:
-        series[-1] = pt           # collapse sub-6h points
+    recent = bool(series and (t - (series[-1].get("t") or 0)) < 6 * 3600)
+    if carry:
+        if recent:
+            return                # a fresh real point already covers this window
+        series.append(pt)         # fill the gap, don't clobber anything
+    elif recent:
+        series[-1] = pt           # collapse sub-6h real points
     else:
         series.append(pt)
     series = series[-1500:]       # ~1y at 4/day
     p.write_text(json.dumps(series), encoding="utf-8")
+
+
+def _load_cached_snapshot(sym):
+    """Last good per-token perp snapshot written by a previous run, or None."""
+    p = OUT / f"{sym}.json"
+    if not p.exists():
+        return None
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return None
 
 
 def _print(res):
@@ -587,7 +612,17 @@ def main(argv):
     results = fetch_all(tokens) if direct else fetch_all_cg(tokens)
     for sym, res in sorted(results.items()):
         if not res:
-            print(f"{sym:9} (failed)")
+            # Live fetch came back empty (the CoinGecko aggregator throttles the CI
+            # IP on most runs). Don't leave a hole in the trend chart: carry the
+            # last good cached snapshot forward, stamped now, so history still gets
+            # a point. The live OI/funding snapshot on the page is untouched.
+            cached = _load_cached_snapshot(sym)
+            if cached:
+                _append_history(cached, when=int(time.time()), carry=True)
+                print(f"{sym:9} (live empty — carried cached "
+                      f"${(cached.get('total_oi_usd') or 0)/1e6:.0f}M forward)")
+            else:
+                print(f"{sym:9} (failed)")
             continue
         path = OUT / f"{sym}.json"
         # Coverage guard: some exchanges (Binance/OKX/Bybit) geo-block datacenter
@@ -607,6 +642,9 @@ def main(argv):
                 print(f"{sym:9} coverage dropped to {res['n_venues']}v/"
                       f"${res['total_oi_usd']/1e6:.0f}M (cached {prev.get('n_venues')}v/"
                       f"${(prev.get('total_oi_usd') or 0)/1e6:.0f}M) — kept cached")
+                # Kept the better cached snapshot — carry IT into history too, so a
+                # degraded-coverage run still logs a point instead of a gap.
+                _append_history(prev, when=int(time.time()), carry=True)
                 continue
         path.write_text(json.dumps(res, ensure_ascii=False), encoding="utf-8")
         _append_history(res)
