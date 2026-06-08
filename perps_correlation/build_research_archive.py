@@ -32,6 +32,7 @@ import csv
 import datetime as dt
 import glob
 import json
+import sys
 from pathlib import Path
 
 import metrics
@@ -362,6 +363,15 @@ the day (idempotent). A token shown on multiple tabs is recorded in each tab's f
 
 
 def main():
+    # Windows' default console is cp1252 and chokes on the "→" in a tab label
+    # (UnicodeEncodeError), which previously crashed the run AFTER two tabs were
+    # written but BEFORE the third — leaving scam_watchlist unrecorded. Force UTF-8
+    # (or at least never let a print kill the build).
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
     records: dict = {}
     ingest_reactions(records)
     ingest_funnel(records)
