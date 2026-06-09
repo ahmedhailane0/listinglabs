@@ -116,7 +116,10 @@ def _okx(sym):
     ih = round((nxt - cur) / 3600000) if (nxt and cur and nxt > cur) else 8
     tk = _get(f"https://www.okx.com/api/v5/market/ticker?instId={sym}-USDT-SWAP")
     td = ((tk or {}).get("data") or [{}])[0]
-    mark = _f(td.get("last")) or _f(od[0].get("oiUsd")) and (oi_usd / (_f(od[0].get("oiCcy")) or 1))
+    mark = _f(td.get("last"))
+    if not mark:                       # derive from OI value when the ticker is missing
+        oi_ccy = _f(od[0].get("oiCcy"))
+        mark = (oi_usd / oi_ccy) if oi_ccy else None
     vol = _f(td.get("volCcy24h"))
     return {"oi_coins": _f(od[0].get("oiCcy")), "oi_usd": oi_usd, "mark": mark,
             "funding": _f(fd.get("fundingRate")), "interval_h": float(ih or 8),
@@ -611,13 +614,16 @@ def main(argv):
               for rec in data.values()]
     results = fetch_all(tokens) if direct else fetch_all_cg(tokens)
     for sym, res in sorted(results.items()):
-        if not res:
+        if not res or not res.get("n_venues"):
             # Live fetch came back empty (the CoinGecko aggregator throttles the CI
-            # IP on most runs). Don't leave a hole in the trend chart: carry the
-            # last good cached snapshot forward, stamped now, so history still gets
+            # IP on most runs). The CG path returns a 0-venue dict rather than None,
+            # so treat both the same: NEVER let an empty run overwrite a cached
+            # snapshot (whatever its age — throttling isn't a real coverage change)
+            # or log a bogus $0 point into the trend chart. Carry the last good
+            # cached snapshot forward instead, stamped now, so history still gets
             # a point. The live OI/funding snapshot on the page is untouched.
             cached = _load_cached_snapshot(sym)
-            if cached:
+            if cached and cached.get("n_venues"):
                 _append_history(cached, when=int(time.time()), carry=True)
                 print(f"{sym:9} (live empty — carried cached "
                       f"${(cached.get('total_oi_usd') or 0)/1e6:.0f}M forward)")

@@ -109,7 +109,7 @@ def _fetch_binance_spot(symbol: str, start: datetime, end: datetime) -> list:
                 break
             out[ts] = [ts, float(k[1]), float(k[2]), float(k[3]), float(k[4])]
         nxt = int(rows[-1][0]) + 1
-        if nxt <= cur or len(rows) < 1000:
+        if nxt <= cur or len(rows) < 1000 or nxt > end_ms:
             break
         cur = nxt
     return [out[k] for k in sorted(out)]

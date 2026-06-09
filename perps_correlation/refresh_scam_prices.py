@@ -65,7 +65,10 @@ def refresh_one(rec: dict) -> dict:
     if slug:
         oi = oimod.fetch_one(slug)
         mcm = oimod.fetch_mcap(slug)
-        amt, mcv = oi.get("oi_usd"), mcm.get("mcap_now_usd")
+        amt = oi.get("oi_usd")
+        # CMC mcap preferred; fall back to the CoinGecko mcap refreshed above so a
+        # fresh OI never gets paired with a stale ratio.
+        mcv = mcm.get("mcap_now_usd") or rec.get("mcap")
         if amt is not None:
             rec["oi_usd"] = amt
         rec["oi_pct_mcap"] = (amt / mcv * 100) if (amt and mcv) else rec.get("oi_pct_mcap")
