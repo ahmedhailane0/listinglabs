@@ -12,7 +12,7 @@ from pathlib import Path
 import requests
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from listing_chart import render_twopanel, parse_iso  # noqa
+from lib.listing_chart import render_twopanel, parse_iso  # noqa
 from funnel_chart import scale_factor  # noqa
 
 UA = {"User-Agent": "Mozilla/5.0 verifysheet/to-main"}

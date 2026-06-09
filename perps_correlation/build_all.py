@@ -89,12 +89,12 @@ def main():
     SITE.mkdir(parents=True, exist_ok=True)
 
     print("building reports into Listinglabs/ ...", flush=True)
-    _run(HERE / "fetch_bwenews.py")                  # cache/bwenews_signals.json (RSS poll; never fails build)
-    _run(HERE / "apply_signals.py")                  # fold new venue signals into listings/*.json
-    _run(HERE / "build_funding.py")                  # cache/funding.json (offline merge)
-    _run(HERE / "build_listing_report.py")          # -> Listinglabs/report
+    _run(HERE / "fetch" / "fetch_bwenews.py")                  # cache/bwenews_signals.json (RSS poll; never fails build)
+    _run(HERE / "build" / "apply_signals.py")                  # fold new venue signals into listings/*.json
+    _run(HERE / "build" / "build_funding.py")                  # cache/funding.json (offline merge)
+    _run(HERE / "build" / "build_listing_report.py")          # -> Listinglabs/report
     _run(HERE / "funnel" / "funnel_report.py")       # -> Listinglabs/funnel/report
-    _run(HERE / "build_scams.py")                    # -> Listinglabs/scams
+    _run(HERE / "build" / "build_scams.py")                    # -> Listinglabs/scams
 
     (SITE / "index.html").write_text(landing(), encoding="utf-8")
     print(f"wrote landing: reactions={REACTIONS_N}, funnel={FUNNEL_N}", flush=True)

@@ -7,7 +7,7 @@ from pathlib import Path
 import requests
 
 UA = {"User-Agent": "Mozilla/5.0 verifysheet/probe"}
-CACHE = Path(__file__).parent.parent / "cache"
+CACHE = Path(__file__).resolve().parents[2] / "cache"
 CACHE.mkdir(exist_ok=True)
 
 # token -> per-venue config

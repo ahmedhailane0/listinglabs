@@ -14,8 +14,8 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from venues import venue_color
-from listing_chart import fmt_usd_compact, fmt_subscript_price
+from lib.venues import venue_color
+from lib.listing_chart import fmt_usd_compact, fmt_subscript_price
 
 UA = {"User-Agent": "Mozilla/5.0 verifysheet/funnel-chart"}
 HERE = Path(__file__).parent

@@ -1,224 +1,82 @@
-# perps_correlation — project context
+# perps_correlation — the program
 
-Working notes so this folder can be edited without re-discovering everything.
-Read this first; it points at the few files that actually matter.
+The ListingLabs pipeline. Layers (each has its own CLAUDE.md with the detail):
 
-## What this is
+- `fetch/` — every script that talks to the internet (refresh candles, OI,
+  holders, news, market data…). CI-safe vs LOCAL-ONLY split documented there.
+- `build/` — every script that turns cached data into output (the website's
+  three reports, the landing page, the research CSV archive).
+- `lib/` — shared modules imported by the others: `listing_chart` (PNG charts +
+  GeckoTerminal fetch + parse/format helpers), `interactive_chart` (Lightweight
+  Charts HTML), `metrics` (since/peak/drawdown math), `venues` (colors/URLs).
+- `listings/` — one JSON config per tracked token (the report's source of truth).
+- `funnel/` — the CEX→Korea funnel study and its report builder.
+- `study/` — the original "what predicts perp performance" study (frozen).
+- `tools/` — maintenance one-offs (audits, backfills, cache repair).
+- `docs/` — SETUP_GITHUB.md (Actions/Pages hand-holding) + audit reports.
+- `charts/` — generated PNGs. `vendor/` — vendored Lightweight Charts JS.
+- `Listinglabs/` — THE BUILD OUTPUT (the website). Never hand-edit; rebuilt by
+  `build_all.py`; deployed to GitHub Pages as an artifact (not read from git).
 
-Two things live here:
+## Import convention (matters when editing/adding scripts)
 
-1. **The original study** — does anything (FDV, prior CEX count, VC funding…)
-   predict how a Binance-Alpha-listed token's perp performs after launch?
-   Output: `enriched_clean.csv` + `analysis.ipynb` + `PERPS_REPORT.docx`.
-   This is largely *done* and rarely touched now. See `HOW_TO_RUN.md`.
-2. **ListingLabs** — the live static website. This is the active surface. It has
-   three sub-reports under one folder. **Almost all edits happen here.**
+Scripts in subfolders import shared code as packages:
+`from lib.listing_chart import parse_iso`, `from fetch import fetch_oi_cmc`,
+`from build.merge_sweep import classify`. Each runnable script carries a 3-line
+sys.path bootstrap so it works from any working directory. Moved scripts keep a
+`HERE = Path(__file__).resolve().parents[1]` constant that points at THIS folder
+(perps_correlation/), not their subfolder — all data paths hang off it
+(`HERE.parent / "cache"`, `HERE / "listings"`, …). Keep that convention.
 
-## ListingLabs site — the part you'll edit
-
-Everything is ONE folder: `Listinglabs/`. Built by ONE command:
+## One command builds everything
 
 ```powershell
-python build_all.py            # rebuild everything, then zip Listinglabs.zip
-python build_all.py --no-zip   # skip the deploy zip
+python build_all.py            # rebuild all reports + landing, then zip
+python build_all.py --no-zip   # what CI runs
 ```
 
-`build_all.py` runs four builders in order and writes the landing page:
+Order inside: `fetch/fetch_bwenews.py` (RSS poll) → `build/apply_signals.py`
+(fold new listing signals into listings/*.json) → `build/build_funding.py` →
+`build/build_listing_report.py` → `funnel/funnel_report.py` →
+`build/build_scams.py` → landing page. Network-heavy refreshers are NOT in
+build_all — the CI workflow runs them as separate capped steps first
+(see `fetch/CLAUDE.md`).
 
-| Builder | Writes | Source of truth |
-|---|---|---|
-| `fetch_bwenews.py` | `../cache/bwenews_{feed,signals}.json` | BWEnews RSS poll (keyless) |
-| `build_funding.py` | `../cache/funding.json` (offline merge) | rootdata cache + cryptorank |
-| `build_listing_report.py` | `Listinglabs/report/` | `listings/*.json` + `charts/` + caches |
-| `funnel/funnel_report.py` | `Listinglabs/funnel/report/` | `funnel/funnel_master.json` |
-| `build_scams.py` | `Listinglabs/scams/` | `fetch_scam_data.py` outputs |
+## Automation (forever-autonomous, $0)
 
-`refresh_klines.py` is **not** in `build_all.py` (it makes network calls). The
-cron runs it *before* `build_all.py` to extend each token's candles to now;
-locally run `python refresh_klines.py [tokens…]` when you want fresh charts.
-
-**Scam Watchlist freshness + history** (also network, also outside `build_all.py`):
-the cron now runs `refresh_scam_prices.py` (keyless CoinGecko price/series + CMC
-authoritative supply — fixes the stale charts and the bogus CoinGecko supply) and
-`fetch_holders.py` (keyless **GoPlus** multichain top-holders — BNB Chain / Base /
-ETH / …; non-EVM chains degrade to "unavailable") before the build. It also runs
-`fetch_scam_tge.py` (keyless CMC `dateAdded`, CoinGecko genesis fallback →
-`cache/scam_tge.json`) which gives each token a **TGE date**; the Manipulated
-report renders it as a TGE column + tile field and **defaults to newest-first by
-that date**, mirroring the Listing Reactions report. The per-token
-**OI + funding history chart** reads `cache/perp_history/<SYM>.json`, which
-`fetch_perp_markets.py` *appends* a live point to each run (collapsing sub-6h
-points). When a run's live fetch comes back empty (CoinGecko's aggregator 451/429s
-the CI IP on most runs) or the coverage guard keeps the cached snapshot, it now
-**carries the last good cached snapshot forward** (stamped now, tagged
-`src:"carry"`) so the trend chart gets a point every run instead of multi-day
-gaps. A carry only fills a real >6h gap and never overwrites a recent real
-reading; a genuine fetch within 6h collapses the carry. The trailing ~30 days are seeded by **`backfill_perp_history.py`**, which
-is **LOCAL-ONLY** (Binance/Bybit history endpoints 451 the CI IP, like the klines
-gap-fill): run `python backfill_perp_history.py` locally and commit
-`cache/perp_history/`; CI only appends forward. It anchors on Binance USD OI
-(~30d) + Bybit OI (valued at Binance daily close), OI-weighting funding.
-
-The site is static HTML/CSS + JS charts. **All price/time trading charts use
-TradingView Lightweight Charts** (the reactions report charts + the Scam Watchlist
-price chart, via `interactive_chart.timeseries_html`). The Scam Watchlist keeps
-Plotly only for its non-time-series visuals — the OI/funding-over-time chart and
-the donut/pie charts (holder distribution, OI-by-exchange, supply, FDV/MC) — so
-its detail pages load both libs. `Listinglabs.zip` is the deploy artifact
-(historically uploaded to Netlify). There is **no** separate `report/` / `share/`
-copy anymore — builders write straight into `Listinglabs/`. Don't recreate the
-old split (`build_share.py`, top-level `report/`, `share/` are gone on purpose).
-
-### The Listing Reactions report — `build_listing_report.py`
-
-The most-edited file. Builds the token grid + per-token detail pages.
-
-- **Index table** = `LIST_COLS` (`build_listing_report.py`). Columns:
-  `# | Token | TGE | Since | 24h | 7d | 30d | 90d | FDV | MC | OI% | Funding`.
-  Rows built by `_list_row()`; the table is client-side sortable (header click)
-  and filterable by venue chips + search (`FILTER_SCRIPT`). The sort JS reads
-  `th` index dynamically and each `<td data-s="...">`, so **adding/removing a
-  column needs no JS change** — but DO update the CSS `nth-child` widths block
-  (currently hard-codes 12 cols) and the column-count comment.
-- **TGE column**: `_tge_time(cfg)` = earliest *precisely observed* venue event,
-  **skipping daily-resolution sweep artifacts** (`_is_sweep` — notes containing
-  "earliest-candle sweep" / "daily resolution" sit at midnight UTC and predate
-  the real listing, e.g. CTR's fake `Gate.io 00:00Z` before the real Alpha
-  `13:00Z`). Falls back to Alpha time. Rendered by `_tge_cell` (date + UTC time,
-  sorted by epoch).
-- **Charts**: each token gets an interactive **TradingView Lightweight Charts**
-  area chart from `interactive_chart.chart_html()` (5m/15m/1h/4h switcher, launch
-  reset, crosshair tooltip, listing + announcement markers). Falls back to the
-  static PNG in `charts/` if no klines. The lib is vendored at
-  `vendor/lightweight-charts.standalone.production.js` and copied into
-  `Listinglabs/report/` at build (CSP blocks CDNs). **Migrated off Plotly** (which
-  was heavy + flaky); the Scam Watchlist report still uses Plotly, so
-  `build_listing_report.py` keeps emitting `report/plotly.min.js` and
-  `interactive_chart._autofit_js` is retained for it.
-- **Listing-time SYNC (important)**: most tokens only have a *date* for their
-  Alpha listing (stored as `00:00Z`), so a naive marker lands at midnight, hours
-  off the real reaction. `interactive_chart._resolved_events` **derives the real
-  Alpha moment from the data** — the on-chain pool's first candle ≈ the listing —
-  and snaps placeholder Alpha events onto it; unresolvable midnight CEX events are
-  dropped from the chart (kept in the events table). `_tge_time` uses the same
-  first-candle derivation (`first_candle_dt`) when only placeholders exist.
-- **Metrics** (`metrics.py`): Since/peak/drawdown/checkpoints, computed purely
-  from `cache/<token>_klines_5m_alpha.json` relative to the Alpha listing time.
-
-### Per-token config — `listings/<token>.json`
-
-One file per tracked token. Schema (see `listings/ctr.json` for a full example):
-
-```jsonc
-{
-  "token": "CTR", "name": "Citrea", "chain": "base",
-  "token_contract": "0x…", "gecko_pool": "0x…",   // GeckoTerminal Alpha pool
-  "fdv_usd": 259286830, "fdv_source": "…",
-  "mcap_usd": …, "circulating_supply": …, "total_supply": …, "cmc_slug": "citrea",
-  "category": "…",
-  "window_start_utc": "…Z", "window_end_utc": "…Z",   // default chart view window
-  "events":      [ {"exchange": "Binance Alpha", "iso_time_utc": "…Z", "note": "…"}, … ],
-  "annotations": [ {"label": "BN perp announce", "iso_time_utc": "…Z", "note": "…"} ],
-  "not_listed":  [ "Binance main spot", … ]
-}
-```
-
-`events[].exchange` strings must match the chip prefixes in `CHIP_SPECS`
-(`build_listing_report.py`) to light up venue filters.
-
-### Charts pipeline
-
-- `listing_chart.py` — pulls 5m OHLCV from the **on-chain Alpha pool via
-  GeckoTerminal** (true Alpha price, CEX fallback), renders annotated PNG to
-  `charts/<token>_listing_reaction.png`. Run: `python listing_chart.py listings/<t>.json`.
-- `interactive_chart.py` — same cached klines → embedded Lightweight Charts div for
-  detail pages (auto-derives listing times; see SYNC note above).
-- Klines cached at `../cache/<token>_klines_5m_alpha.json`.
+`.github/workflows/update-site.yml` (repo root): cron every ~20 min, runs the
+capped fetch steps → build_all → uploads `Listinglabs/` as the Pages artifact →
+commits cache/ + listings/ back (rebase-retry push, best-effort). Every fetch
+step is `continue-on-error` + timeout so nothing flaky blocks a deploy.
+Workflow paths reference `fetch/...` and `build/...` — keep them in sync when
+moving scripts.
 
 ## Venue allowlist (IMPORTANT)
 
-Only annotate/track: **Binance Alpha + Binance Spot + Binance Perp**, and the
-majors **Coinbase / OKX / Bybit / Kraken / KuCoin / Bitget / Gate.io**, plus the
-Korean venues **Upbit / Bithumb / Coinone**. **Drop** MEXC / BitMart / HTX /
-LBank / XT / BingX — they are excluded by design (see `note_dropped_venues` in
-some configs). This is the canonical chip set in `CHIP_SPECS`.
+Only annotate/track: **Binance Alpha / Spot / Perp**, majors **Coinbase / OKX /
+Bybit / Kraken / KuCoin / Bitget / Gate.io**, Korean **Upbit / Bithumb /
+Coinone**. **Drop** MEXC / BitMart / HTX / LBank / XT / BingX — excluded by
+design. Canonical chip set: `CHIP_SPECS` in `build/build_listing_report.py`.
 
-## Data sources & caches
+## Gotchas (learned the hard way — don't relearn)
 
-Fetchers save into `../cache/` (sibling of this folder) so re-runs are incremental:
-
-- Prices/perp: Binance `fapi`/`api`, GeckoTerminal (Alpha pools), Kraken/KuCoin/
-  Gate/Coinbase public OHLC (`sweep_venues.py`, `venues.py`, `probe_listings*.py`).
-- FDV / MC / supply: CoinMarketCap web `data-api` (keyless) — `fetch_oi_cmc.py`
-  → `oi_cmc.json` for **current** open interest. At-listing/historical aggregated
-  OI still needs paid APIs (Coinalyze/Coinglass) — not wired.
-- Funding/investors: RootData (`fetch_rootdata.py`, **needs API key**) +
-  CryptoRank (`fetch_cryptorank.py`, keyless) → merged by `build_funding.py`.
-- Announcements / socials: `fetch_announcements.py`, `fetch_token_socials.py`.
-- Korean listing dates: `fetch_coinone.py`, plus cached `bithumb_*`, coinbase caches.
-
-## Secrets & security (do not leak)
-
-- The RootData API key lives **outside** the repo at
-  `C:\Users\PC\.config\verifysheet\secrets.env`. Scripts read it from there.
-- **Never commit** `secrets.env`, the key, or anything under `../cache/` that
-  embeds a key. If this folder is ever pushed to a public GitHub repo, a
-  `.gitignore` must exclude secrets and the key must be supplied to CI via an
-  encrypted **GitHub Actions secret**, never hard-coded.
-
-## Gotchas (learned the hard way)
-
-- **FDV at listing ≠ current FDV.** Use perp price × total supply for
-  at-listing FDV; current FDV is dump-biased low. (Study finding: higher
-  FDV-at-listing → better 30d return, ρ≈+0.19.)
+- **FDV at listing ≠ current FDV.** Use perp price × total supply at listing;
+  current FDV is dump-biased low. (Study: higher FDV-at-listing → better 30d
+  return, ρ≈+0.19.)
 - **Daily-resolution sweep events are not real times** — they sit at 00:00Z and
-  predate the true listing. Always filter them when you need a precise moment
-  (TGE, first-listing). See `_is_sweep`.
-- **OI matching**: CMC OI joins on `cg_id`-as-CMC-slug, not symbol match.
+  predate the true listing. Filter with `_is_sweep` when you need a precise
+  moment (TGE, first-listing).
+- **OI matching:** CMC OI joins on `cg_id`-as-CMC-slug, not symbol match.
 - **Drawdown** ignores the opening settling window (first on-chain candles wick
-  violently — fake −70% no one traded). See `metrics.py`.
-- Re-run any fetcher safely; caches make it incremental.
+  violently). See `lib/metrics.py`.
+- **Chart y-axis blank?** A global `table{table-layout:fixed}` leaking into
+  Lightweight Charts' internal table — fix is the `.tvchart table` CSS reset.
+- GeckoTerminal & CoinGecko **rate-limit the shared CI IP hard**; Binance/OKX/
+  Bybit **451 datacenter IPs**. Heavy/blocked fetches run LOCALLY and get
+  committed; CI only does capped incremental work. Details in `fetch/CLAUDE.md`.
+- Re-running any fetcher is safe; caches make everything incremental.
 
-## Automation — forever-autonomous, $0 (built)
+## Secrets
 
-Keeps the site updating forever via **GitHub Actions cron** (no PC needed).
-Setup is hand-held in `SETUP_GITHUB.md`. Pieces:
-
-- **`.github/workflows/update-site.yml`** (repo root = `verifysheet/`): every
-  ~20 min runs `refresh_klines.py` → `build_all.py --no-zip`, commits refreshed
-  caches back (also keeps the schedule from auto-disabling), and deploys
-  `Listinglabs/` to **GitHub Pages**. Cron is best-effort (GitHub delays/skips).
-- **`fetch_bwenews.py`** — polls the **BWEnews RSS feed**
-  (`https://rss-public.bwe-ws.com/`, keyless). Classifies listing headlines →
-  `bwenews_signals.json` (venue + symbol + whether tracked). Rendered as a live
-  signal strip on the reactions index (`_news_strip`, built server-side → no
-  CORS). The websocket (`wss://bwenews-api.bwe-ws.com/ws`) is intentionally NOT
-  used in the cloud path — a cron job can't hold a socket open; it's only an
-  option for an always-on local listener.
-- **`refresh_klines.py`** — re-pulls GeckoTerminal candles to *now* and MERGES
-  with the cached launch-window candles (union by ts), so charts extend forever
-  while the launch reaction is never lost. **Incremental**: only fetches candles
-  *since the last cached one* (~1 page), so steady-state is ~0.8s/token. Tokens
-  are processed **most-stale-first**; `REFRESH_LIMIT` env (or `--limit N`) caps how
-  many a run touches. The interactive chart pins its default x-range to the launch
-  window (`win_range` in `interactive_chart.py`); pan/zoom reveals the live history.
-  NOTE: GeckoTerminal's free 5m endpoint caps ~12k candles (~41d) per fetch.
-
-  **⚠️ Throttling lesson (don't relearn):** GeckoTerminal rate-limits (429) the
-  shared **GitHub Actions IP hard** — a CI run managed only ~5 tokens' gap-fills in
-  12 min. So: the expensive **one-time gap-fill is done LOCALLY** (`python
-  refresh_klines.py`, unthrottled) and committed; **CI only does capped incremental
-  refresh** (`REFRESH_LIMIT: "20"` in the workflow), round-robining all 78 tokens
-  every ~80 min. If you add many new tokens, seed them locally first, then push —
-  don't expect CI to do large fetches. Local IP is not throttled.
-
-### Security model (must preserve)
-
-- Repo is **public** (needed for free Pages + unlimited Actions). The cloud build
-  uses **no API key** — only public keyless endpoints — so nothing secret is in
-  CI. The RootData key stays in `~/.config/verifysheet/secrets.env` (outside repo).
-- The **root `.gitignore` is a whitelist**: only `perps_correlation/` + `cache/`
-  (+ `.github/`, `.gitignore`) are tracked; everything else in `verifysheet/`
-  stays local even on `git add .`. Verified clean: no embedded keys in scripts or
-  cache (only "RootData" as a source name, and token descriptions mentioning
-  "password"). Don't relax this whitelist.
+RootData API key lives outside the repo: `C:\Users\PC\.config\verifysheet\
+secrets.env`. Never commit a key; CI is 100% keyless by design.

@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent          # perps_correlation/ (this file is in tools/)
 sys.path.insert(0, str(ROOT))
-from listing_chart import parse_iso
-import build_listing_report as B
+from lib.listing_chart import parse_iso
+from build import build_listing_report as B
 
 LISTINGS = ROOT / "listings"
 CACHE = ROOT.parent / "cache"

@@ -58,7 +58,7 @@ jobs:
         # of the older tokens. Dead on-chain pools (tracked in cache/refresh_skip.json)
         # sink to the back instead of burning the budget. The heavy one-time gap-fill
         # is done locally and committed, so CI only does cheap work.
-        run: python refresh_klines.py
+        run: python fetch/refresh_klines.py
         env:
           REFRESH_LIMIT: "20"    # tokens touched per run (cap for the rate-limited IP)
           REFRESH_NEWEST: "8"    # of those, how many are the newest listings (priority).
@@ -79,7 +79,7 @@ jobs:
         # still gets all venues. Direct per-exchange fetching is local-only
         # (`fetch_perp_markets.py --direct`); the default path used here is CoinGecko.
         # build_scams stamps each page "via CoinGecko · as of <fetch time>".
-        run: python fetch_perp_markets.py
+        run: python fetch/fetch_perp_markets.py
         continue-on-error: true     # a flaky aggregator call must never block the build
         timeout-minutes: 5
 
@@ -89,7 +89,7 @@ jobs:
         # market data + 180d daily series and CMC's authoritative supply for every
         # token already in cache/scam_data.json. Without this, the watchlist charts
         # froze ~2 days behind (nothing refreshed scam_prices in the cron).
-        run: python refresh_scam_prices.py
+        run: python fetch/refresh_scam_prices.py
         env:
           SCAM_LIMIT: "13"   # tokens touched per run (CoinGecko 429s the CI IP).
                              # Walks MOST-STALE-FIRST and writes after every token,
@@ -101,7 +101,7 @@ jobs:
       - name: Refresh top holders (Scam Watchlist)
         # Keyless multichain holders via GoPlus token-security (BNB Chain / Base /
         # ETH / …). Non-EVM chains gracefully report "unavailable".
-        run: python fetch_holders.py
+        run: python fetch/fetch_holders.py
         continue-on-error: true
         timeout-minutes: 5
 
@@ -110,7 +110,7 @@ jobs:
         # fallbacks) -> cache/scam_tge.json. Static per token + skips ones already
         # cached, so this only does work when a new watchlist token appears. Drives
         # the Manipulated report's TGE column/sort.
-        run: python fetch_scam_tge.py
+        run: python fetch/fetch_scam_tge.py
         continue-on-error: true
         timeout-minutes: 4
 
@@ -118,7 +118,7 @@ jobs:
         # Keyless CMC detail per listings/*.json -> cache/token_market.json so the
         # reactions report's FDV/MC/supply match CoinMarketCap instead of the stale
         # hand-entered values. build_listing_report prefers these live numbers.
-        run: python fetch_token_market.py
+        run: python fetch/fetch_token_market.py
         continue-on-error: true
         timeout-minutes: 6
 
@@ -126,7 +126,7 @@ jobs:
         # Keyless Binance Futures CMS detail (publishDate, ms-precise) -> per token
         # cache/perp_announce.json. Drives the auto-generated "BN perp announce" Alpha
         # spike annotations. Static per token; only chases ones not already cached.
-        run: python fetch_perp_announce.py
+        run: python fetch/fetch_perp_announce.py
         continue-on-error: true
         timeout-minutes: 6
 
@@ -141,8 +141,8 @@ jobs:
         # tokens first (they're the ones still gaining venues), capped per run.
         # merge_sweep only ADDS; curated / candle-verified events always win.
         run: |
-          python sweep_venues.py --ci --limit 20
-          python merge_sweep.py
+          python fetch/sweep_venues.py --ci --limit 20
+          python build/merge_sweep.py
         continue-on-error: true     # a flaky exchange call must never block the build
         timeout-minutes: 6
 

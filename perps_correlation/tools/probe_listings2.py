@@ -6,7 +6,7 @@ from pathlib import Path
 import requests
 
 UA = {"User-Agent": "Mozilla/5.0 verifysheet/probe2"}
-CACHE = Path(__file__).parent.parent / "cache"
+CACHE = Path(__file__).resolve().parents[2] / "cache"
 
 TARGETS = {
     "CTR": {"start": datetime(2026, 5, 25, 0, tzinfo=timezone.utc),
