@@ -88,28 +88,8 @@ verifysheet/                     ← repo root (GitHub repo "listinglabs")
    ├─ funnel/                    the Listing Funnel report
    ├─ study/                     the original perps study (frozen)
    ├─ tools/                     maintenance one‑offs (audits, backfills)
-   ├─ Listinglabs/               the built static site (deployed as a Pages artifact)
-   └─ CLAUDE.md                  detailed developer notes (one per layer folder too)
+   └─ Listinglabs/               the built static site (deployed as a Pages artifact)
 ```
-
-## Building locally
-
-```bash
-cd perps_correlation
-pip install requests plotly matplotlib
-
-python fetch/refresh_klines.py  # pull fresh candles (all tokens; local IP isn't throttled)
-python build_all.py             # rebuild all three reports + landing page
-```
-
-`build_all.py --no-zip` skips the deploy zip. To refresh specific tokens only:
-`python fetch/refresh_klines.py qait ctr slx`.
-
-See [`perps_correlation/CLAUDE.md`](perps_correlation/CLAUDE.md) for the full
-developer guide and [`perps_correlation/study/HOW_TO_RUN.md`](perps_correlation/study/HOW_TO_RUN.md)
-for the original study.
-
----
 
 ## Security model
 

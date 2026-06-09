@@ -16,7 +16,14 @@
 !/.gitignore
 !/README.md
 
-# 3) Inside those folders, still drop noise and anything secret-shaped
+# 3) Context / developer docs are LOCAL-ONLY. The public repo gets the code the
+#    cloud build needs — not the manual for how to operate it.
+**/CLAUDE.md
+perps_correlation/docs/
+perps_correlation/study/HOW_TO_RUN.md
+perps_correlation/study/EXPLANATION.txt
+
+# 4) Inside those folders, still drop noise and anything secret-shaped
 #    (defense in depth — secrets live outside the repo, but never take chances).
 **/__pycache__/
 **/*.pyc
@@ -27,7 +34,7 @@
 **/*.pem
 **/*credential*
 
-# 4) Drop heavy / regenerated artifacts the live site doesn't need. Excluding the
+# 5) Drop heavy / regenerated artifacts the live site doesn't need. Excluding the
 #    logs + notebooks also shrinks the surface where a stray key could hide.
 perps_correlation/Listinglabs.zip
 # The built site is published as a Pages artifact every run (never read from git),
