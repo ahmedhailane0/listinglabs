@@ -13,8 +13,9 @@ CI's fetch_perp_markets keeps appending live points on top forever.
 Coverage (kept honest in the chart subtitle): we sum the two largest venues that
 expose keyless daily history — **Binance** (OI already in USD via openInterestHist)
 and **Bybit** (OI in coins, valued at Binance's daily close). Daily funding is the
-OI-weighted mean of the two. That tracks the multi-day TREND closely; the live
-snapshot above the chart remains the full all-venue total.
+OI-weighted mean of the two; daily 24h volume (for the OI/volume chart) is summed
+over the same venues that contributed OI that day. That tracks the multi-day
+TREND closely; the live snapshot above the chart remains the full all-venue total.
 
 Output merges into cache/perp_history/<SYM>.json as daily points tagged
 {"src":"backfill"}; live points (no src / "live") are preserved. Re-running
@@ -63,11 +64,22 @@ def _day(ms: int) -> int:
     return (int(ms) // DAY_MS) * DAY_MS
 
 
-def _binance_daily_close(sym: str) -> dict[int, float]:
-    """UTC-day -> close price, from Binance daily futures klines (for valuing
-    coin-denominated OI from other venues)."""
+def _binance_daily_close(sym: str) -> tuple[dict[int, float], dict[int, float]]:
+    """UTC-day -> (close price, quote volume USD), from Binance daily futures
+    klines. Close values coin-denominated OI from other venues; quote volume
+    (k[7]) feeds the OI/volume backfill."""
     kl = _get(f"https://fapi.binance.com/fapi/v1/klines?symbol={sym}USDT&interval=1d&limit=400") or []
-    return {_day(k[0]): _f(k[4]) for k in kl if _f(k[4])}
+    price = {_day(k[0]): _f(k[4]) for k in kl if _f(k[4])}
+    vol = {_day(k[0]): _f(k[7]) for k in kl if _f(k[7])}
+    return price, vol
+
+
+def _bybit_daily_vol(sym: str) -> dict[int, float]:
+    """UTC-day -> Bybit perp 24h turnover in USD (kline row: [start, o, h, l, c,
+    volume, turnover])."""
+    d = _get(f"https://api.bybit.com/v5/market/kline?category=linear&symbol={sym}USDT&interval=D&limit=200")
+    lst = ((d or {}).get("result") or {}).get("list") or []
+    return {_day(int(r[0])): _f(r[6]) for r in lst if len(r) > 6 and _f(r[6])}
 
 
 def _binance_oi_usd(sym: str) -> dict[int, float]:
@@ -109,15 +121,18 @@ def _avg_by_day(pairs) -> dict[int, float]:
 
 
 def build_series(sym: str) -> list[dict]:
-    """Daily [{t, total_oi_usd, funding_avg, src:'backfill'}] for one token,
-    summing Binance + Bybit OI (Bybit coins valued at Binance daily close) and
-    OI-weighting their daily funding."""
+    """Daily [{t, total_oi_usd, funding_avg, vol24h_usd, src:'backfill'}] for one
+    token, summing Binance + Bybit OI (Bybit coins valued at Binance daily close),
+    OI-weighting their daily funding, and summing their daily USD volume over the
+    same venues the day's OI covers (so the OI/volume ratio compares like with
+    like)."""
     sym = sym.upper()
-    price = _binance_daily_close(sym)
+    price, bn_vol = _binance_daily_close(sym)
     bn_oi = _binance_oi_usd(sym)
     bn_fund = _binance_funding_daily(sym)
     by_oi_coins = _bybit_oi_coins(sym)
     by_fund = _bybit_funding_daily(sym)
+    by_vol = _bybit_daily_vol(sym)
     by_oi_usd = {d: c * price[d] for d, c in by_oi_coins.items() if price.get(d)}
 
     # Anchor the window on whichever venue gives a CONSISTENT OI floor: Binance's
@@ -138,8 +153,17 @@ def build_series(sym: str) -> list[dict]:
                 num += oi_v * fund_v
                 den += oi_v
         funding = (num / den) if den else None
+        # volume from the SAME venues that contributed OI that day — never count
+        # a venue's volume when its OI was missing (would skew the ratio down).
+        vol = 0.0
+        if oi_bn and bn_vol.get(d):
+            vol += bn_vol[d]
+        if oi_by and by_vol.get(d):
+            vol += by_vol[d]
         out.append({"t": d // 1000, "total_oi_usd": round(total, 2),
-                    "funding_avg": funding, "src": "backfill"})
+                    "funding_avg": funding,
+                    "vol24h_usd": round(vol, 2) if vol else None,
+                    "src": "backfill"})
     return out
 
 
@@ -156,8 +180,15 @@ def merge(sym: str, backfill: list[dict]) -> int:
         except Exception:
             existing = []
     live = [pt for pt in existing if pt.get("src") != "backfill"]
+    # Live points logged before vol24h_usd existed have no volume; stamp them
+    # with their day's backfill volume (tagged vol_src) so the OI/volume chart
+    # has no historical hole. Points that already carry a live volume win.
+    bf_vol = {pt["t"] // 86400: pt.get("vol24h_usd") for pt in backfill}
+    for pt in live:
+        if pt.get("vol24h_usd") is None and bf_vol.get(pt["t"] // 86400):
+            pt["vol24h_usd"] = bf_vol[pt["t"] // 86400]
+            pt["vol_src"] = "backfill"
     # de-dup: if a live point falls on a day we backfilled, keep the live one
-    bf_days = {pt["t"] // 86400 for pt in backfill}
     live_days = {pt["t"] // 86400 for pt in live}
     merged = [pt for pt in backfill if pt["t"] // 86400 not in live_days] + live
     merged.sort(key=lambda pt: pt["t"])

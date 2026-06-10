@@ -718,6 +718,60 @@ def _oi_funding_history_chart(sym: str) -> str:
                        config={"displayModeBar": False, "responsive": True})
 
 
+def _oi_volume_history_chart(sym: str) -> str:
+    """OI vs 24h-volume time series: total tracked-venue OI (line, left $ axis),
+    24h volume (bars, hidden axis scaled to the lower third) and the OI/volume
+    ratio (line, right axis). Same cache/perp_history series as the OI/funding
+    chart; vol24h_usd points come from fetch_perp_markets live snapshots and the
+    Binance+Bybit daily backfill. High/rising ratio = positions parked against
+    thin real trading — the watchlist's manipulation tell."""
+    p = PERP_HIST / f"{sym.upper()}.json"
+    if not p.exists():
+        return ""
+    series = [pt for pt in json.loads(p.read_text(encoding="utf-8")) if pt.get("total_oi_usd")]
+    with_vol = [pt for pt in series if pt.get("vol24h_usd")]
+    if len(with_vol) < 2:
+        return ('<div class="missing">OI / volume history builds over time — '
+                'volume is logged each refresh; check back after a few cycles.</div>')
+    import datetime as dt
+    xs = [dt.datetime.fromtimestamp(pt["t"], dt.timezone.utc) for pt in series]
+    oi = [pt["total_oi_usd"] for pt in series]
+    vol = [pt.get("vol24h_usd") for pt in series]
+    ratio = [(pt["total_oi_usd"] / pt["vol24h_usd"]) if pt.get("vol24h_usd") else None
+             for pt in series]
+    vmax = max(v for v in vol if v)
+    fig = go.Figure()
+    fig.add_trace(go.Bar(x=xs, y=vol, name="24h volume", yaxis="y3",
+        marker=dict(color="rgba(91,155,213,0.45)", line=dict(width=0)),
+        hovertemplate="%{x|%b %d %H:%M}  vol <b>$%{y:,.0f}</b><extra></extra>"))
+    fig.add_trace(go.Scatter(x=xs, y=oi, name="Total OI", mode="lines", yaxis="y",
+        line=dict(color="#1f4e79", width=2),
+        hovertemplate="%{x|%b %d %H:%M}  OI <b>$%{y:,.0f}</b><extra></extra>"))
+    fig.add_trace(go.Scatter(x=xs, y=ratio, name="OI / 24h vol", mode="lines", yaxis="y2",
+        line=dict(color="#9c6ade", width=2), connectgaps=True,
+        hovertemplate="%{x|%b %d %H:%M}  OI/vol <b>%{y:.2f}</b><extra></extra>"))
+    fig.update_layout(
+        height=320, margin=dict(l=62, r=58, t=12, b=36), font=_CHART_FONT,
+        paper_bgcolor="white", plot_bgcolor="white", template="plotly_white",
+        xaxis=dict(showgrid=False, showline=True, linecolor="#e1e7ee", ticks="outside",
+                   tickcolor="#e1e7ee", tickfont=dict(size=11)),
+        yaxis=dict(title=dict(text="OI (USD)", font=dict(size=11, color="#6b7785")),
+                   tickprefix="$", gridcolor="#eef2f6", zeroline=False, side="left",
+                   tickfont=dict(size=11)),
+        yaxis2=dict(title=dict(text="OI / 24h vol", font=dict(size=11, color="#9c6ade")),
+                    overlaying="y", side="right", showgrid=False, zeroline=False,
+                    rangemode="tozero", tickfont=dict(size=11)),
+        # volume bars live on a hidden axis pinned to the lower third so they
+        # read as context under the OI line instead of dwarfing it
+        yaxis3=dict(overlaying="y", side="right", visible=False,
+                    range=[0, vmax * 3.2]),
+        hovermode="x unified", dragmode="pan", barmode="overlay",
+        legend=dict(orientation="h", y=1.14, x=0, font=dict(size=11)))
+    return fig.to_html(full_html=False, include_plotlyjs=False,
+                       div_id=f"oivol-{sym.lower()}",
+                       config={"displayModeBar": False, "responsive": True})
+
+
 def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -> str:
     """A single donut (go.Pie, hole=0.58). usd=True formats hover/values as $."""
     hover = "%{label}<br><b>%{percent}</b>" + ("<br>$%{value:,.0f}" if usd else "") + "<extra></extra>"
@@ -814,6 +868,11 @@ def _perp_extras(rec, perp, sym) -> str:
     if hist:
         parts.append('<h4 class="hist-h">OI &amp; funding over time '
                      '<span class="asof">accumulated per refresh</span></h4>' + hist)
+    oivol = _oi_volume_history_chart(sym)
+    if oivol:
+        parts.append('<h4 class="hist-h">OI vs 24h volume '
+                     '<span class="asof">tracked venues · high ratio = parked OI, '
+                     'thin trading</span></h4>' + oivol)
     return "".join(parts)
 
 

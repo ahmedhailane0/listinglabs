@@ -196,13 +196,18 @@ def ingest_scams(records):
         if perp and perp.get("venues"):
             vs = [v for v in perp["venues"] if v.get("venue") in ALLOWED_PERP_VENUES]
             total = sum(v["oi_usd"] for v in vs) or 0.0
+            vol_total = sum(v["vol24h_usd"] for v in vs if v.get("vol24h_usd")) or 0.0
             r["open_interest"].update(
                 tracked_total_usd=total,
                 pct_mcap=(total / mk["mcap"] * 100) if (total and mk.get("mcap")) else None,
+                tracked_vol24h_usd=vol_total or None,
+                oi_vol_ratio=(total / vol_total) if (total and vol_total) else None,
                 venues=[{"venue": v["venue"], "oi_usd": v["oi_usd"],
                          "share_pct": (v["oi_usd"] / total * 100) if total else None,
                          "funding": v.get("funding"), "interval_h": v.get("interval_h"),
-                         "funding_annualized": v.get("funding_annualized")} for v in vs],
+                         "funding_annualized": v.get("funding_annualized"),
+                         "vol24h_usd": v.get("vol24h_usd"),
+                         "oi_vol_ratio": v.get("oi_vol_ratio")} for v in vs],
                 fetched_at=perp.get("fetched_at"))
         # CMC all-venue OI (the inflated whole-market figure — kept for context)
         if rec.get("oi_usd") is not None:
@@ -266,7 +271,8 @@ TAB_COLS = {
     "scam_watchlist": [
         "date", "symbol", "name", "chain", "cmc_slug", "price", "mcap", "fdv", "vol24h",
         "circ_supply", "total_supply", "max_supply", "circ_ratio",
-        "oi_tracked_usd", "oi_pct_mcap", "cmc_all_venue_oi",
+        "oi_tracked_usd", "oi_pct_mcap", "perp_vol24h_usd", "oi_vol_ratio",
+        "cmc_all_venue_oi",
         "funding_amount", "holder_count", "top10_share", "retail_share"],
 }
 
@@ -308,6 +314,7 @@ def _row(tab, date_str, r) -> dict:
             circ_supply=sup.get("circulating"), total_supply=sup.get("total"),
             max_supply=sup.get("max"), circ_ratio=sup.get("circ_ratio"),
             oi_tracked_usd=oi.get("tracked_total_usd"), oi_pct_mcap=oi.get("pct_mcap"),
+            perp_vol24h_usd=oi.get("tracked_vol24h_usd"), oi_vol_ratio=oi.get("oi_vol_ratio"),
             cmc_all_venue_oi=oi.get("cmc_all_venue_usd"),
             funding_amount=fr.get("amount"), holder_count=h.get("holder_count"),
             top10_share=h.get("top10_share"), retail_share=h.get("retail_share"))

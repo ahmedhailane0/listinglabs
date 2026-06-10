@@ -541,7 +541,11 @@ def _append_history(res, when=None, carry=False) -> None:
     den = sum(v["oi_usd"] for v in venues
               if v.get("funding") is not None and v.get("oi_usd"))
     t = when or res.get("fetched_at") or int(time.time())
-    pt = {"t": t, "total_oi_usd": total, "funding_avg": (num / den) if den else None}
+    # 24h volume across the same tracked venues as total_oi_usd, so the
+    # OI/volume ratio chart compares like with like (Others excluded from both).
+    vols = [v["vol24h_usd"] for v in venues if v.get("vol24h_usd")]
+    pt = {"t": t, "total_oi_usd": total, "funding_avg": (num / den) if den else None,
+          "vol24h_usd": round(sum(vols), 2) if vols else None}
     if carry:
         pt["src"] = "carry"
     HIST.mkdir(parents=True, exist_ok=True)
