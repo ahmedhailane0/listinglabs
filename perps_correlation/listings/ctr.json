@@ -61,15 +61,20 @@
       "note": "CTRUSDT USDT-M perp first 1m candle on Binance fapi (verified earliest = 09:30Z, high vol). Listed ~2d after Alpha."
     },
     {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2026-06-09T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Bithumb",
       "iso_time_utc": "2026-06-09T01:40:05Z",
-      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场增加] 增加Citrea (CTR) 韩元市场 CTR MarketCap: 17M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 2026-06\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16244",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [\ub9c8\ucf13 \ucd94\uac00 Bithumb\u4e0a\u65b0: [\u5e02\u573a\u589e\u52a0] \u589e\u52a0Citrea (CTR) \u97e9\u5143\u5e02\u573a CTR MarketCap: 17M (Auto match could be wrong, \u81ea\u52a8\u5339\u914d\u53ef\u80fd\u4e0d\u51c6\u786e) \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014 2026-06\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16244",
       "source": "bwenews"
     },
     {
       "exchange": "Upbit",
       "iso_time_utc": "2026-06-09T02:30:03Z",
-      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for Citrea(CTR) (BTC, USDT Market) Upbit 上新: [交易] Citrea(CTR) 的市场支持 (BTC, USDT 市场) BTC MarketCap: 1.3T\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16245",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for Citrea(CTR) (BTC, USDT Market) Upbit \u4e0a\u65b0: [\u4ea4\u6613] Citrea(CTR) \u7684\u5e02\u573a\u652f\u6301 (BTC, USDT \u5e02\u573a) BTC MarketCap: 1.3T\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16245",
       "source": "bwenews"
     }
   ],

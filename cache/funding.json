@@ -587,8 +587,8 @@
     "investors": []
   },
   "BILL": {
-    "amount": null,
-    "source": null,
+    "amount": 30000000.0,
+    "source": "excel",
     "investors": []
   },
   "BIRB": {
@@ -639,8 +639,8 @@
     ]
   },
   "BTW": {
-    "amount": null,
-    "source": null,
+    "amount": 5940000.0,
+    "source": "excel",
     "investors": []
   },
   "CFG": {
@@ -912,8 +912,8 @@
     "investors": []
   },
   "EDGE": {
-    "amount": null,
-    "source": null,
+    "amount": 4100000.0,
+    "source": "excel",
     "investors": [
       {
         "name": "Circle Ventures",
@@ -3827,6 +3827,92 @@
       {
         "name": "P2 Ventures",
         "url": "https://x.com/PolygonVentures",
+        "lead": false
+      }
+    ]
+  },
+  "VELVET": {
+    "amount": 3700000,
+    "source": "rootdata",
+    "investors": [
+      {
+        "name": "YZi Labs",
+        "url": "https://x.com/YZiLabs",
+        "lead": false
+      },
+      {
+        "name": "Blockchain Founders Fund",
+        "url": "https://x.com/blockchainff",
+        "lead": false
+      },
+      {
+        "name": "FunFair Ventures",
+        "url": "https://x.com/FunFairVentures",
+        "lead": false
+      },
+      {
+        "name": "Selini Capital",
+        "url": "https://x.com/SeliniCapital",
+        "lead": false
+      },
+      {
+        "name": "PAKA",
+        "url": "https://x.com/pakafund",
+        "lead": false
+      },
+      {
+        "name": "LucidBlue Ventures",
+        "url": "https://x.com/LucidBlueVC",
+        "lead": false
+      },
+      {
+        "name": "Mindfulness Capital",
+        "url": "https://x.com/MindfulnessCap",
+        "lead": false
+      },
+      {
+        "name": "SkyVision Capital",
+        "url": "https://x.com/SkyVisionCap",
+        "lead": false
+      },
+      {
+        "name": "Gate.io Labs",
+        "url": "https://www.rootdata.com/Investors/detail/Gate.io Labs?k=MTE3MDE=",
+        "lead": false
+      },
+      {
+        "name": "Poolz Venture",
+        "url": "https://x.com/PoolzVentures",
+        "lead": false
+      },
+      {
+        "name": "NexGen Venture",
+        "url": "https://x.com/NexGenVen",
+        "lead": false
+      },
+      {
+        "name": "Gains Associates",
+        "url": "https://x.com/GainsAssociates",
+        "lead": false
+      },
+      {
+        "name": "Rarestone Capital",
+        "url": "https://x.com/rarestonecap",
+        "lead": false
+      },
+      {
+        "name": "echo",
+        "url": "https://x.com/echodotxyz",
+        "lead": false
+      },
+      {
+        "name": "DWF Ventures",
+        "url": "https://www.rootdata.com/Investors/detail/DWF Ventures?k=MTIxMTI=",
+        "lead": false
+      },
+      {
+        "name": "Arbitrum",
+        "url": "https://x.com/arbitrum",
         "lead": false
       }
     ]

@@ -1,0 +1,66 @@
+{
+  "token": "VELVET",
+  "name": "Velvet",
+  "chain": "bsc",
+  "token_contract": "0x8b194370825e37b33373e74a41009161808c1488",
+  "gecko_pool": "0x5d2913a8ea284e486000177852c87ea4d64d03d6",
+  "fdv_usd": 768788090.8208612,
+  "fdv_source": "Binance Alpha listings API, 2026-06-10 (current, not at-listing)",
+  "mcap_usd": 337413207.46812624,
+  "circulating_supply": 438889742.826087,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "velvet",
+  "category": "DeFi asset management (DeFAI)",
+  "new": true,
+  "window_start_utc": "2025-07-15T08:00:00Z",
+  "window_end_utc": "2025-07-17T09:00:00Z",
+  "events": [
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2025-07-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2025-07-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bybit Perp",
+      "iso_time_utc": "2025-07-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2025-07-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2025-07-15T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2025-07-15T09:15:00Z",
+      "note": "Listed on Binance Alpha 2025-07-15, same day as the VELVETUSDT perp. Exact Alpha open minute not candle-verifiable (GeckoTerminal free history expired); anchored to the perp launch time, approximate. Announcement 06:42 UTC. (Alpha listings API listingTime=2026-02-18 is bogus for this token.)"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2025-07-15T09:15:00Z",
+      "note": "VELVETUSDT USD-M perpetual launch per Binance announcement (CUSDT 09:00, VELVETUSDT 09:15 UTC)."
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2025-10-24T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2025-10-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    }
+  ],
+  "annotations": [],
+  "not_listed": []
+}

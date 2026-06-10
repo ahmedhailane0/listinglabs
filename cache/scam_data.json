@@ -1122,5 +1122,33 @@
       "investors": []
     },
     "refreshed_at": 1781121474.4403365
+  },
+  "VELVET": {
+    "symbol": "VELVET",
+    "memo": "",
+    "memo_en": "Listed Jul 2025 (Alpha + Binance perp same day); ~9x run-up Apr-Jun 2026 pushed FDV toward $0.8B on 1B supply",
+    "days": "",
+    "okx_spot": false,
+    "coinbase_spot": false,
+    "cg_id": "velvet",
+    "cmc_slug": "velvet",
+    "name": "Velvet",
+    "chain": "binance-smart-chain",
+    "contract": "0x8b194370825e37b33373e74a41009161808c1488",
+    "price": 0.791439,
+    "mcap": 332956096,
+    "fdv": 791424124,
+    "vol": 47960561,
+    "circ_supply": 420705012.8238019,
+    "total_supply": 1000000000.0,
+    "max_supply": 1000000000.0,
+    "ath_price": 0.794995,
+    "supply_source": "coinmarketcap",
+    "n_prices": 181,
+    "oi_usd": 134449378.8859687,
+    "oi_pct_mcap": 40.7659923722814,
+    "circ_ratio": 0.42070501282380185,
+    "peak_mcap": 334458381.6698584,
+    "refreshed_at": 1781125729.9769087
   }
 }

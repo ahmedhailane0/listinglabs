@@ -42,6 +42,10 @@
         "label": "Gate.io Perp",
         "iso": "2024-03-26T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:11.166666Z",
+      "kraken_futures": "2026-06-10T21:05:11.166666Z"
     }
   },
   "ctr": {
@@ -51,7 +55,10 @@
       "okx_spot": null,
       "okx_perp": null,
       "bybit_spot": null,
-      "bybit_perp": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2026-06-09T00:00:00Z"
+      },
       "kraken_spot": {
         "label": "Kraken Spot",
         "iso": "2026-05-26T00:00:00Z"
@@ -80,7 +87,11 @@
       }
     },
     "checked": {
-      "kraken_futures": "2026-06-10T20:06:03.745842Z"
+      "kraken_futures": "2026-06-10T20:06:03.745842Z",
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "bybit_spot": "2026-06-10T21:05:33.981998Z",
+      "bybit_perp": "2026-06-10T21:05:33.981998Z"
     }
   },
   "nex": {
@@ -171,7 +182,8 @@
         "label": "Gate.io Perp",
         "iso": "2025-10-02T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "allo": {
     "symbol": "ALLO",
@@ -216,6 +228,10 @@
         "label": "Gate.io Perp",
         "iso": "2025-11-11T00:00:00Z"
       }
+    },
+    "checked": {
+      "bybit_spot": "2026-06-10T21:05:11.166666Z",
+      "kraken_futures": "2026-06-10T21:05:11.166666Z"
     }
   },
   "aster": {
@@ -267,11 +283,12 @@
         "label": "Gate.io Perp",
         "iso": "2025-09-19T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "ath": {
     "symbol": "ATH",
-    "floor": "2024-07-14T00:00:00+00:00",
+    "floor": "2024-05-13T01:40:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -318,7 +335,8 @@
         "label": "Gate.io Perp",
         "iso": "2024-07-14T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "avnt": {
     "symbol": "AVNT",
@@ -369,7 +387,8 @@
         "label": "Gate.io Perp",
         "iso": "2025-09-09T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "b3": {
     "symbol": "B3",
@@ -412,11 +431,14 @@
         "iso": "2025-02-10T00:00:00Z"
       }
     },
-    "checked": {}
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z"
+    }
   },
   "bard": {
     "symbol": "BARD",
-    "floor": "2025-08-18T00:00:00+00:00",
+    "floor": "2025-08-17T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -460,11 +482,14 @@
         "label": "Gate.io Perp",
         "iso": "2025-09-18T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "bigtime": {
     "symbol": "BIGTIME",
-    "floor": "2023-09-12T00:00:00+00:00",
+    "floor": "2023-09-11T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -508,6 +533,9 @@
         "label": "Gate.io Perp",
         "iso": "2023-10-11T00:00:00Z"
       }
+    },
+    "checked": {
+      "bybit_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "bill": {
@@ -555,7 +583,8 @@
       }
     },
     "checked": {
-      "kraken_futures": "2026-06-10T20:06:03.745842Z"
+      "kraken_futures": "2026-06-10T20:06:03.745842Z",
+      "okx_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "birb": {
@@ -595,11 +624,17 @@
         "label": "Gate.io Perp",
         "iso": "2026-01-28T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "kraken_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "brev": {
     "symbol": "BREV",
-    "floor": "2025-11-30T10:45:00+00:00",
+    "floor": "2025-11-30T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -643,11 +678,14 @@
         "label": "Gate.io Perp",
         "iso": "2025-12-30T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "cfg": {
     "symbol": "CFG",
-    "floor": "2025-08-26T00:00:00+00:00",
+    "floor": "2025-07-05T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -688,6 +726,9 @@
         "label": "Gate.io Perp",
         "iso": "2026-03-16T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_perp": "2026-06-10T21:05:33.981998Z"
     }
   },
   "chip": {
@@ -784,11 +825,15 @@
         "label": "Gate.io Perp",
         "iso": "2025-05-09T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "drift": {
     "symbol": "DRIFT",
-    "floor": "2024-04-17T00:00:00+00:00",
+    "floor": "2024-04-16T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
@@ -829,6 +874,10 @@
         "label": "Gate.io Perp",
         "iso": "2024-05-22T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z"
     }
   },
   "edge": {
@@ -926,6 +975,12 @@
         "label": "Gate.io Perp",
         "iso": "2026-01-22T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "kraken_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "era": {
@@ -965,11 +1020,17 @@
         "label": "Gate.io Perp",
         "iso": "2025-07-17T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "kraken_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "esp": {
     "symbol": "ESP",
-    "floor": "2026-01-11T08:10:00+00:00",
+    "floor": "2026-01-11T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": {
@@ -1007,11 +1068,15 @@
         "label": "Gate.io Perp",
         "iso": "2026-02-10T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "bybit_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "eul": {
     "symbol": "EUL",
-    "floor": "2025-07-07T00:00:00+00:00",
+    "floor": "2025-06-07T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
@@ -1043,11 +1108,17 @@
         "label": "Gate.io Perp",
         "iso": "2025-10-13T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "bybit_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "flock": {
     "symbol": "FLOCK",
-    "floor": "2025-04-29T00:00:00+00:00",
+    "floor": "2025-03-30T00:00:00+00:00",
     "venues": {
       "okx_spot": null,
       "okx_perp": null,
@@ -1085,11 +1156,16 @@
         "label": "Gate.io Perp",
         "iso": "2025-04-29T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z"
     }
   },
   "fluid": {
     "symbol": "FLUID",
-    "floor": "2025-01-22T00:00:00+00:00",
+    "floor": "2024-12-23T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -1121,6 +1197,12 @@
         "label": "Gate.io Perp",
         "iso": "2025-09-24T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "kraken_spot": "2026-06-10T21:05:33.981998Z",
+      "kraken_futures": "2026-06-10T21:05:33.981998Z",
+      "kucoin_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "g": {
@@ -1169,6 +1251,9 @@
         "label": "Gate.io Perp",
         "iso": "2024-08-15T00:00:00Z"
       }
+    },
+    "checked": {
+      "okx_perp": "2026-06-10T21:05:33.981998Z"
     }
   },
   "gwei": {
@@ -1210,7 +1295,10 @@
       }
     },
     "checked": {
-      "kraken_futures": "2026-06-10T20:06:03.745842Z"
+      "kraken_futures": "2026-06-10T20:06:03.745842Z",
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "bybit_spot": "2026-06-10T21:05:33.981998Z"
     }
   },
   "home": {
@@ -3620,9 +3708,9 @@
       }
     },
     "checked": {
-      "okx_spot": "2026-06-06T14:48:41.153412Z",
-      "okx_perp": "2026-06-06T14:48:41.153412Z",
-      "bybit_spot": "2026-06-06T14:48:41.153412Z",
+      "okx_spot": "2026-06-10T21:05:33.981998Z",
+      "okx_perp": "2026-06-10T21:05:33.981998Z",
+      "bybit_spot": "2026-06-10T21:05:33.981998Z",
       "bybit_perp": "2026-06-06T14:48:41.153412Z",
       "kraken_spot": "2026-06-10T20:06:03.745842Z",
       "kraken_futures": "2026-06-10T20:06:03.745842Z",
@@ -3630,6 +3718,57 @@
       "kucoin_futures": "2026-06-06T14:48:41.153412Z",
       "bitget_spot": "2026-06-06T14:48:41.153412Z",
       "gate_perp": "2026-06-06T14:48:41.153412Z"
+    }
+  },
+  "velvet": {
+    "symbol": "VELVET",
+    "floor": "2025-06-15T09:15:00+00:00",
+    "venues": {
+      "okx_spot": null,
+      "okx_perp": null,
+      "bybit_spot": null,
+      "bybit_perp": {
+        "label": "Bybit Perp",
+        "iso": "2025-07-15T00:00:00Z"
+      },
+      "kraken_spot": {
+        "label": "Kraken Spot",
+        "iso": "2025-10-30T00:00:00Z"
+      },
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2025-07-10T00:00:00Z"
+      },
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2025-07-15T00:00:00Z"
+      },
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2025-10-24T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2025-07-10T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2025-07-15T00:00:00Z"
+      }
+    },
+    "checked": {
+      "okx_spot": "2026-06-10T21:07:22.970179Z",
+      "okx_perp": "2026-06-10T21:07:22.970179Z",
+      "bybit_spot": "2026-06-10T21:07:22.970179Z",
+      "bybit_perp": "2026-06-10T21:07:22.970179Z",
+      "kraken_spot": "2026-06-10T21:07:22.970179Z",
+      "kraken_futures": "2026-06-10T21:07:22.970179Z",
+      "kucoin_spot": "2026-06-10T21:07:22.970179Z",
+      "kucoin_futures": "2026-06-10T21:07:22.970179Z",
+      "bitget_spot": "2026-06-10T21:07:22.970179Z",
+      "gate_spot": "2026-06-10T21:07:22.970179Z",
+      "gate_perp": "2026-06-10T21:07:22.970179Z"
     }
   }
 }
