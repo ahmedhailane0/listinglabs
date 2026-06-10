@@ -45,6 +45,14 @@ SKIP_STATE = CACHE / "refresh_skip.json"
 DEAD_AFTER = 3
 
 
+def _r8(v: float) -> float:
+    """Round to 8 significant digits (storage precision; see write site)."""
+    try:
+        return float(f"{v:.8g}")
+    except (TypeError, ValueError):
+        return v
+
+
 def _cache_path(token: str) -> Path:
     return CACHE / f"{token.lower()}_klines_5m_alpha.json"
 
@@ -195,6 +203,10 @@ def refresh_one(cfg: dict) -> tuple[str, str]:
         return f"{token}: no candles — skipped", "dead"
 
     label = src_label + (" + binance-spot" if fb else "")
+    # Store prices at 8 significant digits: full-precision float reprs are
+    # 17+ chars each and bloat the committed cache (the chart itself renders far
+    # fewer digits). ~30-40% smaller files = smaller CI commits forever.
+    merged = [[r[0], _r8(r[1]), _r8(r[2]), _r8(r[3]), _r8(r[4])] for r in merged]
     path.write_text(json.dumps({"source": label, "rows": merged}, ensure_ascii=False),
                     encoding="utf-8")
     last = datetime.fromtimestamp(merged[-1][0] / 1000, tz=timezone.utc)

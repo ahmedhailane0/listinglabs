@@ -156,55 +156,71 @@ def _token_chips(cfg: dict) -> list[str]:
     return out
 
 
-def _chart_rel(cfg: dict) -> str | None:
-    chart = CHARTS / f"{_slug(cfg)}_listing_reaction.png"
-    return f"../charts/{chart.name}" if chart.exists() else None
-
-
 KLINES = HERE.parent / "cache"
 _SPARK_W, _SPARK_H = 100.0, 32.0   # viewBox units; CSS stretches to tile width
 
 
+# slug -> symbol body (or "" when no data). Each token's sparkline path is built
+# ONCE and emitted as a <symbol>; the tile and the list row both render a tiny
+# <use> reference instead of duplicating the whole path — this alone halves the
+# index page weight.
+_SPARK_BODIES: dict[str, str] = {}
+
+
+def _spark_body(cfg: dict) -> str:
+    """Inner SVG shapes (area + line + Alpha marker) of the token's sparkline,
+    from its own kline cache. '' if no kline data. Cached per build."""
+    slug = _slug(cfg)
+    if slug in _SPARK_BODIES:
+        return _SPARK_BODIES[slug]
+    from lib.interactive_chart import _load_rows
+    body = ""
+    rows = _load_rows(cfg["token"]) or []
+    if len(rows) >= 2:
+        # Downsample to ~120 points; always keep the LAST candle so the spark's
+        # right edge is the real latest price (plain slicing could drop it).
+        step = max(1, len(rows) // 120)
+        pts = rows[::step]
+        if pts[-1][0] != rows[-1][0]:
+            pts.append(rows[-1])
+        closes = [r[4] for r in pts]
+        times = [r[0] for r in pts]
+        lo, hi = min(closes), max(closes)
+        span = (hi - lo) or 1.0
+        n = len(closes)
+
+        def x(i): return round(i / (n - 1) * _SPARK_W, 2)
+        def y(v): return round(_SPARK_H - (v - lo) / span * (_SPARK_H - 2) - 1, 2)
+
+        line = " ".join(f"{x(i)},{y(c)}" for i, c in enumerate(closes))
+        area = f"0,{_SPARK_H} {line} {_SPARK_W},{_SPARK_H}"
+        alpha_ms = int(_alpha_time(cfg).timestamp() * 1000)
+        ai = min(range(n), key=lambda i: abs(times[i] - alpha_ms))
+        marker = (f'<line x1="{x(ai)}" y1="0" x2="{x(ai)}" y2="{_SPARK_H}" '
+                  f'class="spark-alpha"/>') if 0 < ai < n - 1 else ""
+        body = (f'<polygon class="spark-fill" points="{area}"/>'
+                f'<polyline class="spark-line" points="{line}"/>{marker}')
+    _SPARK_BODIES[slug] = body
+    return body
+
+
+def spark_defs(items) -> str:
+    """One hidden SVG holding every sparkline as a <symbol> (width/height 0, NOT
+    display:none — hidden defs break <use> in some browsers)."""
+    syms = "".join(
+        f'<symbol id="sp-{slug}" viewBox="0 0 {_SPARK_W:g} {_SPARK_H:g}" '
+        f'preserveAspectRatio="none">{body}</symbol>'
+        for slug, body in items if body)
+    return (f'<svg width="0" height="0" style="position:absolute" aria-hidden="true">'
+            f'<defs>{syms}</defs></svg>') if syms else ""
+
+
 def _sparkline(cfg: dict) -> str:
-    """Inline SVG mini-chart of the close-price path from the token's own
-    kline cache (same data the detail Plotly chart uses). Vector + tiny, so it
-    replaces the ~250KB PNG thumbnail. A faint vertical line marks the Alpha
-    listing. Returns '' if no kline data."""
-    p = KLINES / f"{_slug(cfg)}_klines_5m_alpha.json"
-    if not p.exists():
+    """A <use> reference to the token's sparkline symbol (see spark_defs)."""
+    if not _spark_body(cfg):
         return ""
-    rows = json.loads(p.read_text(encoding="utf-8")).get("rows") or []
-    if len(rows) < 2:
-        return ""
-
-    # Downsample to ~120 points to keep the path string small.
-    step = max(1, len(rows) // 120)
-    pts = rows[::step]
-    closes = [r[4] for r in pts]
-    times = [r[0] for r in pts]
-    lo, hi = min(closes), max(closes)
-    span = (hi - lo) or 1.0
-    n = len(closes)
-
-    def x(i): return round(i / (n - 1) * _SPARK_W, 2)
-    def y(v): return round(_SPARK_H - (v - lo) / span * (_SPARK_H - 2) - 1, 2)
-
-    line = " ".join(f"{x(i)},{y(c)}" for i, c in enumerate(closes))
-    area = f"0,{_SPARK_H} {line} {_SPARK_W},{_SPARK_H}"
-
-    # Alpha marker: x of the candle nearest the Alpha listing time.
-    alpha_ms = int(_alpha_time(cfg).timestamp() * 1000)
-    ai = min(range(n), key=lambda i: abs(times[i] - alpha_ms))
-    marker = (f'<line x1="{x(ai)}" y1="0" x2="{x(ai)}" y2="{_SPARK_H}" '
-              f'class="spark-alpha"/>') if 0 < ai < n - 1 else ""
-
-    return (
-        f'<svg class="thumb" viewBox="0 0 {_SPARK_W:g} {_SPARK_H:g}" '
-        f'preserveAspectRatio="none" aria-hidden="true">'
-        f'<polygon class="spark-fill" points="{area}"/>'
-        f'<polyline class="spark-line" points="{line}"/>'
-        f'{marker}</svg>'
-    )
+    return (f'<svg class="thumb" aria-hidden="true">'
+            f'<use href="#sp-{_slug(cfg)}" width="100%" height="100%"/></svg>')
 
 
 def _events_rows(cfg: dict) -> str:
@@ -254,10 +270,8 @@ def _events_rows(cfg: dict) -> str:
 
 
 def _load_klines(cfg: dict) -> list | None:
-    p = KLINES / f"{_slug(cfg)}_klines_5m_alpha.json"
-    if not p.exists():
-        return None
-    return json.loads(p.read_text(encoding="utf-8")).get("rows") or None
+    from lib.interactive_chart import _load_rows
+    return _load_rows(cfg["token"])    # shared per-process cache (read-only)
 
 
 def _perp_open_time(cfg: dict):
@@ -356,17 +370,37 @@ def _annotations(cfg: dict) -> str:
     return f"<div class=\"ann\"><h4>Annotations</h4><ul>{''.join(items)}</ul></div>"
 
 
-def _page(title: str, body: str, extra_head: str = "") -> str:
-    # CSP as a <meta> (GitHub Pages can't set response headers). Allows same-origin +
-    # the inline scripts/styles Plotly emits, but blocks any external script load or
-    # data exfil — defense-in-depth on top of output escaping (audit L-3).
-    csp = ("default-src 'self'; script-src 'self' 'unsafe-inline'; "
-           "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
-           "connect-src 'self'; base-uri 'self'; frame-ancestors 'none'")
+# CSP as a <meta> (GitHub Pages can't set response headers). Allows same-origin +
+# the inline scripts/styles Plotly emits, but blocks any external script load or
+# data exfil — defense-in-depth on top of output escaping (audit L-3). Shared by
+# every report shell (scams/funnel import it) so the policy never drifts per-tab.
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; "
+       "style-src 'self' 'unsafe-inline'; img-src 'self' data:; "
+       "connect-src 'self'; base-uri 'self'; frame-ancestors 'none'")
+
+SITE_NAME = "ListingLabs"
+
+
+def page_meta(title: str, desc: str, favicon_rel: str = "../favicon.svg") -> str:
+    """The shared head block: CSP + description + OG tags + favicon. Every page
+    on the site goes through this (reactions here; scams/funnel import it)."""
+    t, d = html.escape(title), html.escape(desc)
+    return (f'<meta http-equiv="Content-Security-Policy" content="{CSP}">\n'
+            f'<meta name="description" content="{d}">\n'
+            f'<meta property="og:title" content="{t}">\n'
+            f'<meta property="og:description" content="{d}">\n'
+            f'<meta property="og:type" content="website">\n'
+            f'<meta property="og:site_name" content="{SITE_NAME}">\n'
+            f'<link rel="icon" type="image/svg+xml" href="{favicon_rel}">')
+
+
+def _page(title: str, body: str, extra_head: str = "", desc: str = "") -> str:
+    desc = desc or ("Binance Alpha listing reactions — per-token price charts "
+                    "annotated with every venue listing, FDV, supply and open interest.")
     return f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="{csp}">
+{page_meta(title, desc)}
 <title>{html.escape(title)}</title>
 <link rel="stylesheet" href="style.css">{extra_head}</head>
 <body>{body}</body></html>"""
@@ -655,9 +689,16 @@ def _detail(cfg: dict) -> str:
         chart_block = interactive
         extra_head = "<script src=\"lightweight-charts.standalone.production.js\"></script>"
     else:
-        chart = _chart_rel(cfg)
-        chart_block = (f"<img src=\"{chart}\" alt=\"{token} chart\">"
-                       if chart else "<div class=\"missing\">chart not rendered</div>")
+        # PNG fallback (no candle cache). The PNG must be COPIED into the deployed
+        # folder — charts/ lives outside Listinglabs/, so a ../charts/ reference
+        # would 404 on the live site.
+        png = CHARTS / f"{_slug(cfg)}_listing_reaction.png"
+        if png.exists():
+            import shutil as _sh
+            _sh.copyfile(png, OUT_DIR / png.name)
+            chart_block = f"<img src=\"{png.name}\" alt=\"{token} chart\">"
+        else:
+            chart_block = "<div class=\"missing\">chart not rendered</div>"
         extra_head = ""
     body = f"""
 <header><a class="back" href="index.html">← all tokens</a></header>
@@ -684,7 +725,9 @@ def _detail(cfg: dict) -> str:
   <div class="chart">{chart_block}</div>
 </section>
 </main>"""
-    return _page(f"{cfg.get('name', token)} ({token})", body, extra_head)
+    desc = (f"{cfg.get('name', token)} ({token}) listing reaction — price chart with "
+            f"every venue listing annotated, plus FDV, supply and open interest.")
+    return _page(f"{cfg.get('name', token)} ({token})", body, extra_head, desc=desc)
 
 
 FILTER_SCRIPT = """
@@ -736,6 +779,12 @@ if (ltab) {
   const tb = ltab.querySelector('tbody');
   ltab.querySelectorAll('th').forEach((th, i) => {
     let asc = false;  // first click on a column = descending (best on top)
+    th.tabIndex = 0;                       // keyboard-sortable
+    th.setAttribute('role', 'button');
+    th.setAttribute('aria-label', 'Sort by ' + th.textContent);
+    th.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); th.click(); }
+    });
     th.addEventListener('click', () => {
       const rs = [...tb.rows];
       rs.sort((a, b) => {
@@ -744,9 +793,10 @@ if (ltab) {
         const c = (!isNaN(nx) && !isNaN(ny)) ? nx - ny : ('' + x).localeCompare(y);
         return asc ? c : -c;
       });
+      const applied = asc ? 'asc' : 'desc';   // the order just applied
       asc = !asc;
-      ltab.querySelectorAll('th').forEach(h => h.classList.remove('sorted'));
-      th.classList.add('sorted');
+      ltab.querySelectorAll('th').forEach(h => h.classList.remove('sorted', 'asc', 'desc'));
+      th.classList.add('sorted', applied);
       rs.forEach(r => tb.appendChild(r));
     });
   });
@@ -836,16 +886,43 @@ def _news_strip(tracked_syms: set[str]) -> str:
             f'<div class="pills">{"".join(pills)}</div></div>')
 
 
+def sibling_counts() -> tuple[int | None, int | None]:
+    """(funnel_n, scams_n) read from their sources, so the cross-tab counts in
+    the topnav can never silently drift from the real reports (they used to be
+    hardcoded). None when a source file is missing."""
+    funnel_n = scams_n = None
+    fm = HERE / "funnel" / "funnel_master.json"
+    sd = HERE.parent / "cache" / "scam_data.json"
+    try:
+        funnel_n = len(json.loads(fm.read_text(encoding="utf-8")))
+    except Exception:
+        pass
+    try:
+        scams_n = len(json.loads(sd.read_text(encoding="utf-8")))
+    except Exception:
+        pass
+    return funnel_n, scams_n
+
+
+def build_stamp() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+
+
 def _index(cfgs: list[dict]) -> str:
     tiles = "\n".join(_tile(c) for c in cfgs)
     tracked = {c["token"].upper() for c in cfgs}
+    funnel_n, scams_n = sibling_counts()
+    fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
+    scam_lbl = f"Manipulated ({scams_n})" if scams_n else "Manipulated"
+    defs = spark_defs(_SPARK_BODIES.items())
     body = f"""
 <header><h1>Binance Alpha &amp; Perps</h1>
-<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">CEX → Korea (74)</a><a href="../scams/index.html">Manipulated</a></nav>
-<p>{len(cfgs)} tokens · click a token for its info + chart</p></header>
+<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">{fun_lbl}</a><a href="../scams/index.html">{scam_lbl}</a></nav>
+<p>{len(cfgs)} tokens · click a token for its info + chart · updated {build_stamp()} UTC, rebuilds every ~20 min</p></header>
 {_news_strip(tracked)}
 {_filter_bar(cfgs)}
 <div id="views" class="view-grid">
+  {defs}
   <main class="grid">{tiles}</main>
   <div class="listwrap">{_list_table(cfgs)}</div>
 </div>
@@ -935,6 +1012,9 @@ table.list th { position: sticky; top: 0; background: #eef2f6; text-align: right
                 border-bottom: 2px solid #d6dee6; cursor: pointer; white-space: nowrap; font-size: 12px; }
 table.list th:first-child { text-align: left; }
 table.list th.sorted { color: #1f4e79; background: #e3edf7; }
+table.list th.sorted.desc::after { content: " ▼"; font-size: 9px; }
+table.list th.sorted.asc::after  { content: " ▲"; font-size: 9px; }
+table.list th:focus-visible { outline: 2px solid #1f4e79; outline-offset: -2px; }
 table.list tbody { counter-reset: rank; }
 table.list tbody tr { counter-increment: rank; }
 table.list td.rank::before { content: counter(rank); color: #8a96a3; font-variant-numeric: tabular-nums; }
@@ -1145,9 +1225,11 @@ def main() -> None:
     lib = HERE / "vendor" / "lightweight-charts.standalone.production.js"
     shutil.copyfile(lib, OUT_DIR / "lightweight-charts.standalone.production.js")
     # Keep emitting plotly.min.js too: the Scam Watchlist report (build_scams.py)
-    # still renders its OI/funding history with Plotly and links ../report/plotly.min.js.
-    from plotly.offline import get_plotlyjs
-    (OUT_DIR / "plotly.min.js").write_text(get_plotlyjs(), encoding="utf-8")
+    # renders its donuts + history charts with Plotly and links ../report/plotly.min.js.
+    # Vendored BASIC bundle (scatter/bar/pie only, 1.1MB vs the 4.7MB full bundle the
+    # python package ships) — keep vendor/plotly-basic.min.js on the same plotly.js
+    # version as the installed `plotly` package (currently 3.5.0).
+    shutil.copyfile(HERE / "vendor" / "plotly-basic.min.js", OUT_DIR / "plotly.min.js")
     (OUT_DIR / "style.css").write_text(CSS, encoding="utf-8")
     (OUT_DIR / "index.html").write_text(_index(cfgs), encoding="utf-8")
     for cfg in cfgs:

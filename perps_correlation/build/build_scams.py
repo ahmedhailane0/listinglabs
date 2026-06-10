@@ -23,6 +23,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch./build. importable from anywhere
 from build.build_listing_report import CSS as RCSS          # reuse reactions styling
 from build.build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
+from build.build_listing_report import page_meta, build_stamp     # shared CSP/OG head + stamp
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from lib.interactive_chart import timeseries_html
@@ -75,26 +76,51 @@ def _load_funding(symbols) -> dict:
 
 _SW, _SH = 100.0, 32.0
 
+# sym -> sparkline symbol body; built once, referenced by tile AND list row via
+# <use> (same dedup as the reactions index — halves the index page weight).
+_SPARK_BODIES: dict[str, str] = {}
+
+
+def _spark_body(sym: str) -> str:
+    if sym in _SPARK_BODIES:
+        return _SPARK_BODIES[sym]
+    body = ""
+    p = PRICES / f"{sym}.json"
+    if p.exists():
+        series = json.loads(p.read_text(encoding="utf-8"))
+        if len(series) >= 2:
+            step = max(1, len(series) // 120)
+            pts = series[::step]
+            if pts[-1][0] != series[-1][0]:
+                pts.append(series[-1])      # always end on the real latest price
+            vals = [v for _t, v in pts]
+            lo, hi = min(vals), max(vals)
+            span = (hi - lo) or 1.0
+            n = len(vals)
+            x = lambda i: round(i / (n - 1) * _SW, 2)
+            y = lambda v: round(_SH - (v - lo) / span * (_SH - 2) - 1, 2)
+            line = " ".join(f"{x(i)},{y(v)}" for i, v in enumerate(vals))
+            area = f"0,{_SH} {line} {_SW},{_SH}"
+            body = (f'<polygon class="spark-fill" points="{area}"/>'
+                    f'<polyline class="spark-line" points="{line}"/>')
+    _SPARK_BODIES[sym] = body
+    return body
+
+
+def _spark_defs() -> str:
+    syms = "".join(
+        f'<symbol id="sp-{s.lower()}" viewBox="0 0 {_SW:g} {_SH:g}" '
+        f'preserveAspectRatio="none">{b}</symbol>'
+        for s, b in _SPARK_BODIES.items() if b)
+    return (f'<svg width="0" height="0" style="position:absolute" aria-hidden="true">'
+            f'<defs>{syms}</defs></svg>') if syms else ""
+
 
 def _sparkline(sym: str) -> str:
-    p = PRICES / f"{sym}.json"
-    if not p.exists():
+    if not _spark_body(sym):
         return ""
-    series = json.loads(p.read_text(encoding="utf-8"))
-    if len(series) < 2:
-        return ""
-    step = max(1, len(series) // 120)
-    vals = [v for _t, v in series[::step]]
-    lo, hi = min(vals), max(vals)
-    span = (hi - lo) or 1.0
-    n = len(vals)
-    x = lambda i: round(i / (n - 1) * _SW, 2)
-    y = lambda v: round(_SH - (v - lo) / span * (_SH - 2) - 1, 2)
-    line = " ".join(f"{x(i)},{y(v)}" for i, v in enumerate(vals))
-    area = f"0,{_SH} {line} {_SW},{_SH}"
-    return (f'<svg class="thumb" viewBox="0 0 {_SW:g} {_SH:g}" preserveAspectRatio="none" '
-            f'aria-hidden="true"><polygon class="spark-fill" points="{area}"/>'
-            f'<polyline class="spark-line" points="{line}"/></svg>')
+    return (f'<svg class="thumb" aria-hidden="true">'
+            f'<use href="#sp-{sym.lower()}" width="100%" height="100%"/></svg>')
 
 
 def _price_chart(sym: str, name: str) -> str:
@@ -204,9 +230,14 @@ def _perf(rec):
     DAY = 86400_000
 
     def chg(n_days):
+        # Nearest point to the target, capped at 2 days off — a gapped series
+        # must omit the checkpoint rather than quote a far-away price as "n days
+        # ago" (same rule as lib.metrics.CHECKPOINT_TOL).
         target = last_t - n_days * DAY
-        base = next((p[1] for p in reversed(s) if p[0] <= target), None)
-        return (last / base - 1) * 100 if base else None
+        base_t, base = min(s, key=lambda p: abs(p[0] - target))
+        if abs(base_t - target) > 2 * DAY or not base:
+            return None
+        return (last / base - 1) * 100
 
     prices = [p[1] for p in s]
     ath, atl = max(prices), min(prices)
@@ -602,10 +633,21 @@ def _holders_panel(rec, chain) -> str:
                     f'<td>{_compact(toks)}</td><td>{_usd(usd)}</td>'
                     f'<td>{share:.2f}%</td></tr>')
     top10, retail = h["top10_share"], h["retail_share"]
-    tb = _badge(f"Top-10: {top10:.1f}% · {'⚠ ≥95% (highly concentrated)' if top10 >= 95 else '<95%'}",
-                top10 >= 95)
-    rb = _badge(f"Retail: {retail:.1f}% · {'⚠ <1% (negligible)' if retail < 1 else '≥1%'}",
-                retail < 1)
+    # GoPlus shares can exceed 100% of supply (LP/burn double-counting, or a
+    # supply base that excludes burned tokens) — which would render a negative
+    # "retail" and a self-contradictory badge. Clamp the displayed numbers and
+    # say plainly that the source data is inconsistent.
+    inconsistent = top10 > 100 or retail < 0
+    top10_c = min(max(top10, 0.0), 100.0)
+    retail_c = min(max(retail, 0.0), 100.0)
+    tb = _badge(f"Top-10: {top10_c:.1f}% · {'⚠ ≥95% (highly concentrated)' if top10_c >= 95 else '<95%'}",
+                top10_c >= 95)
+    if inconsistent:
+        rb = _badge("⚠ shares exceed supply — LP/burn double-count likely (source data inconsistent)",
+                    True)
+    else:
+        rb = _badge(f"Retail: {retail_c:.1f}% · {'⚠ <1% (negligible)' if retail_c < 1 else '≥1%'}",
+                    retail_c < 1)
     hc = h.get("holder_count")
     hc_badge = (f' <span class="badge" style="color:#42505e;background:#eef2f6">'
                 f'{hc:,} holders</span>' if hc else "")
@@ -810,6 +852,8 @@ def _donut_holders(rec, h, chain=None) -> str:
         labels.append("Retail (rest)")
         values.append(retail)
     top10 = h.get("top10_share")
+    if top10 is not None:
+        top10 = min(max(top10, 0.0), 100.0)   # GoPlus can exceed 100% (see _holders_panel)
     center = f"Top-10<br>{top10:.0f}%" if top10 is not None else None
     suffix = f"-{CG_PLATFORM_TO_BMAPS.get(chain, chain)}" if chain else ""
     return _donut(f"dh-{rec['symbol'].lower()}{suffix}", labels, values,
@@ -967,10 +1011,14 @@ def _detail(rec, platforms) -> str:
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
   {_holders_block(rec, platforms)}
 </section></main>"""
+    title = f"{rec.get('name', sym)} ({sym}) — Manipulated"
+    desc = (f"{rec.get('name', sym)} ({sym}) on the Manipulated watchlist — price history, "
+            f"per-venue perp OI & funding, OI/volume trend, supply and top holders.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta(title, desc)}'
             f'<title>{name} ({html.escape(sym)}) — Manipulated</title>'
-            f'<style>{RCSS}{EXTRA_CSS}</style>'
+            f'<link rel="stylesheet" href="style.css">'
             f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
             f'<script src="../report/plotly.min.js"></script></head><body>{body}'
             f'{_PLOT_RESIZE_JS}</body></html>')
@@ -992,22 +1040,34 @@ def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
     rows = "\n".join(_list_row(r) for r in recs)
+    reactions_n = len(list((HERE / "listings").glob("*.json")))
+    fm = HERE / "funnel" / "funnel_master.json"
+    try:
+        funnel_n = len(json.loads(fm.read_text(encoding="utf-8")))
+    except Exception:
+        funnel_n = None
+    react_lbl = f"Binance Alpha &amp; Perps ({reactions_n})" if reactions_n else "Binance Alpha &amp; Perps"
+    fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
     body = f"""
 <header><h1>Manipulated</h1>
-<nav class="topnav"><a href="../report/index.html">Binance Alpha &amp; Perps</a>
-<a href="../funnel/report/index.html">CEX → Korea</a>
+<nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
+<a href="../funnel/report/index.html">{fun_lbl}</a>
 <a class="active" href="index.html">Manipulated ({len(recs)})</a></nav>
-<p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour</p></header>
+<p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour · updated {build_stamp()} UTC</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
+  {_spark_defs()}
   <main class="grid">{tiles}</main>
   <div class="listwrap"><table class="list" id="ltab"><thead><tr>{head}</tr></thead>
   <tbody>{rows}</tbody></table></div>
 </div>
 {JS}"""
+    desc = ("Manipulated-token watchlist — tokens propped to extreme FDV: price history, "
+            "per-venue perp open interest, funding, OI/volume trend and holder concentration.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'<title>Manipulated</title><style>{RCSS}{EXTRA_CSS}</style></head>'
+            f'{page_meta("Manipulated — ListingLabs", desc)}'
+            f'<title>Manipulated</title><link rel="stylesheet" href="style.css"></head>'
             f'<body>{body}</body></html>')
 
 
@@ -1137,10 +1197,14 @@ let _v0='grid';try{_v0=localStorage.getItem(VIEW_KEY)||'grid';}catch(e){}
 setView(_v0=='list'?'list':'grid',false);
 const ltab=document.getElementById('ltab');
 if(ltab){const tb=ltab.querySelector('tbody');
- ltab.querySelectorAll('th').forEach((th,i)=>{let asc=false;th.addEventListener('click',()=>{
+ ltab.querySelectorAll('th').forEach((th,i)=>{let asc=false;
+  th.tabIndex=0;th.setAttribute('role','button');th.setAttribute('aria-label','Sort by '+th.textContent);
+  th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();th.click();}});
+  th.addEventListener('click',()=>{
   const rs=[...tb.rows];rs.sort((a,b)=>{const x=a.cells[i].dataset.s??a.cells[i].textContent,y=b.cells[i].dataset.s??b.cells[i].textContent;
   const nx=parseFloat(x),ny=parseFloat(y);const c=(!isNaN(nx)&&!isNaN(ny))?nx-ny:(''+x).localeCompare(y);return asc?c:-c;});
-  asc=!asc;ltab.querySelectorAll('th').forEach(h=>h.classList.remove('sorted'));th.classList.add('sorted');
+  const applied=asc?'asc':'desc';asc=!asc;
+  ltab.querySelectorAll('th').forEach(h=>h.classList.remove('sorted','asc','desc'));th.classList.add('sorted',applied);
   rs.forEach(r=>tb.appendChild(r));});});}
 apply();
 </script>"""
@@ -1162,6 +1226,9 @@ def main():
                   key=lambda r: (_tge_dt(r).timestamp() if _tge_dt(r) else float("-inf")),
                   reverse=True)
     SITE.mkdir(parents=True, exist_ok=True)
+    # ONE shared stylesheet instead of ~35KB of CSS inlined into every page —
+    # cached across the index + all detail pages.
+    (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     for r in recs:
         (SITE / f"{r['symbol'].lower()}.html").write_text(_detail(r, platforms), encoding="utf-8")

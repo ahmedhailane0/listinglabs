@@ -5,12 +5,21 @@ import html, json, statistics as st
 from datetime import date
 from pathlib import Path
 
+import sys as _sys
+_sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # make lib./build. importable
+from build.build_listing_report import page_meta, build_stamp  # shared CSP/OG head + stamp
+
 HERE = Path(__file__).parent
 OUT = HERE.parent / "Listinglabs" / "funnel" / "report"
 OUT.mkdir(parents=True, exist_ok=True)
 M = json.loads((HERE / "funnel_master.json").read_text(encoding="utf-8"))
 # Token count of the sibling "Listing Reactions" report, for the cross-nav.
 REACTIONS_N = len(list((HERE.parent / "listings").glob("*.json")))
+try:
+    SCAMS_N = len(json.loads((HERE.parent.parent / "cache" / "scam_data.json")
+                             .read_text(encoding="utf-8")))
+except Exception:
+    SCAMS_N = None
 M.sort(key=lambda x: x["alpha_date"])
 
 
@@ -124,12 +133,16 @@ def findings_block():
 
 def index_html():
     head = "".join(f'<th data-i="{i}">{lbl}</th>' for i, (_k, lbl, _ki) in enumerate(COLS)) + '<th>KR</th>'
+    scam_lbl = f"Manipulated ({SCAMS_N})" if SCAMS_N else "Manipulated"
+    desc = (f"Alpha → Binance Perp → Coinbase → Korea funnel study: {len(M)} tokens "
+            f"with listing-to-listing timing gaps and FDV-at-listing.")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{page_meta("CEX → Korea funnel — ListingLabs", desc, favicon_rel="../../favicon.svg")}
 <title>Alpha→Perp→Coinbase→Korea funnel</title><style>{CSS}</style></head><body>
 <header><h1>CEX → Korea <span style="opacity:.6;font-weight:400">· Binance Alpha → Perp → Coinbase → Korea</span></h1>
-<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">Manipulated</a></nav>
-<p>{len(M)} tokens · 2025-01-01 → today · click a token for its timing detail</p></header>
+<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">{scam_lbl}</a></nav>
+<p>{len(M)} tokens · 2025-01-01 → today · click a token for its timing detail · updated {build_stamp()} UTC</p></header>
 {findings_block()}
 <section class="tablewrap"><h3>Funnel table <span class="hint">(click a header to sort)</span></h3>
 <table id="ft"><thead><tr>{head}</tr></thead><tbody>
@@ -150,8 +163,11 @@ def detail_html(m):
             ("Coinbase → Korea", m["days_coinbase_to_korean"]), ("Perp → Korea", m["days_perp_to_korean"])]
     lag_html = "".join(f'<div class="lag"><span class="k">{html.escape(k)}</span><span class="v">{("—" if v is None else str(v)+"d")}</span></div>' for k, v in lags)
     cmc = f'<a href="https://coinmarketcap.com/currencies/{m["cmc_slug"]}/" target="_blank">CoinMarketCap ↗</a>' if m.get("cmc_slug") else ""
+    _desc = (f"{m.get('name') or m['symbol']} ({m['symbol']}) in the CEX → Korea funnel — "
+             f"venue listing dates and day-lags from Binance Alpha to Korea.")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{page_meta(f"{m['symbol']} — funnel", _desc, favicon_rel="../../favicon.svg")}
 <title>{html.escape(m['symbol'])} — funnel</title><style>{CSS}</style></head><body>
 <header><a class="back" href="index.html">← all {len(M)} tokens</a></header>
 <main class="detail"><div class="info"><h2>{html.escape(m.get('name') or m['symbol'])} <span class="sym">{html.escape(m['symbol'])}</span></h2>

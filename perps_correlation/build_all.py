@@ -27,11 +27,35 @@ ZIP_BASE = HERE / "Listinglabs"            # -> Listinglabs.zip
 
 REACTIONS_N = len(list((HERE / "listings").glob("*.json")))
 FUNNEL_N = len(json.loads((HERE / "funnel" / "funnel_master.json").read_text(encoding="utf-8")))
+try:
+    SCAMS_N = len(json.loads((HERE.parent / "cache" / "scam_data.json").read_text(encoding="utf-8")))
+except Exception:
+    SCAMS_N = None
+
+# One favicon for the whole site, written to Listinglabs/favicon.svg; every page
+# references it relatively (report/: ../favicon.svg, funnel/report/: ../../…).
+FAVICON_SVG = (
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+    '<rect width="64" height="64" rx="14" fill="#1f4e79"/>'
+    '<polyline points="10,44 22,34 30,40 42,20 54,28" fill="none" stroke="#fff" '
+    'stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'
+    '<circle cx="42" cy="20" r="4.5" fill="#e67e22"/></svg>')
 
 
 def landing() -> str:
+    from datetime import datetime, timezone
+    from build.build_listing_report import page_meta
+    stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    scam_n = f"{SCAMS_N} tokens" if SCAMS_N else "tracker"
+    meta = page_meta(
+        "ListingLabs — Binance Alpha listing studies",
+        "How Binance-Alpha-listed tokens react to exchange listings: reaction "
+        "charts, the CEX → Korea funnel, and a manipulated-token watchlist. "
+        "Self-updating every ~20 minutes.",
+        favicon_rel="favicon.svg")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+{meta}
 <title>Binance Alpha — Listing Studies</title><style>
 *{{box-sizing:border-box}}body{{font:15px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f4f6f9;color:#1d2733}}
 header{{padding:28px;background:#1f4e79;color:#fff}}header h1{{margin:0;font-size:22px}}header p{{margin:6px 0 0;opacity:.85}}
@@ -66,14 +90,14 @@ img,svg{{max-width:100%;height:auto}}
     <span class="go">Open funnel →</span>
   </a>
   <a class="card" href="scams/index.html">
-    <h2>Manipulated</h2><span class="n">tracker</span>
+    <h2>Manipulated</h2><span class="n">{scam_n}</span>
     <p>Hand-maintained watchlist of tokens with notes on FDV behaviour
        (sustained &gt;$1B, brief spikes, uptrends). Sortable, with an
        FDV&nbsp;&gt;&nbsp;$1B filter.</p>
     <span class="go">Open watchlist →</span>
   </a>
 </div></div>
-<footer>Built by build_all.py — single-folder site. Reactions filter backfilled with
+<footer>Updated {stamp} UTC · rebuilds every ~20 min. Reactions filter backfilled with
 daily-resolution earliest-candle listing dates across all major CEX venues; per-token
 current open interest from CoinMarketCap.</footer>
 </body></html>"""
@@ -97,6 +121,7 @@ def main():
     _run(HERE / "build" / "build_scams.py")                    # -> Listinglabs/scams
 
     (SITE / "index.html").write_text(landing(), encoding="utf-8")
+    (SITE / "favicon.svg").write_text(FAVICON_SVG, encoding="utf-8")
     print(f"wrote landing: reactions={REACTIONS_N}, funnel={FUNNEL_N}", flush=True)
 
     if "--no-zip" not in sys.argv:

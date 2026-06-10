@@ -47,7 +47,14 @@ SHORT = {"Binance Alpha": "Alpha", "Binance Spot": "BN Spot", "Binance Perp": "P
          "Bithumb": "Bithumb", "Coinone": "Coinone"}
 
 
+from functools import lru_cache
+
+
+@lru_cache(maxsize=None)
 def _load_rows(token: str) -> list | None:
+    """Cached per process: a build touches each token's kline JSON ~6 times
+    (sparkline, list row, metrics ×2, chart, annotations) — parse it once.
+    Callers must treat the returned list as read-only."""
     p = CACHE / f"{token.lower()}_klines_5m_alpha.json"
     if not p.exists():
         return None

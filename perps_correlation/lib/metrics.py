@@ -44,6 +44,28 @@ def _price_at(rows: list, t: datetime) -> float | None:
     return prev
 
 
+# A checkpoint price is only honest if a candle exists NEAR the target. Cached
+# histories can have multi-month holes (e.g. a token added late whose middle
+# months no free source still serves) — without a cap, "+30d" would silently
+# return a candle from months later and label it as the 30-day mark.
+CHECKPOINT_TOL = timedelta(days=2)
+
+
+def _price_near(rows: list, t: datetime, tol: timedelta = CHECKPOINT_TOL) -> float | None:
+    """Close of the candle nearest to t, or None when the nearest candle is
+    further than `tol` away (the target falls inside a data gap)."""
+    tms = int(t.timestamp() * 1000)
+    tol_ms = int(tol.total_seconds() * 1000)
+    best_c, best_d = None, None
+    for ts, _o, _h, _l, c in rows:
+        d = abs(ts - tms)
+        if best_d is None or d < best_d:
+            best_c, best_d = c, d
+        if ts > tms + tol_ms:
+            break                      # rows are ascending; it only gets worse
+    return best_c if (best_d is not None and best_d <= tol_ms) else None
+
+
 def reaction(cfg: dict) -> dict | None:
     rows = _load_rows(cfg["token"])
     if not rows:
@@ -78,7 +100,7 @@ def reaction(cfg: dict) -> dict | None:
     for label, delta in CHECKPOINTS:
         target = launch + delta
         if target <= last_t:
-            px = _price_at(rows, target)
+            px = _price_near(rows, target)
             if px:
                 checks.append((label, (px / launch_px - 1) * 100))
 
