@@ -306,13 +306,10 @@ function mount(id, cfg){
   }
   // Default = full history fitted to the frame ("All", like CoinMarketCap).
   render(active); toAll();
-  // Keep the chart sized to its (responsive) container. autoSize handles most of it;
-  // this is a belt-and-braces resize for browsers/timing where the first measure is
-  // stale. (The y-axis-labels-invisible bug was actually the page's global
-  // `table{table-layout:fixed}` leaking into LWC's internal table — fixed in CSS.)
-  if(window.ResizeObserver){
-    new ResizeObserver(function(){ if(el.clientWidth){ chart.resize(el.clientWidth, el.clientHeight); } }).observe(el);
-  }
+  // Sizing is autoSize:true only — LWC ignores chart.resize() when autoSize is on,
+  // so a manual ResizeObserver here would be a no-op. (The y-axis-labels-invisible
+  // bug was the page's global `table{table-layout:fixed}` leaking into LWC's
+  // internal table — fixed in CSS.)
 
   // Crosshair tooltip (date + price), floating inside the wrap.
   var wrap = el.parentElement, tip = document.getElementById(id+'-tip');
