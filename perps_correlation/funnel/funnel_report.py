@@ -87,6 +87,36 @@ def _alfdv_bucket(v):
     return ">1B"
 
 
+def _lag_strip(label, pairs, color="#1f6fb2"):
+    """One lag-distribution row as inline SVG: a dot per token at its day-lag
+    (exact value + symbol in the native tooltip), a red median line, min/max
+    axis labels. Pure build-time SVG — values are the same day-lags shown in
+    the table, never binned or smoothed."""
+    pairs = [(s, d) for s, d in pairs if d is not None]
+    if len(pairs) < 2:
+        return ""
+    vals = [d for _s, d in pairs]
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1
+    X0, X1, W = 14, 546, 560
+    x = lambda d: X0 + (d - lo) / span * (X1 - X0)
+    med = st.median(vals)
+    dots = "".join(
+        f'<circle cx="{x(d):.1f}" cy="15" r="3.5" fill="{color}" fill-opacity=".5">'
+        f'<title>{html.escape(s)} — {d:g}d</title></circle>'
+        for s, d in sorted(pairs, key=lambda p: p[1]))
+    return f"""
+  <div class="lagrow"><span class="laglbl">{html.escape(label)}</span>
+    <svg viewBox="0 0 {W} 30" class="lagsvg" role="img" aria-label="{html.escape(label)} lag distribution">
+      <line x1="{X0}" y1="15" x2="{X1}" y2="15" stroke="#dde4ec" stroke-width="1"/>
+      {dots}
+      <line x1="{x(med):.1f}" y1="3" x2="{x(med):.1f}" y2="27" stroke="#c0392b" stroke-width="2"><title>median {med:g}d</title></line>
+      <text x="{X0}" y="28.5" class="lagax">{lo:g}d</text>
+      <text x="{X1}" y="28.5" class="lagax" text-anchor="end">{hi:g}d</text>
+    </svg>
+    <span class="lagsum">median {med:g}d · n={len(pairs)}</span></div>"""
+
+
 def findings_block():
     new = [m for m in M if m.get("new_launch")]
     majors = [m for m in M if not m.get("new_launch")]
@@ -109,6 +139,24 @@ def findings_block():
     albk = " · ".join(f"{k} {alb.get(k,0)}" for k in ["<100M","100–300M","300M–1B",">1B"])
     curbk = " · ".join(f"{k} {curb.get(k,0)}" for k in ["<100M","100–300M","300M–1B",">1B"])
     ge100_al = sum(v for k, v in alb.items() if k != "<100M" and k != "unknown")
+    # Lag-distribution strips: SAME filters as the medians quoted above, with
+    # token symbols attached so each dot is traceable.
+    strips = "".join([
+        _lag_strip("Alpha → Binance Perp",
+                   [(m["symbol"], m.get("days_alpha_to_perp")) for m in new]),
+        _lag_strip("Coinbase → Binance Perp (Coinbase led)",
+                   [(m["symbol"], m["days_coinbase_to_perp"]) for m in new
+                    if (m["days_coinbase_to_perp"] or -1) > 0], color="#6aa84f"),
+        _lag_strip("Binance Perp → Korea",
+                   [(m["symbol"], m["days_perp_to_korean"]) for m in new
+                    if (m["days_perp_to_korean"] or -999) >= 0], color="#9c6ade"),
+        _lag_strip("Coinbase → Korea",
+                   [(m["symbol"], m["days_coinbase_to_korean"]) for m in new
+                    if (m["days_coinbase_to_korean"] or -999) >= 0], color="#d98c5f"),
+    ])
+    lag_viz = (f'<h3>Lag distributions — new launches <span class="hint">'
+               f'(each dot = one token, hover for symbol · red line = median)</span></h3>'
+               f'<div class="lagviz">{strips}</div>') if strips else ""
     return f"""
 <section class="findings">
   <h2>Findings — {len(M)} tokens completed Alpha → Binance Perp → Coinbase → Korea (2025–today)</h2>
@@ -123,6 +171,7 @@ def findings_block():
     <li><b>FDV at listing (perp price at onboard × total supply):</b> {albk}. <b>{ge100_al}/{len(new)} were ≥$100M at listing</b>, mass at $300M–1B+. <span class="ref">✓ strongly confirms "Binance favors $100M–1B"</span></li>
     <li><b>Why current FDV misleads:</b> same tokens <i>today</i>: {curbk}. Post-listing dumps push them into &lt;$100M — so a current-FDV snapshot would have <i>falsely rejected</i> the finding.</li>
   </ul>
+  {lag_viz}
   <h3>Pooled — all {len(M)} (directional only)</h3>
   <ul>
     <li>Perp→Korea {summ(p2k_all)}; Coinbase→Korea {summ(cb2k_all)} — these match the reference's ~22–25d medians, but only because <b>re-featured majors drag the tail up</b>. Treat as directional, not a clean test.</li>
@@ -187,6 +236,14 @@ section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;te
 .cav{color:#8a96a3;font-size:12px;font-style:italic}.findings .sub{color:#42505e;font-size:13px;margin:2px 0 6px}
 .findings h3{margin:12px 0 4px;color:#1f4e79}
 .hint{font-weight:400;text-transform:none;color:#aab3bd;font-size:11px}
+/* lag-distribution strips (inline SVG, one dot per token) */
+.lagviz{margin:4px 0 8px}
+.lagrow{display:flex;align-items:center;gap:12px;padding:3px 0}
+.laglbl{flex:0 0 250px;font-size:12.5px;color:#42505e;font-weight:600}
+.lagsvg{flex:1 1 auto;min-width:0;height:30px;display:block}
+.lagax{font-size:9.5px;fill:#8a96a3}
+.lagsum{flex:0 0 auto;font-size:12px;color:#6b7785;white-space:nowrap}
+@media(max-width:700px){.lagrow{flex-wrap:wrap}.laglbl{flex-basis:100%}.lagsum{order:3}}
 table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff}
 th{position:sticky;top:0;background:#eef2f6;text-align:left;padding:6px 8px;border-bottom:2px solid #d6dee6;cursor:pointer;white-space:nowrap}
 td{padding:5px 8px;border-bottom:1px solid #eef2f6}td.n{text-align:right;font-variant-numeric:tabular-nums}

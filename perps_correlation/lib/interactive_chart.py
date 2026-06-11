@@ -360,27 +360,34 @@ function mount(id, cfg){
 
 
 def timeseries_html(div_id: str, series: list[dict], height: int = 520,
-                    ranges: list[tuple] | None = None) -> str:
+                    ranges: list[tuple] | None = None, sync: str | None = None,
+                    sync_main: int = 0) -> str:
     """Generic Lightweight Charts time-series embed, reused by other reports for
     their price / value-over-time *trading* charts (e.g. the Scam Watchlist price
-    chart and OI+funding history). Renders one or more line/area series, optionally
-    on dual (left/right) price scales, with a crosshair tooltip and auto-resize.
+    chart and OI+funding history). Renders one or more line/area/histogram series,
+    optionally on dual (left/right) price scales or an overlay scale, with a
+    crosshair tooltip and auto-resize.
 
     `ranges`: optional [(label, days|None), …] -> a toolbar of range buttons (e.g.
     1M / 3M / All), giving the same kind of zoom controls the listing-reaction chart
     has. (These series are daily, so a 5m/1h resolution switcher doesn't apply — a
     range selector is the equivalent control.) None days = fit all.
 
+    `sync`: charts on the same page passing the same group name get a SHARED
+    crosshair + visible range (hover one, the line appears on the other).
+
     series: list of dicts, each:
       {"data": [[t_seconds, value], ...],   # ascending; gaps allowed (omit points)
-       "kind": "area" | "line",
+       "kind": "area" | "line" | "hist",    # hist = histogram bars
        "color": "#1f4e79",
-       "scale": "right" | "left",           # which price axis
+       "scale": "right" | "left" | "<id>",  # <id> = overlay scale (no axis labels)
+       "margins": {"top": 0.72, "bottom": 0},  # optional scale margins (pin bars low)
        "name": "Price",                      # tooltip label
-       "fmt":  {"kind": "usd"|"usdCompact"|"percent"|"price", "dec": 4},
+       "fmt":  {"kind": "usd"|"usdCompact"|"percent"|"price"|"num", "dec": 4},
        "fill": True}                         # area only
     """
-    cfg_js = json.dumps({"height": height, "series": series, "ranges": ranges or []},
+    cfg_js = json.dumps({"height": height, "series": series, "ranges": ranges or [],
+                         "sync": sync, "sync_main": sync_main},
                         separators=(",", ":"))
     toolbar = ""
     if ranges:
@@ -420,6 +427,7 @@ function mountTS(id, cfg){
     if(f.kind==='usdCompact') return usdC(v);
     if(f.kind==='usd') return '$'+Math.round(v).toLocaleString();
     if(f.kind==='percent') return v.toFixed(f.dec)+'%';
+    if(f.kind==='num') return v.toFixed(f.dec!=null?f.dec:2);
     return '$'+v.toFixed(f.dec);
   }
   function minMove(f){ f=f||{}; if(f.kind==='usd'||f.kind==='usdCompact') return 1;
@@ -460,7 +468,9 @@ function mountTS(id, cfg){
 
   var built = [];
   cfg.series.forEach(function(s){
-    var scaleId = (s.scale==='left') ? 'left' : 'right';
+    // 'left'/'right' = the visible axes; any other id = an OVERLAY scale
+    // (no axis labels — used to pin volume bars under the main series).
+    var scaleId = s.scale || 'right';
     // 'price' kind uses the built-in price format (type:'price'), which generates the
     // y-axis tick labels — a 'custom' format leaves the axis blank. Other kinds keep
     // a custom formatter (they pair with localization.priceFormatter for the axis).
@@ -473,14 +483,55 @@ function mountTS(id, cfg){
       ser = chart.addAreaSeries({ lineColor:s.color, lineWidth:2,
         topColor:'rgba(31,78,121,0.18)', bottomColor:'rgba(31,78,121,0.02)',
         priceScaleId:scaleId, priceFormat:pf, priceLineVisible:false });
+    } else if(s.kind==='hist'){
+      ser = chart.addHistogramSeries({ color:s.color,
+        priceScaleId:scaleId, priceFormat:pf, priceLineVisible:false,
+        lastValueVisible:false });
     } else {
       ser = chart.addLineSeries({ color:s.color, lineWidth:2,
         priceScaleId:scaleId, priceFormat:pf, priceLineVisible:false });
     }
+    if(s.margins){ ser.priceScale().applyOptions({ scaleMargins:s.margins }); }
     ser.setData(clean(s.data));
     built.push({ s:ser, def:s });
   });
   chart.timeScale().fitContent();
+
+  // Cross-chart sync (cfg.sync = group name): hovering one chart shows the
+  // crosshair at the same time on its siblings, and pan/zoom follows. The
+  // group guard stops the echo loop.
+  if(cfg.sync){
+    var REG = window.__tssync = window.__tssync || {};
+    var G = REG[cfg.sync] = REG[cfg.sync] || { charts:[], busy:false, rbusy:false };
+    var mi = cfg.sync_main || 0;        // which series anchors the shared crosshair
+    var map = {};
+    (cfg.series[mi] && cfg.series[mi].data || []).forEach(function(p){
+      if(p[1]!==null && p[1]!==undefined) map[p[0]] = p[1];
+    });
+    var me = { chart:chart, s0:(built[mi]&&built[mi].s), map:map };
+    G.charts.push(me);
+    chart.subscribeCrosshairMove(function(p){
+      if(G.busy) return;
+      G.busy = true;
+      G.charts.forEach(function(o){
+        if(o===me) return;
+        if(p && p.time && o.map[p.time]!==undefined && o.s0){
+          o.chart.setCrosshairPosition(o.map[p.time], p.time, o.s0);
+        } else {
+          o.chart.clearCrosshairPosition();
+        }
+      });
+      G.busy = false;
+    });
+    chart.timeScale().subscribeVisibleLogicalRangeChange(function(r){
+      if(G.rbusy || !r) return;
+      G.rbusy = true;
+      G.charts.forEach(function(o){
+        if(o!==me){ o.chart.timeScale().setVisibleLogicalRange(r); }
+      });
+      G.rbusy = false;
+    });
+  }
 
   var wrap = el.parentElement;
   // Range buttons (e.g. 1M / 3M / All) — the zoom controls equivalent to the
@@ -523,57 +574,3 @@ function mountTS(id, cfg){
   // Sizing handled by autoSize:true (above).
 }
 """
-
-
-def _autofit_js(div_id: str) -> str:
-    """Plotly y-axis autofit glue, kept for the OTHER reports that still render with
-    Plotly (e.g. build_scams.py's OI/funding history charts). The listing reaction
-    charts no longer use this — they're rendered by Lightweight Charts above. On
-    x-zoom/pan, rescale the y-axis to the data in view so zooming reveals detail
-    instead of just stretching the chart horizontally."""
-    return f"""
-<script>
-(function() {{
-  var gd = document.getElementById("{div_id}");
-  if (!gd) return;
-  var lock = false;
-  function lineIdx() {{
-    for (var i = 0; i < gd.data.length; i++) {{
-      var d = gd.data[i];
-      if (d.mode === "lines" && d.visible !== false && d.visible !== "legendonly") return i;
-    }}
-    return 0;
-  }}
-  function fitY() {{
-    var tr = gd.data[lineIdx()];
-    var ax = gd.layout.xaxis;
-    if (!tr || !ax || !ax.range) return;
-    var lo = new Date(ax.range[0]).getTime(), hi = new Date(ax.range[1]).getTime();
-    var ys = [];
-    for (var k = 0; k < tr.x.length; k++) {{
-      var tx = new Date(tr.x[k]).getTime();
-      if (tx >= lo && tx <= hi && tr.y[k] != null) ys.push(tr.y[k]);
-    }}
-    if (ys.length < 2) return;
-    var mn = Math.min.apply(null, ys), mx = Math.max.apply(null, ys);
-    var pad = (mx - mn) * 0.10 || mx * 0.02;
-    lock = true;
-    Plotly.relayout(gd, {{"yaxis.range": [mn - pad, mx + pad]}}).then(function() {{ lock = false; }});
-  }}
-  function attach() {{
-    if (!gd.on) {{ setTimeout(attach, 60); return; }}
-    gd.on("plotly_relayout", function(e) {{
-      if (lock) return;
-      if ("xaxis.autorange" in e) return;            // double-click reset: let it auto
-      if (("xaxis.range[0]" in e) || ("xaxis.range" in e)) fitY();
-    }});
-    gd.on("plotly_restyle", function() {{             // timeframe switch while zoomed
-      var ax = gd.layout.xaxis;
-      if (ax && ax.range && ax.autorange !== true) fitY();
-    }});
-  }}
-  attach();
-  if (gd.once) gd.once("plotly_afterplot", function() {{ try {{ fitY(); }} catch (e) {{}} }});
-  else setTimeout(function() {{ try {{ fitY(); }} catch (e) {{}} }}, 200);
-}})();
-</script>"""

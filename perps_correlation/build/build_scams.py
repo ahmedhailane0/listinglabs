@@ -16,8 +16,6 @@ import json
 import math
 from pathlib import Path
 
-import plotly.graph_objects as go
-
 import sys as _sys
 from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch./build. importable from anywhere
@@ -296,7 +294,7 @@ def _tile(rec) -> str:
       {_sparkline(sym)}
       <div class="tile-body">
         <div class="tile-head"><span class="name">{html.escape(rec.get('name', sym))}</span>
-          <span class="sym">{html.escape(sym)}</span></div>
+          <span class="sym">{html.escape(sym)}</span>{_flag_chips(rec)}</div>
         <div class="tile-meta">
           <span><b>Price</b> {fmt_subscript_price(px) if px else '—'}</span>
           <span><b>FDV</b> {_usd(fdv)}</span>
@@ -307,8 +305,19 @@ def _tile(rec) -> str:
 
 
 # Same columns as the Listing Reactions list view (performance from price
-# history) plus the watchlist-specific Memo (the $1B-FDV behaviour notes).
-LIST_COLS = ["#", "Token", "TGE", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "Funding", "Memo"]
+# history) plus OI/Vol (the parked-positions screener) and the watchlist-
+# specific Memo (the $1B-FDV behaviour notes).
+LIST_COLS = ["#", "Token", "TGE", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "OI/Vol", "Funding", "Memo"]
+
+
+def _ratio_cell(rec) -> str:
+    """OI/Vol ratio cell: plain number, red when it crosses the parked-OI
+    threshold. Sortable so the most-parked tokens rise to the top."""
+    r = _screen(rec)["ratio"]
+    if r is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    cls = " neg" if r >= FLAG_OI_VOL else ""
+    return f'<td class="n{cls}" data-s="{r:.4f}">{r:.2f}</td>'
 
 
 def _tge_cell(rec) -> str:
@@ -353,6 +362,7 @@ def _list_row(rec) -> str:
         f"{_num_cell(p.get('p30'))}{_num_cell(p.get('p90'))}"
         f"{_num_cell(fdv, pct=False, color=False)}{_num_cell(mc, pct=False, color=False)}"
         f"{_num_cell(oi, pct=True, color=False)}"
+        f"{_ratio_cell(rec)}"
         f"{_funding_cell(rec)}"
         f'<td class="memo"><span>{memo or "—"}</span></td></tr>')
 
@@ -419,10 +429,55 @@ ADDR_EXPLORERS = {
 }
 
 
+_PERP_CACHE: dict = {}
+
+
 def _load_perp(sym):
-    p = PERP / f"{sym.upper()}.json"
+    sym = sym.upper()
+    if sym in _PERP_CACHE:
+        return _PERP_CACHE[sym]
+    p = PERP / f"{sym}.json"
     perp = json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
-    return _allowed_perp(perp)
+    _PERP_CACHE[sym] = _allowed_perp(perp)
+    return _PERP_CACHE[sym]
+
+
+# Screening thresholds (documented in docs/OI_VOLUME_METHODOLOGY.md): OI/vol
+# ≥ 0.5 = open positions are half a day's trading — parked OI, squeeze fuel;
+# |annualized OI-weighted funding| ≥ 100%/yr = someone is paying heavily to
+# hold a position/the price. Either is the watchlist's manipulation tell.
+FLAG_OI_VOL = 0.5
+FLAG_FUNDING_ANN = 1.0
+
+
+def _screen(rec) -> dict:
+    """Tracked-venue OI/vol ratio + OI-weighted annualized funding + ⚠ flags,
+    for the list column and the tile/detail chips. The Others row is excluded
+    from both sides (it has no volume data)."""
+    perp = _load_perp(rec["symbol"])
+    venues = [v for v in ((perp or {}).get("venues") or []) if not v.get("is_others")]
+    oi = sum(v["oi_usd"] for v in venues if v.get("oi_usd"))
+    vol = sum(v["vol24h_usd"] for v in venues if v.get("vol24h_usd"))
+    ratio = (oi / vol) if (oi and vol) else None
+    num = sum(v["funding_annualized"] * v["oi_usd"] for v in venues
+              if v.get("funding_annualized") is not None and v.get("oi_usd"))
+    den = sum(v["oi_usd"] for v in venues
+              if v.get("funding_annualized") is not None and v.get("oi_usd"))
+    fund_w = (num / den) if den else None
+    flags = []
+    if ratio is not None and ratio >= FLAG_OI_VOL:
+        flags.append(("parked OI", f"OI is {ratio:.2f}× the 24h volume — positions "
+                                   f"held against thin trading"))
+    if fund_w is not None and abs(fund_w) >= FLAG_FUNDING_ANN:
+        flags.append(("extreme funding", f"OI-weighted funding ≈ {fund_w * 100:+.0f}%/yr"))
+    return {"ratio": ratio, "fund_w": fund_w, "flags": flags}
+
+
+def _flag_chips(rec) -> str:
+    chips = "".join(
+        f'<span class="flag" title="{html.escape(tip)}">⚠ {html.escape(label)}</span>'
+        for label, tip in _screen(rec)["flags"])
+    return f'<span class="flags">{chips}</span>' if chips else ""
 
 
 def _allowed_perp(perp):
@@ -678,14 +733,14 @@ def _holder_picker_chains(rec, platforms) -> list:
 
 
 def _holders_switch_js(sym) -> str:
+    """Chain-picker panel toggle. Pure display switching — the donuts are static
+    SVG now, nothing needs a resize call when a panel becomes visible."""
     s = sym.lower()
     return ("<script>(function(){"
             f"var w=document.getElementById('hwrap-{s}');if(!w)return;"
             "var ps=[].slice.call(w.querySelectorAll('.hpanel'));"
-            "function act(i){ps.forEach(function(p){var on=(+p.dataset.idx===i);"
-            "p.style.display=on?'':'none';if(on&&window.Plotly){"
-            "p.querySelectorAll('.plotly-graph-div').forEach(function(d){"
-            "try{Plotly.Plots.resize(d);}catch(e){}});}});}"
+            "function act(i){ps.forEach(function(p){"
+            "p.style.display=(+p.dataset.idx===i)?'':'none';});}"
             f"var s=document.getElementById('hsel-{s}');"
             "if(s)s.addEventListener('change',function(){act(+s.value);});act(0);"
             "})();</script>")
@@ -711,126 +766,111 @@ def _holders_block(rec, platforms) -> str:
             f'<div class="hpanels">{"".join(panels)}</div>{_holders_switch_js(sym)}</div>')
 
 
-# ── time-series + donut charts ────────────────────────────────────────────────
+# ── time-series + donut charts (Lightweight Charts + inline SVG; no Plotly) ──
 
-_CHART_FONT = dict(family="Segoe UI, -apple-system, Roboto, sans-serif", size=12, color="#1d2733")
 # slice palette (holders/venues/supply): muted, report-consistent.
 _DONUT_COLORS = ["#1f4e79", "#2e6da4", "#5b9bd5", "#8ab6e0", "#9c6ade", "#d98c5f",
                  "#e0b35f", "#6aa84f", "#c0392b", "#7f8c9a", "#c5ccd3"]
 
+_HIST_RANGES = [("1M", 30), ("3M", 90), ("All", None)]
+
+
+def _hist_series(sym: str) -> list:
+    p = PERP_HIST / f"{sym.upper()}.json"
+    if not p.exists():
+        return []
+    return [pt for pt in json.loads(p.read_text(encoding="utf-8")) if pt.get("total_oi_usd")]
+
 
 def _oi_funding_history_chart(sym: str) -> str:
     """Dual-axis time series of total perp OI (left) and OI-weighted funding rate
-    (right), accumulated by fetch_perp_markets into cache/perp_history. Sparse at
-    first; fills in as the cron logs snapshots."""
-    p = PERP_HIST / f"{sym.upper()}.json"
-    if not p.exists():
+    (right), accumulated by fetch_perp_markets into cache/perp_history. Rendered
+    with Lightweight Charts (same engine as every other trading chart); crosshair
+    + range synced with the OI/volume chart below it. Values plotted are the raw
+    cache points — the renderer never transforms them (funding ×100 to % only)."""
+    series = _hist_series(sym)
+    if not series:
         return ""
-    series = [pt for pt in json.loads(p.read_text(encoding="utf-8")) if pt.get("total_oi_usd")]
     if len(series) < 2:
         return ('<div class="missing">OI &amp; funding history builds over time — '
                 'a point is logged each refresh; check back after a few cycles.</div>')
-    import datetime as dt
-    xs = [dt.datetime.fromtimestamp(pt["t"], dt.timezone.utc) for pt in series]
-    oi = [pt["total_oi_usd"] for pt in series]
-    fund = [(pt["funding_avg"] * 100 if pt.get("funding_avg") is not None else None)
+    oi = [[pt["t"], pt["total_oi_usd"]] for pt in series]
+    fund = [[pt["t"], (pt["funding_avg"] * 100 if pt.get("funding_avg") is not None else None)]
             for pt in series]
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(x=xs, y=oi, name="Total OI", mode="lines", yaxis="y",
-        line=dict(color="#1f4e79", width=2), fill="tozeroy", fillcolor="rgba(31,78,121,0.07)",
-        hovertemplate="%{x|%b %d %H:%M}  OI <b>$%{y:,.0f}</b><extra></extra>"))
-    fig.add_trace(go.Scatter(x=xs, y=fund, name="Funding (OI-wtd)", mode="lines", yaxis="y2",
-        line=dict(color="#c0392b", width=2), connectgaps=True,
-        hovertemplate="%{x|%b %d %H:%M}  funding <b>%{y:.4f}%</b><extra></extra>"))
-    fig.update_layout(
-        height=320, margin=dict(l=62, r=58, t=12, b=36), font=_CHART_FONT,
-        paper_bgcolor="white", plot_bgcolor="white", template="plotly_white",
-        xaxis=dict(showgrid=False, showline=True, linecolor="#e1e7ee", ticks="outside",
-                   tickcolor="#e1e7ee", tickfont=dict(size=11)),
-        yaxis=dict(title=dict(text="OI (USD)", font=dict(size=11, color="#6b7785")),
-                   tickprefix="$", gridcolor="#eef2f6", zeroline=False, side="left",
-                   tickfont=dict(size=11)),
-        yaxis2=dict(title=dict(text="Funding %", font=dict(size=11, color="#c0392b")),
-                    overlaying="y", side="right", ticksuffix="%", showgrid=False,
-                    zeroline=True, zerolinecolor="#f0d7d3", tickfont=dict(size=11)),
-        hovermode="x unified", dragmode="pan",
-        legend=dict(orientation="h", y=1.14, x=0, font=dict(size=11)))
-    return fig.to_html(full_html=False, include_plotlyjs=False,
-                       div_id=f"oihist-{sym.lower()}",
-                       config={"displayModeBar": False, "responsive": True})
+    return timeseries_html(f"oihist-{sym.lower()}", [
+        {"data": oi, "kind": "area", "color": "#1f4e79", "scale": "left",
+         "name": "Total OI", "fmt": {"kind": "usdCompact"}},
+        {"data": fund, "kind": "line", "color": "#c0392b", "scale": "right",
+         "name": "Funding (OI-wtd)", "fmt": {"kind": "percent", "dec": 4}},
+    ], height=320, ranges=_HIST_RANGES, sync=f"ph-{sym.lower()}")
 
 
 def _oi_volume_history_chart(sym: str) -> str:
     """OI vs 24h-volume time series: total tracked-venue OI (line, left $ axis),
-    24h volume (bars, hidden axis scaled to the lower third) and the OI/volume
-    ratio (line, right axis). Same cache/perp_history series as the OI/funding
-    chart; vol24h_usd points come from fetch_perp_markets live snapshots and the
-    Binance+Bybit daily backfill. High/rising ratio = positions parked against
-    thin real trading — the watchlist's manipulation tell."""
-    p = PERP_HIST / f"{sym.upper()}.json"
-    if not p.exists():
+    24h volume (bars on an overlay scale pinned to the lower third) and the
+    OI/volume ratio (line, right axis). Same cache/perp_history series as the
+    OI/funding chart; ratio = total_oi_usd / vol24h_usd per point, computed at
+    build from the raw cache values. High/rising ratio = positions parked
+    against thin real trading — the watchlist's manipulation tell."""
+    series = _hist_series(sym)
+    if not series:
         return ""
-    series = [pt for pt in json.loads(p.read_text(encoding="utf-8")) if pt.get("total_oi_usd")]
     with_vol = [pt for pt in series if pt.get("vol24h_usd")]
     if len(with_vol) < 2:
         return ('<div class="missing">OI / volume history builds over time — '
                 'volume is logged each refresh; check back after a few cycles.</div>')
-    import datetime as dt
-    xs = [dt.datetime.fromtimestamp(pt["t"], dt.timezone.utc) for pt in series]
-    oi = [pt["total_oi_usd"] for pt in series]
-    vol = [pt.get("vol24h_usd") for pt in series]
-    ratio = [(pt["total_oi_usd"] / pt["vol24h_usd"]) if pt.get("vol24h_usd") else None
-             for pt in series]
-    vmax = max(v for v in vol if v)
-    fig = go.Figure()
-    fig.add_trace(go.Bar(x=xs, y=vol, name="24h volume", yaxis="y3",
-        marker=dict(color="rgba(91,155,213,0.45)", line=dict(width=0)),
-        hovertemplate="%{x|%b %d %H:%M}  vol <b>$%{y:,.0f}</b><extra></extra>"))
-    fig.add_trace(go.Scatter(x=xs, y=oi, name="Total OI", mode="lines", yaxis="y",
-        line=dict(color="#1f4e79", width=2),
-        hovertemplate="%{x|%b %d %H:%M}  OI <b>$%{y:,.0f}</b><extra></extra>"))
-    fig.add_trace(go.Scatter(x=xs, y=ratio, name="OI / 24h vol", mode="lines", yaxis="y2",
-        line=dict(color="#9c6ade", width=2), connectgaps=True,
-        hovertemplate="%{x|%b %d %H:%M}  OI/vol <b>%{y:.2f}</b><extra></extra>"))
-    fig.update_layout(
-        height=320, margin=dict(l=62, r=58, t=12, b=36), font=_CHART_FONT,
-        paper_bgcolor="white", plot_bgcolor="white", template="plotly_white",
-        xaxis=dict(showgrid=False, showline=True, linecolor="#e1e7ee", ticks="outside",
-                   tickcolor="#e1e7ee", tickfont=dict(size=11)),
-        yaxis=dict(title=dict(text="OI (USD)", font=dict(size=11, color="#6b7785")),
-                   tickprefix="$", gridcolor="#eef2f6", zeroline=False, side="left",
-                   tickfont=dict(size=11)),
-        yaxis2=dict(title=dict(text="OI / 24h vol", font=dict(size=11, color="#9c6ade")),
-                    overlaying="y", side="right", showgrid=False, zeroline=False,
-                    rangemode="tozero", tickfont=dict(size=11)),
-        # volume bars live on a hidden axis pinned to the lower third so they
-        # read as context under the OI line instead of dwarfing it
-        yaxis3=dict(overlaying="y", side="right", visible=False,
-                    range=[0, vmax * 3.2]),
-        hovermode="x unified", dragmode="pan", barmode="overlay",
-        legend=dict(orientation="h", y=1.14, x=0, font=dict(size=11)))
-    return fig.to_html(full_html=False, include_plotlyjs=False,
-                       div_id=f"oivol-{sym.lower()}",
-                       config={"displayModeBar": False, "responsive": True})
+    oi = [[pt["t"], pt["total_oi_usd"]] for pt in series]
+    vol = [[pt["t"], pt["vol24h_usd"]] for pt in with_vol]
+    ratio = [[pt["t"], pt["total_oi_usd"] / pt["vol24h_usd"]] for pt in with_vol]
+    return timeseries_html(f"oivol-{sym.lower()}", [
+        # bars first so the OI line draws over them; sync_main=1 anchors the
+        # shared crosshair to the OI line (full time domain).
+        {"data": vol, "kind": "hist", "color": "rgba(91,155,213,0.45)", "scale": "vol",
+         "margins": {"top": 0.72, "bottom": 0}, "name": "24h volume",
+         "fmt": {"kind": "usdCompact"}},
+        {"data": oi, "kind": "line", "color": "#1f4e79", "scale": "left",
+         "name": "Total OI", "fmt": {"kind": "usdCompact"}},
+        {"data": ratio, "kind": "line", "color": "#9c6ade", "scale": "right",
+         "name": "OI / 24h vol", "fmt": {"kind": "num", "dec": 2}},
+    ], height=320, ranges=_HIST_RANGES, sync=f"ph-{sym.lower()}", sync_main=1)
 
 
 def _donut(div_id, labels, values, title, colors=None, center=None, usd=False) -> str:
-    """A single donut (go.Pie, hole=0.58). usd=True formats hover/values as $."""
-    hover = "%{label}<br><b>%{percent}</b>" + ("<br>$%{value:,.0f}" if usd else "") + "<extra></extra>"
-    fig = go.Figure(go.Pie(
-        labels=labels, values=values, hole=0.58, sort=False, direction="clockwise",
-        marker=dict(colors=colors or _DONUT_COLORS, line=dict(color="white", width=1.5)),
-        textposition="inside", textinfo="percent", insidetextorientation="horizontal",
-        hovertemplate=hover))
-    fig.update_layout(
-        height=300, margin=dict(l=8, r=8, t=34, b=8), font=_CHART_FONT,
-        title=dict(text=title, x=0.5, xanchor="center", font=dict(size=13, color="#1d2733")),
-        paper_bgcolor="white", showlegend=True,
-        legend=dict(orientation="v", x=1.0, xanchor="right", y=0.5, font=dict(size=10.5)),
-        annotations=([dict(text=center, x=0.5, y=0.5, showarrow=False,
-                           font=dict(size=12.5, color="#42505e"))] if center else []))
-    return fig.to_html(full_html=False, include_plotlyjs=False, div_id=div_id,
-                       config={"displayModeBar": False, "responsive": True})
+    """A single donut as BUILD-TIME inline SVG (no JS dependency). Slices are
+    drawn with pathLength=100 stroke-dashes so each arc is exactly the value's
+    share; exact raw values live in native <title> tooltips and the legend.
+    Same signature as the old Plotly version — call sites unchanged."""
+    total = sum(v for v in values if v) or 1.0
+    cols = colors or _DONUT_COLORS
+    arcs, legend = [], []
+    cum = 0.0
+    for i, (lbl, v) in enumerate(zip(labels, values)):
+        if not v or v <= 0:
+            continue
+        pct = v / total * 100
+        col = cols[i % len(cols)]
+        val_txt = f" · {fmt_usd_compact(v)}" if usd else ""
+        tip = f"{lbl} — {pct:.1f}%{val_txt}" + ("" if usd else f" ({v:,.2f})")
+        arcs.append(
+            f'<circle r="40" cx="60" cy="60" fill="none" stroke="{col}" stroke-width="22" '
+            f'pathLength="100" stroke-dasharray="{pct:.3f} {100 - pct:.3f}" '
+            f'stroke-dashoffset="{-cum:.3f}"><title>{html.escape(tip)}</title></circle>')
+        legend.append(
+            f'<li><i style="background:{col}"></i>{html.escape(str(lbl))}'
+            f'<b>{pct:.1f}%{val_txt}</b></li>')
+        cum += pct
+    if not arcs:
+        return ""
+    ctr = (f'<text x="60" y="60" text-anchor="middle" dominant-baseline="middle" '
+           f'class="sd-ctr">{html.escape(center.replace("<br>", " "))}</text>') if center else ""
+    return (f'<figure class="sdonut" id="{div_id}">'
+            f'<figcaption>{html.escape(title)}</figcaption>'
+            f'<div class="sd-row">'
+            f'<svg viewBox="0 0 120 120" class="sd-svg" role="img" '
+            f'aria-label="{html.escape(title)}">'
+            f'<g transform="rotate(-90 60 60)">{"".join(arcs)}</g>{ctr}</svg>'
+            f'<ul class="sd-legend">{"".join(legend)}</ul>'
+            f'</div></figure>')
 
 
 def _donut_holders(rec, h, chain=None) -> str:
@@ -930,28 +970,6 @@ def _supply_valuation_block(rec) -> str:
             f'<div class="donut-grid">{"".join(donuts)}</div></section>')
 
 
-# Keep every Plotly chart sized to its container on ANY layout change — browser
-# zoom, window/tab resize, CSS reflow, or a hidden panel becoming visible. Plotly's
-# own `responsive:true` only listens for window resize, so charts that share a
-# fluid grid got clipped (rendered at a stale width) on zoom/reflow. A
-# ResizeObserver on each graph div, debounced with rAF (avoids the observer-loop
-# warning), redraws it whenever its box actually changes; offsetParent!==null skips
-# display:none panels (they fire again when shown).
-_PLOT_RESIZE_JS = (
-    "<script>(function(){"
-    "if(!('ResizeObserver' in window))return;var raf;"
-    "var ro=new ResizeObserver(function(es){if(!window.Plotly)return;"
-    "cancelAnimationFrame(raf);raf=requestAnimationFrame(function(){"
-    "es.forEach(function(e){var d=e.target;"
-    "if(d.classList.contains('plotly-graph-div')&&d.offsetParent!==null){"
-    "try{Plotly.Plots.resize(d);}catch(err){}}});});});"
-    "function obs(){document.querySelectorAll('.plotly-graph-div')"
-    ".forEach(function(d){ro.observe(d);});}"
-    "if(document.readyState==='loading')"
-    "document.addEventListener('DOMContentLoaded',obs);else obs();"
-    "})();</script>"
-)
-
 
 def _detail(rec, platforms) -> str:
     sym = rec["symbol"]
@@ -974,6 +992,8 @@ def _detail(rec, platforms) -> str:
                  if _ts else "keyless public exchange APIs")
     warn = ("" if rec.get("resolved", True) else
             '<div class="cat" style="background:#fdecea;color:#c0392b">⚠ identity auto-matched by symbol — verify</div>')
+    chips = _flag_chips(rec)
+    flagrow = f'<div class="flagrow">{chips}</div>' if chips else ""
     memo = html.escape(rec.get("memo_en") or "—")
     mc, fdv = rec.get("mcap") or rec.get("csv_mc"), rec.get("fdv") or rec.get("csv_fdv")
     fdvmc = f"<dt>FDV / MC</dt><dd>{fdv / mc:.1f}×</dd>" if (mc and fdv) else ""
@@ -983,6 +1003,7 @@ def _detail(rec, platforms) -> str:
   <div class="info">
     <h2>{name} <span class="sym">{html.escape(sym)}</span></h2>
     {warn}
+    {flagrow}
     {_links(rec)}
     <dl>
       <dt>TGE</dt><dd>{_tge_dt(rec).strftime('%Y-%m-%d') if _tge_dt(rec) else '—'} <span class="src">token launch (CMC)</span></dd>
@@ -1020,8 +1041,7 @@ def _detail(rec, platforms) -> str:
             f'<title>{name} ({html.escape(sym)}) — Manipulated</title>'
             f'<link rel="stylesheet" href="style.css">'
             f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
-            f'<script src="../report/plotly.min.js"></script></head><body>{body}'
-            f'{_PLOT_RESIZE_JS}</body></html>')
+            f'</head><body>{body}</body></html>')
 
 
 def _filter_bar() -> str:
@@ -1074,22 +1094,29 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (13 cols: #, Token, TGE, Since, 24h, 7d, 30d, 90d,
-   FDV, MC, OI%, Funding, Memo). Fixed layout reads widths from the header row.
-   A min-width keeps every column readable — when the viewport is narrower the
-   wrapper (.listwrap, overflow-x:auto) scrolls horizontally instead of crunching
-   the columns (esp. Memo). */
-#ltab{table-layout:fixed;min-width:1080px}
+/* deterministic column widths (14 cols: #, Token, TGE, Since, 24h, 7d, 30d, 90d,
+   FDV, MC, OI%, OI/Vol, Funding, Memo). Fixed layout reads widths from the header
+   row. A min-width keeps every column readable — when the viewport is narrower
+   the wrapper (.listwrap, overflow-x:auto) scrolls horizontally instead of
+   crunching the columns (esp. Memo). */
+#ltab{table-layout:fixed;min-width:1160px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                                   /* # */
-#ltab th:nth-child(2){width:17%;text-align:left}                  /* Token */
-#ltab th:nth-child(3){width:8%;text-align:left}                   /* TGE */
+#ltab th:nth-child(2){width:15.5%;text-align:left}                /* Token */
+#ltab th:nth-child(3){width:7.5%;text-align:left}                 /* TGE */
 #ltab th:nth-child(4),#ltab th:nth-child(5),#ltab th:nth-child(6),
 #ltab th:nth-child(7),#ltab th:nth-child(8){width:5.5%}           /* Since,24h,7d,30d,90d */
-#ltab th:nth-child(9),#ltab th:nth-child(10){width:8%}            /* FDV, MC */
-#ltab th:nth-child(11){width:6%}                                  /* OI% */
-#ltab th:nth-child(12){width:11%;text-align:left}                 /* Funding */
-#ltab th:nth-child(13){width:13.5%;text-align:left}               /* Memo */
+#ltab th:nth-child(9),#ltab th:nth-child(10){width:7.5%}          /* FDV, MC */
+#ltab th:nth-child(11){width:5.5%}                                /* OI% */
+#ltab th:nth-child(12){width:5.5%}                                /* OI/Vol */
+#ltab th:nth-child(13){width:9.5%;text-align:left}                /* Funding */
+#ltab th:nth-child(14){width:11%;text-align:left}                 /* Memo */
+/* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
+.flags{display:inline-flex;gap:5px;flex-wrap:wrap}
+.flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
+  font-weight:700;padding:1px 8px;white-space:nowrap;cursor:help}
+.tile-head .flags{margin-left:auto}
+.flagrow{margin:0 0 10px}
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
@@ -1135,16 +1162,24 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 .hol-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
 .hol-grid>*{min-width:0}
 @media(max-width:760px){.hol-grid{grid-template-columns:1fr}}
-/* donut grids: fluid, 1–2 donuts per row. min-width:0 on the cells lets each
-   Plotly chart shrink with its column instead of overflowing and being clipped
-   by .card{overflow:hidden} (the bug where the supply donut got cut off). */
+/* donut grids: fluid, 1–2 donuts per row; min-width:0 lets each cell shrink
+   with its column instead of overflowing the card */
 .donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
 .donut-grid>*{min-width:0}
-.donut-grid .plotly-graph-div,.donut-grid>div{width:100%!important;max-width:100%}
+/* static SVG donuts (build-time; replaced the Plotly pies) */
+.sdonut{margin:0;background:#fff}
+.sdonut figcaption{text-align:center;font-size:13px;font-weight:600;color:#1d2733;margin:6px 0 8px}
+.sd-row{display:flex;align-items:center;gap:14px}
+.sd-svg{flex:0 0 150px;width:150px;height:150px}
+.sd-ctr{font-size:11.5px;fill:#42505e;font-weight:600}
+.sd-legend{list-style:none;margin:0;padding:0;font-size:11.5px;color:#42505e;min-width:0}
+.sd-legend li{display:flex;align-items:center;gap:6px;padding:1.5px 0;flex-wrap:wrap}
+.sd-legend li i{flex:0 0 9px;width:9px;height:9px;border-radius:50%;display:inline-block}
+.sd-legend li b{font-weight:600;color:#1d2733;margin-left:auto;padding-left:8px;white-space:nowrap}
+@media(max-width:640px){.sd-svg{flex-basis:120px;width:120px;height:120px}}
 /* wide tables (perp/holders) scroll horizontally on small screens instead of
    overflowing the card */
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-section.card.span .plotly-graph-div{max-width:100%}
 .hist-h{margin:18px 0 4px;font-size:14px;color:#1d2733}
 .hist-h .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:6px}
 /* ── Top-holders chain picker + Bubblemaps link ──────────────────────────── */

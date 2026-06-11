@@ -1117,7 +1117,7 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
 .chart { padding: 14px; display: flex; align-items: flex-start; justify-content: center;
          background: #fafbfc; }
 .chart img { width: 100%; height: auto; border-radius: 6px; }
-.chart > .plotly-graph-div, .chart > div { width: 100%; }
+.chart > div { width: 100%; }
 .missing { color: #b00; font-style: italic; }
 
 /* TradingView Lightweight Charts embed */
@@ -1162,7 +1162,7 @@ img, svg, canvas, video { max-width: 100%; height: auto; }
    content — the #1 cause of charts/tables overflowing (and being clipped by an
    overflow:hidden card). Let them shrink. */
 .card > *, .chart, .stats > *, .grid > * { min-width: 0; }
-.chart > .plotly-graph-div, .chart > div { width: 100% !important; max-width: 100%; }
+.chart > div { width: 100% !important; max-width: 100%; }
 
 @media (max-width: 1024px) {
   header, .newsbar, .filters, .grid, .listwrap, main:not(.grid) {
@@ -1224,12 +1224,10 @@ def main() -> None:
     import shutil
     lib = HERE / "vendor" / "lightweight-charts.standalone.production.js"
     shutil.copyfile(lib, OUT_DIR / "lightweight-charts.standalone.production.js")
-    # Keep emitting plotly.min.js too: the Scam Watchlist report (build_scams.py)
-    # renders its donuts + history charts with Plotly and links ../report/plotly.min.js.
-    # Vendored BASIC bundle (scatter/bar/pie only, 1.1MB vs the 4.7MB full bundle the
-    # python package ships) — keep vendor/plotly-basic.min.js on the same plotly.js
-    # version as the installed `plotly` package (currently 3.5.0).
-    shutil.copyfile(HERE / "vendor" / "plotly-basic.min.js", OUT_DIR / "plotly.min.js")
+    # No Plotly anywhere anymore: the Scam Watchlist's donuts are build-time SVG
+    # and its history charts run on Lightweight Charts. Remove any stale copy so
+    # the deployed site stops shipping the dead bundle.
+    (OUT_DIR / "plotly.min.js").unlink(missing_ok=True)
     (OUT_DIR / "style.css").write_text(CSS, encoding="utf-8")
     (OUT_DIR / "index.html").write_text(_index(cfgs), encoding="utf-8")
     for cfg in cfgs:
