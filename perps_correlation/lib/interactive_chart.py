@@ -44,7 +44,13 @@ TOL_MS = 2 * 86400 * 1000
 
 SHORT = {"Binance Alpha": "Alpha", "Binance Spot": "BN Spot", "Binance Perp": "Perp",
          "Coinbase Spot": "Coinbase", "Coinbase INTX": "CB-INTX", "Upbit": "Upbit",
-         "Bithumb": "Bithumb", "Coinone": "Coinone"}
+         "Bithumb": "Bithumb", "Coinone": "Coinone",
+         "OKX Spot": "OKX", "OKX Perp": "OKX-P",
+         "Bybit Spot": "Bybit", "Bybit Perp": "Bybit-P",
+         "Kraken Spot": "Kraken", "Kraken Futures": "Kraken-F",
+         "KuCoin Spot": "KuCoin", "KuCoin Futures": "KuCoin-F",
+         "Bitget Spot": "Bitget", "Bitget Perp": "Bitget-P",
+         "Gate.io Spot": "Gate", "Gate.io Perp": "Gate-P"}
 
 
 from functools import lru_cache
@@ -77,38 +83,43 @@ def first_candle_dt(token: str) -> datetime | None:
     return datetime.fromtimestamp(rows[0][0] / 1000, tz=timezone.utc)
 
 
-def _resolved_events(cfg: dict, rows: list) -> list[tuple[dict, int]]:
-    """(event, epoch_ms) pairs to actually plot, with placeholder Alpha events
-    snapped to the first candle and unresolvable midnight events dropped.
+def _resolved_events(cfg: dict, rows: list) -> list[tuple[dict, int, bool]]:
+    """(event, epoch_ms, approx) triples to plot.
 
-    - Binance Alpha at a `00:00Z` placeholder -> snapped to the first candle.
-    - Any other event at a `00:00Z` placeholder -> dropped (we can't place it
-      from on-chain data; it remains in the Listing Events table).
-    - Precise events -> plotted at their real time, clamped to the data edge if
-      within TOL.
+    - Binance Alpha at a `00:00Z` placeholder -> snapped to the first candle
+      (the pool's birth IS the listing), plotted as a normal marker.
+    - Any other `00:00Z` placeholder (daily-resolution sweep dates) -> plotted
+      at its DATE as an APPROXIMATE marker (square, "≈" label) so every venue
+      the token reached is visible; the marker never pretends to be a precise
+      time. The client additionally drops markers that fall in a price-data
+      gap (no candle within 3 days) rather than drawing them months off.
+    - Precise events -> normal markers at their real time, clamped to the data
+      edge if within TOL.
     """
     t_lo, t_hi = rows[0][0], rows[-1][0]
     first_dt = datetime.fromtimestamp(t_lo / 1000, tz=timezone.utc)
-    out: list[tuple[dict, int]] = []
+    out: list[tuple[dict, int, bool]] = []
     for ev in cfg.get("events", []):
         iso = ev.get("iso_time_utc")
         if not iso:
             continue
+        approx = False
         if _is_placeholder(iso):
             if ev.get("exchange") == "Binance Alpha":
                 t = first_dt                       # snap to pool birth = listing
             else:
-                continue                           # unresolvable -> table only
+                t = parse_iso(iso)                 # date-only -> approx marker
+                approx = True
         else:
             t = parse_iso(iso)
         ms = int(t.timestamp() * 1000)
         if ms < t_lo - TOL_MS or ms > t_hi + TOL_MS:
             continue
-        out.append((ev, min(max(ms, t_lo), t_hi)))
+        out.append((ev, min(max(ms, t_lo), t_hi), approx))
     return out
 
 
-def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) -> str | None:
+def chart_html(cfg: dict, height: int = 560) -> str | None:
     token = cfg["token"]
     rows = _load_rows(token)
     if not rows:
@@ -137,37 +148,21 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     js_rows = [[r[0] // 1000, round(r[1], q), round(r[2], q), round(r[3], q), round(r[4], q)]
                for r in rows]
 
-    # Listing markers (auto-derived; see _resolved_events).
+    # Listing markers (auto-derived; see _resolved_events). Precise events are
+    # filled circles; date-only sweep events are squares labelled "≈Venue" so
+    # every venue the token reached is on the chart without a date-only entry
+    # masquerading as a precise time. (Announcement markers were removed by
+    # request — announcements stay in the Annotations text block only.)
     listing_markers = []
-    for ev, ms in _resolved_events(cfg, rows):
+    for ev, ms, approx in _resolved_events(cfg, rows):
         ex = ev["exchange"]
+        short = SHORT.get(ex, ex)
         listing_markers.append({
-            "time": ms // 1000, "position": "aboveBar", "shape": "circle",
-            "color": venue_color(ex), "text": SHORT.get(ex, ex),
-        })
-
-    # Announcement markers: where an announcement carries a date, pin it on the
-    # x-axis (belowBar arrow). Most tokens have none yet — those simply show no
-    # announcement marker (the chart stays clean rather than guessing a time).
-    ann_markers = []
-    for label, a in (announcements or {}).items():
-        d = a.get("date") if isinstance(a, dict) else None
-        if not d:
-            continue
-        try:
-            t = parse_iso(d)
-        except Exception:
-            continue
-        ms = int(t.timestamp() * 1000)
-        if ms < t_lo - TOL_MS or ms > t_hi + TOL_MS:
-            continue
-        ms = min(max(ms, t_lo), t_hi)
-        ann_markers.append({
-            # No on-chart text — the label would clutter the plot (and crowds badly
-            # when a token has several announcements). The marker is just a dot; the
-            # `label` rides along so the crosshair tooltip can reveal it on hover.
-            "time": ms // 1000, "position": "belowBar", "shape": "arrowUp",
-            "color": "#e67e22", "text": "", "label": label,
+            "time": ms // 1000, "position": "aboveBar",
+            "shape": "square" if approx else "circle",
+            "color": venue_color(ex),
+            "text": f"≈{short}" if approx else short,
+            "approx": approx,
         })
 
     # The DEFAULT view shows the FULL history fitted to the frame ("All", like
@@ -175,7 +170,7 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     # price history instead of a zoomed-in launch with the rest crammed off-screen.
     # The "launch" button still jumps to the reaction window below (win_*), and the
     # "all" button returns to the full fit.
-    marker_secs = [m["time"] for m in listing_markers + ann_markers]
+    marker_secs = [m["time"] for m in listing_markers]
     last_ev_ms = (max(marker_secs) * 1000) if marker_secs else t_lo
     win_to_ms = min(t_hi,
                     max(t_lo + 24 * 3600 * 1000, last_ev_ms + 6 * 3600 * 1000),
@@ -201,7 +196,7 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
     div_id = f"tvchart-{token.lower()}"
     cfg_js = json.dumps({
         "rows": js_rows, "dec": dec,
-        "listing": listing_markers, "ann": ann_markers,
+        "listing": listing_markers,
         "win": {"from": win_from, "to": win_to},
         "tfs": TIMEFRAMES, "def_tf": def_tf,
     }, separators=(",", ":"))
@@ -216,7 +211,7 @@ def chart_html(cfg: dict, height: int = 560, announcements: dict | None = None) 
         f'<button class="tv-reset tv-all active" title="Show full history">all</button>'
         f'<button class="tv-reset tv-launch" title="Zoom to the launch reaction">⤺ launch</button>'
         f'<span class="tv-legend"><i class="dot"></i>listing '
-        f'<i class="tri"></i>announcement</span></div>'
+        f'<i class="sq"></i>≈ date-only</span></div>'
         f'<div id="{div_id}" class="tvchart"></div>'
         f'<div class="tv-tip" id="{div_id}-tip"></div>'
         f'</div>'
@@ -276,31 +271,34 @@ function mount(id, cfg){
     return order.map(function(k){ return { time:k, value:map[k] }; });
   }
   function bucket(t, mins){ var bs = mins*60; return Math.floor(t/bs)*bs; }
-  function markers(mins){
+  // Markers must sit on an EXISTING bar or Lightweight Charts won't draw them
+  // (this is why venue dots used to vanish on tokens whose history has a gap).
+  // Snap each marker to the nearest bar, but only within 3 days — a marker
+  // whose true date falls inside a months-long data hole is dropped rather
+  // than drawn months off its real date (it stays in the events table).
+  function markers(mins, times){
     var out = [];
-    [].concat(cfg.listing, cfg.ann).forEach(function(m){
-      out.push({ time: bucket(m.time, mins), position:m.position, color:m.color,
+    cfg.listing.forEach(function(m){
+      var want = bucket(m.time, mins);
+      // binary search nearest bar time
+      var lo = 0, hi = times.length - 1;
+      while(lo < hi){ var mid = (lo + hi) >> 1; if(times[mid] < want) lo = mid + 1; else hi = mid; }
+      var best = times[lo];
+      if(lo > 0 && Math.abs(times[lo-1] - want) < Math.abs(best - want)) best = times[lo-1];
+      if(Math.abs(best - want) > 3*86400) return;
+      out.push({ time: best, position:m.position, color:m.color,
                  shape:m.shape, text:m.text });
     });
     out.sort(function(a,b){ return a.time-b.time; });
     return out;
   }
 
-  // Announcement bucket-time -> label, rebuilt per timeframe. Announcement markers
-  // carry no on-chart text (see chart_html); this lets the crosshair tooltip reveal
-  // "Announcement" when the cursor lands on the marker's candle.
-  var annMap = {};
-  function buildAnnMap(mins){
-    annMap = {};
-    (cfg.ann || []).forEach(function(m){ annMap[bucket(m.time, mins)] = m.label || 'announcement'; });
-  }
-
   var active = cfg.tfs[cfg.def_tf || 0][1];
   function render(mins){
     active = mins;
-    series.setData(agg(cfg.rows, mins));
-    series.setMarkers(markers(mins));
-    buildAnnMap(mins);
+    var data = agg(cfg.rows, mins);
+    series.setData(data);
+    series.setMarkers(markers(mins, data.map(function(d){ return d.time; })));
   }
   function toAll(){ chart.timeScale().fitContent(); }
   function toLaunch(){
@@ -325,9 +323,7 @@ function mount(id, cfg){
     var price = (d.value!==undefined)? d.value : d.close;
     var dt = new Date(p.time*1000).toISOString().slice(0,16).replace('T',' ');
     if(tip){
-      var ann = annMap[p.time];
-      var annLine = ann ? '<br><span style="color:#e67e22">📣 '+ann+'</span>' : '';
-      tip.innerHTML = '<b>$'+price.toFixed(DEC)+'</b><br>'+dt+' UTC'+annLine;
+      tip.innerHTML = '<b>$'+price.toFixed(DEC)+'</b><br>'+dt+' UTC';
       tip.style.display='block';
       var x = p.point.x + 16, y = p.point.y + 12;
       if(x > wrap.clientWidth - 130){ x = p.point.x - 130; }

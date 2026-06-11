@@ -344,18 +344,6 @@ def _all_annotations(cfg: dict) -> list[dict]:
     return list(cfg.get("annotations", [])) + _auto_annotations(cfg)
 
 
-def _chart_announcements(cfg: dict) -> dict:
-    """Announcement markers for the chart. Uses the precise Binance perp-announce
-    time (cache/perp_announce.json) in place of the day-resolution one, so the marker
-    lands on the actual release candle, matching the spike annotation."""
-    base = dict(ANN.get(_slug(cfg)) or {})
-    rec = PERP_ANNOUNCE.get(cfg["token"].upper())
-    if rec and rec.get("announce_utc"):
-        base.pop("Binance Perp", None)         # drop the imprecise day marker
-        base["Binance perp"] = {"date": rec["announce_utc"], "title": rec.get("title", "")}
-    return base
-
-
 def _annotations(cfg: dict) -> str:
     anns = _all_annotations(cfg)
     if not anns:
@@ -684,7 +672,9 @@ def _detail(cfg: dict) -> str:
     fdv_src = (f"current — CoinMarketCap, as of {asof}" if asof
                else cfg.get("fdv_source", ""))
     not_listed = ", ".join(cfg.get("not_listed", [])) or "—"
-    interactive = chart_html(cfg, announcements=_chart_announcements(cfg))
+    # Chart shows listing markers only — announcements stay as TEXT in the
+    # Annotations block (removed from the chart by request).
+    interactive = chart_html(cfg)
     if interactive:
         chart_block = interactive
         extra_head = "<script src=\"lightweight-charts.standalone.production.js\"></script>"
@@ -1144,9 +1134,8 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
              display: inline-flex; align-items: center; gap: 5px; }
 .tv-legend .dot { width: 9px; height: 9px; border-radius: 50%; background: #1f4e79;
              display: inline-block; border: 1.5px solid #fff; box-shadow: 0 0 0 1px #1f4e79; }
-.tv-legend .tri { width: 0; height: 0; display: inline-block; margin-left: 8px;
-             border-left: 5px solid transparent; border-right: 5px solid transparent;
-             border-bottom: 8px solid #e67e22; }
+.tv-legend .sq { width: 8px; height: 8px; display: inline-block; margin-left: 8px;
+             background: #7f8c9a; }
 .tv-tip { position: absolute; pointer-events: none; display: none; z-index: 6;
           background: #fff; border: 1px solid #e1e7ee; border-radius: 6px;
           padding: 4px 8px; font-size: 12px; color: #1d2733; white-space: nowrap;

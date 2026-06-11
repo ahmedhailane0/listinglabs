@@ -556,13 +556,19 @@ def _append_history(res, when=None, carry=False) -> None:
             series = json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             series = []
-    recent = bool(series and (t - (series[-1].get("t") or 0)) < 6 * 3600)
+    last_t = (series[-1].get("t") or 0) if series else 0
+    recent = bool(series and (t - last_t) < 6 * 3600)
+    # NEVER collapse across a UTC day boundary: replacing a 23:50 point with a
+    # 00:10 one vacates the earlier day entirely (this silently emptied
+    # 2026-06-10 for 27/28 tokens — the research archive needs >=1 point per
+    # calendar day, so day-crossing points always append).
+    same_day = bool(series and (last_t // 86400 == t // 86400))
     if carry:
         if recent:
             return                # a fresh real point already covers this window
         series.append(pt)         # fill the gap, don't clobber anything
-    elif recent:
-        series[-1] = pt           # collapse sub-6h real points
+    elif recent and same_day:
+        series[-1] = pt           # collapse sub-6h real points within one day
     else:
         series.append(pt)
     series = series[-1500:]       # ~1y at 4/day
