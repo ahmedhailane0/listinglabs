@@ -13,7 +13,7 @@
   "total_supply": 1000000000.0,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2026-04-20T18:00:00Z",
-  "window_end_utc": "2026-05-30T20:51:49.747812Z",
+  "window_end_utc": "2026-06-15T15:30:06Z",
   "events": [
     {
       "exchange": "Binance Alpha",
@@ -70,6 +70,12 @@
       "exchange": "Binance Spot",
       "iso_time_utc": "2026-05-22T12:00:00Z",
       "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-06-15T09:30:06Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [Trade] Market Support for OpenGradient(OPG) (BTC, USDT Market) Upbit 上新: 【交易】OpenGradient(OPG)市场支持（BTC、USDT市场） OPG MarketCap\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16259",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
