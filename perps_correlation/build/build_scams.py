@@ -404,7 +404,7 @@ def _tile(rec) -> str:
 # (BN+BYB)/FDV ratio drive the scan; price 24h + memo carry the curated-coin
 # context. Full rich data (chart/holders/funding rounds) stays on each coin's
 # detail page. 9 cols — keep the nth-child widths in EXTRA_CSS in sync.
-LIST_COLS = ["#", "Token", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
+LIST_COLS = ["#", "Token", "TGE", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
 
 
 def _ratio_cell(rec) -> str:
@@ -464,6 +464,7 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
+        f'{_tge_cell(rec)}'
         f'{_num_cell(oi, pct=False, color=False)}'
         f'{_num_cell(oifdv, pct=True, color=False) if oifdv is not None else _num_cell(None)}'
         f'{_num_cell(fdv, pct=False, color=False)}'
@@ -1271,18 +1272,19 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (8 cols: #, Token, OI (BN+BYB), OI/FDV %,
+/* deterministic column widths (9 cols: #, Token, TGE, OI (BN+BYB), OI/FDV %,
    FDV, Funding, 24h, Memo). */
-#ltab{table-layout:fixed;min-width:820px}
+#ltab{table-layout:fixed;min-width:900px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3.5%}                  /* # */
-#ltab th:nth-child(2){width:24%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:13%}                   /* OI (BN+BYB) */
-#ltab th:nth-child(4){width:10%}                   /* OI/FDV % */
-#ltab th:nth-child(5){width:11%}                   /* FDV */
-#ltab th:nth-child(6){width:10%}                   /* Funding */
-#ltab th:nth-child(7){width:8%}                    /* 24h */
-#ltab th:nth-child(8){width:20.5%;text-align:left} /* Memo */
+#ltab th:nth-child(2){width:21%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:8%}                    /* TGE */
+#ltab th:nth-child(4){width:12%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(5){width:9%}                    /* OI/FDV % */
+#ltab th:nth-child(6){width:10%}                   /* FDV */
+#ltab th:nth-child(7){width:9%}                    /* Funding */
+#ltab th:nth-child(8){width:7%}                    /* 24h */
+#ltab th:nth-child(9){width:20%;text-align:left}   /* Memo */
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
 .flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
@@ -1291,6 +1293,7 @@ EXTRA_CSS = """
 .flagrow{margin:0 0 10px}
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
+#ltab td.tge{font-size:12px;color:#42505e;text-align:center}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* per-token detail: full-width sections for perp + holders tables.
@@ -1521,7 +1524,7 @@ def main():
     for r in recs:
         _enrich_from_screener(r)
 
-    recs.sort(key=lambda r: (len(_fired_strats(r["symbol"])),
+    recs.sort(key=lambda r: (_tge_dt(r).timestamp() if _tge_dt(r) else 0,
                              _sig(r["symbol"]).get("oi_combined") or 0), reverse=True)
 
     SITE.mkdir(parents=True, exist_ok=True)
