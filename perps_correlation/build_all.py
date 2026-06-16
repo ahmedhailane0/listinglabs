@@ -95,18 +95,11 @@ img,svg{{max-width:100%;height:auto}}
     <span class="go">Open funnel →</span>
   </a>
   <a class="card" href="scams/index.html">
-    <h2>Manipulated</h2><span class="n">{scam_n}</span>
-    <p>Hand-maintained watchlist of tokens with notes on FDV behaviour
-       (sustained &gt;$1B, brief spikes, uptrends). Sortable, with an
-       FDV&nbsp;&gt;&nbsp;$1B filter.</p>
-    <span class="go">Open watchlist →</span>
-  </a>
-  <a class="card" href="screener/index.html">
-    <h2>Screener</h2><span class="n">{f"{SCREENER_N} coins" if SCREENER_N else "hourly"}</span>
-    <p>Hourly Binance-perp screener for the manipulated-coin list: combined
-       Binance&nbsp;+&nbsp;Bybit open interest vs FDV, funding, and Buy v1/v2/v3
-       accumulation &amp; washout-reversal signals. Filter by OI, watchlist, setup
-       and FDV.</p>
+    <h2>Manipulated</h2><span class="n">{f"{SCREENER_N} coins" if SCREENER_N else scam_n}</span>
+    <p>Manipulated-coin perp screener: combined Binance&nbsp;+&nbsp;Bybit open
+       interest vs FDV, funding, and Buy v1/v2/v3 accumulation &amp; washout
+       signals — filter by signal, OI, gate and FDV. Curated coins also carry
+       price charts, holders &amp; memos.</p>
     <span class="go">Open screener →</span>
   </a>
 </div></div>
@@ -131,8 +124,7 @@ def main():
     _run(HERE / "build" / "build_funding.py")                  # cache/funding.json (offline merge)
     _run(HERE / "build" / "build_listing_report.py")          # -> Listinglabs/report
     _run(HERE / "funnel" / "funnel_report.py")       # -> Listinglabs/funnel/report
-    _run(HERE / "build" / "build_scams.py")                    # -> Listinglabs/scams
-    _run(HERE / "build" / "build_screener.py")                 # -> Listinglabs/screener (reads cache/screener/)
+    _run(HERE / "build" / "build_scams.py")                    # -> Listinglabs/scams (now incl. the perp screener)
 
     (SITE / "index.html").write_text(landing(), encoding="utf-8")
     (SITE / "favicon.svg").write_text(FAVICON_SVG, encoding="utf-8")

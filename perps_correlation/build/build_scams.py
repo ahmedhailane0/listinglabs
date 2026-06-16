@@ -44,6 +44,74 @@ FUNDING: dict[str, dict] = {}
 TGE: dict[str, str] = {}
 TGE_CACHE = HERE.parent / "cache" / "scam_tge.json"
 
+# ── Perp screener (cache/screener/screener.json, produced hourly by the always-on
+# box) folded INTO this watchlist: Buy v1/v2/v3 signals + combined Binance+Bybit
+# OI + the (BN+BYB)/FDV gate. Every screener-universe coin that isn't already a
+# curated watchlist token is ADDED here as a signal-only record, so the whole
+# manipulated-coin list lives on one tab.
+SCREENER_FILE = HERE.parent / "cache" / "screener" / "screener.json"
+SCREENER: dict[str, dict] = {}     # SYM(upper) -> screener token record
+SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
+STRATS = ("v1", "v2", "v3")
+STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3"}
+STRAT_TITLE = {"v1": "High-control accumulation breakout",
+               "v2": "OI + EMA golden cross", "v3": "Washout reversal"}
+
+
+def _load_screener() -> None:
+    if not SCREENER_FILE.exists():
+        return
+    try:
+        d = json.loads(SCREENER_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return
+    for k in ("as_of_hour", "counts", "gate", "thresholds"):
+        SCREENER_META[k] = d.get(k)
+    for sym, r in (d.get("tokens") or {}).items():
+        SCREENER[sym.upper()] = r
+
+
+def _sig(sym) -> dict:
+    return SCREENER.get((sym or "").upper()) or {}
+
+
+def _ago(t, as_of=None) -> str:
+    as_of = as_of or SCREENER_META.get("as_of_hour")
+    if not t or not as_of:
+        return ""
+    h = max(0, int((as_of - t) // 3600))
+    return "now" if h == 0 else f"{h}h ago"
+
+
+def _fired_strats(sym) -> list[str]:
+    s = _sig(sym).get("signals") or {}
+    return [k for k in STRATS if (s.get(k) or {}).get("fired")]
+
+
+def _buy_badges(sym, mini=False) -> str:
+    s = _sig(sym).get("signals") or {}
+    cls = "buy {k} mini" if mini else "buy {k}"
+    out = []
+    for k in STRATS:
+        d = s.get(k) or {}
+        if not d.get("fired"):
+            continue
+        ago = _ago(d.get("t"))
+        sub = "" if mini else f' <i>{ago}</i>'
+        out.append(f'<span class="{cls.format(k=k)}" title="{html.escape(STRAT_TITLE[k])} — '
+                   f'fired {ago}; size {d.get("position") or "—"}">{STRAT_NAME[k]}{sub}</span>')
+    return "".join(out)
+
+
+def _venue_badges(sym) -> str:
+    r = _sig(sym)
+    out = ""
+    if r.get("oi_bn"):
+        out += '<span class="ven bn" title="Binance USDT-perp open interest">BN</span>'
+    if r.get("oi_byb"):
+        out += '<span class="ven byb" title="Bybit USDT-perp open interest">BYB</span>'
+    return out
+
 
 def _tge_dt(rec):
     iso = TGE.get((rec.get("symbol") or "").upper())
@@ -281,33 +349,53 @@ def _funding_str(rec):
     return (f"{_usd(amt) if amt else '—'}{src_tag}"), inv
 
 
+def _filter_attrs(rec) -> str:
+    """The data-* attributes the index filter JS reads (search/OI/FDV/WL/Strategy/
+    Gate). Shared by the tile and the list row so both filter identically."""
+    sym = rec["symbol"]
+    r = _sig(sym)
+    search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
+    fdv = rec.get("fdv") or rec.get("csv_fdv") or r.get("fdv")
+    oi = r.get("oi_combined")
+    sources = rec.get("sources") or r.get("sources") or []
+    wl = "manip" if "tradingview" in sources else "other"
+    strat = "|" + "|".join(_fired_strats(sym)) + "|"
+    return (f'data-search="{search}" data-fdvnum="{fdv if fdv else -1:.0f}" '
+            f'data-oi="{oi or 0:.0f}" data-wl="{wl}" data-strat="{strat}" '
+            f'data-gate="{1 if r.get("pass_gate") else 0}"')
+
+
 def _tile(rec) -> str:
     sym = rec["symbol"]
-    search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
-    fdv = rec.get("fdv") or rec.get("csv_fdv")
-    mc = rec.get("mcap") or rec.get("csv_mc")
+    r = _sig(sym)
+    fdv = rec.get("fdv") or rec.get("csv_fdv") or r.get("fdv")
+    oi = r.get("oi_combined")
     px = rec.get("price") or rec.get("csv_price")
-    tge = _tge_dt(rec)
-    tge_txt = tge.strftime("%Y-%m-%d") if tge else "—"
+    buys = _buy_badges(sym, mini=True)
+    metas = []
+    if px:
+        metas.append(f'<span><b>Price</b> {fmt_subscript_price(px)}</span>')
+    metas.append(f'<span><b>OI</b> {_usd(oi)}</span>')
+    metas.append(f'<span><b>FDV</b> {_usd(fdv)}</span>')
+    if r.get("oi_fdv_pct") is not None:
+        metas.append(f'<span><b>OI/FDV</b> {r["oi_fdv_pct"]:.0f}%</span>')
     return f"""
-    <a class="tile" href="{sym.lower()}.html" data-venues="||" data-search="{search}" data-fdv="{fdv or 0:.0f}">
+    <a class="tile" href="{sym.lower()}.html" {_filter_attrs(rec)}>
       {_sparkline(sym)}
       <div class="tile-body">
         <div class="tile-head"><span class="name">{html.escape(rec.get('name', sym))}</span>
-          <span class="sym">{html.escape(sym)}</span>{_flag_chips(rec)}</div>
-        <div class="tile-meta">
-          <span><b>Price</b> {fmt_subscript_price(px) if px else '—'}</span>
-          <span><b>FDV</b> {_usd(fdv)}</span>
-          <span><b>TGE</b> {tge_txt}</span>
-        </div>
+          <span class="sym">{html.escape(sym)}</span>{_venue_badges(sym)}{_flag_chips(rec)}</div>
+        {f'<div class="buyrow">{buys}</div>' if buys else ''}
+        <div class="tile-meta">{"".join(metas)}</div>
       </div>
     </a>"""
 
 
-# Same columns as the Listing Reactions list view (performance from price
-# history) plus OI/Vol (the parked-positions screener) and the watchlist-
-# specific Memo (the $1B-FDV behaviour notes).
-LIST_COLS = ["#", "Token", "TGE", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "OI/Vol", "Funding", "Memo"]
+# Screener-focused list: the Buy signal + combined Binance/Bybit OI + the
+# (BN+BYB)/FDV ratio drive the scan; price 24h + memo carry the curated-coin
+# context. Full rich data (chart/holders/funding rounds) stays on each coin's
+# detail page. 9 cols — keep the nth-child widths in EXTRA_CSS in sync.
+LIST_COLS = ["#", "Token", "Signal", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
 
 
 def _ratio_cell(rec) -> str:
@@ -343,27 +431,38 @@ def _funding_cell(rec) -> str:
     return f'<td class="n" data-s="{amt or 0:.0f}">{amt_txt}{sub}</td>'
 
 
+def _fundcell(r) -> str:
+    """Perp funding-rate cell (per-interval %), from the screener — distinct from
+    the VC funding-rounds shown on the detail page."""
+    f = r.get("funding")
+    if f is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    return f'<td class="n" data-s="{f:.8f}">{f * 100:.3f}%</td>'
+
+
 def _list_row(rec) -> str:
     sym = rec["symbol"]
+    r = _sig(sym)
     search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
-    fdv = rec.get("fdv") or rec.get("csv_fdv")
-    mc = rec.get("mcap") or rec.get("csv_mc")
-    oi = rec.get("oi_pct_mcap")
+    fdv = rec.get("fdv") or rec.get("csv_fdv") or r.get("fdv")
+    oi = r.get("oi_combined")
+    oifdv = r.get("oi_fdv_pct")
     p = _perf(rec) or {}
+    fired = _fired_strats(sym)
     tok = (f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
-           f'<span class="sym">{html.escape(sym)}</span></span></a></td>')
+           f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
+    sig_html = "".join(f'<span class="buy {k} mini">{STRAT_NAME[k]}</span>' for k in fired) or "—"
     memo = html.escape(rec.get("memo_en") or "")
     return (
-        f'<tr class="lrow" data-venues="||" data-search="{search}" data-fdv="{fdv or 0:.0f}">'
+        f'<tr class="lrow" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f"{_tge_cell(rec)}"
-        f"{_num_cell(p.get('since'))}{_num_cell(p.get('p24'))}{_num_cell(p.get('p7'))}"
-        f"{_num_cell(p.get('p30'))}{_num_cell(p.get('p90'))}"
-        f"{_num_cell(fdv, pct=False, color=False)}{_num_cell(mc, pct=False, color=False)}"
-        f"{_num_cell(oi, pct=True, color=False)}"
-        f"{_ratio_cell(rec)}"
-        f"{_funding_cell(rec)}"
+        f'<td class="sig" data-s="{len(fired)}">{sig_html}</td>'
+        f'{_num_cell(oi, pct=False, color=False)}'
+        f'{_num_cell(oifdv, pct=True, color=False) if oifdv is not None else _num_cell(None)}'
+        f'{_num_cell(fdv, pct=False, color=False)}'
+        f'{_fundcell(r)}'
+        f'{_num_cell(p.get("p24"))}'
         f'<td class="memo"><span>{memo or "—"}</span></td></tr>')
 
 
@@ -971,6 +1070,85 @@ def _supply_valuation_block(rec) -> str:
 
 
 
+def _dt_hour(ts) -> str:
+    import datetime as _dt
+    return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%Y-%m-%d %H:00")
+
+
+def _binance_btn(sym) -> str:
+    return (f'<a class="binance-btn" href="https://www.binance.com/en/futures/{html.escape(sym)}USDT" '
+            f'target="_blank" rel="noopener">Trade {html.escape(sym)} on Binance Futures ↗</a>')
+
+
+def _signals_section(sym) -> str:
+    """Buy v1/v2/v3 cards + combined OI / FDV / funding + a Binance link, from
+    cache/screener (hourly box). Empty for coins with no Binance perp."""
+    r = _sig(sym)
+    if not r or r.get("data") == "no_perp":
+        return ""
+    s = r.get("signals") or {}
+    as_of = SCREENER_META.get("as_of_hour")
+    meta = (f'<div class="sigmeta">'
+            f'<span><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}</span>'
+            f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
+            f'<span><b>Bybit OI</b> {_usd(r.get("oi_byb"))}</span>'
+            f'<span><b>FDV</b> {_usd(r.get("fdv"))}</span>'
+            f'<span><b>OI/FDV</b> {(format(r["oi_fdv_pct"], ".1f") + "%") if r.get("oi_fdv_pct") is not None else "—"}</span>'
+            f'<span><b>Funding</b> {(format(r["funding"] * 100, ".3f") + "%") if r.get("funding") is not None else "—"}</span>'
+            f'</div>')
+    cards = []
+    for k in STRATS:
+        d = s.get(k) or {}
+        if d.get("insufficient"):
+            cards.append(f'<div class="buycard"><div class="bc-head">{STRAT_NAME[k]} '
+                         f'<span>{STRAT_TITLE[k]}</span></div>'
+                         f'<div class="bc-state na">not enough hourly data yet</div></div>')
+            continue
+        fired = d.get("fired")
+        state = (f'<span class="buy {k}">fired {_ago(d.get("t"))}</span>' if fired
+                 else '<span class="bc-no">no setup now</span>')
+        extra = ""
+        if fired:
+            stop = d.get("stop")
+            extra = (f'<div class="bc-rec">Suggested size <b>{d.get("position") or "—"}</b>'
+                     + (f' · stop <b>{stop:.6g}</b>' if stop else "") + '</div>')
+        conds = "".join(
+            f'<li class="{"ok" if ok else "x"}">{"✓" if ok else "✗"} {html.escape(c)}</li>'
+            for c, ok in (d.get("conditions") or {}).items())
+        cards.append(f'<div class="buycard{" fired" if fired else ""}">'
+                     f'<div class="bc-head">{STRAT_NAME[k]} <span>{STRAT_TITLE[k]}</span>{state}</div>'
+                     f'{extra}<ul class="conds">{conds}</ul></div>')
+    return (f'<section class="card span"><h3>Perp signals '
+            f'<span class="asof">hourly Binance OI · Buy setups · as of '
+            f'{_dt_hour(as_of) if as_of else "—"} UTC</span></h3>'
+            f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
+            f'<p class="note">Buy v1/v2/v3 are mechanical setups on open interest, price and '
+            f'funding — research signals, not financial advice.</p></section>')
+
+
+def _screener_detail(rec) -> str:
+    """Detail page for a screener-only coin (no curated price/holder/memo data) —
+    header + the perp signals section + the Binance link."""
+    sym = rec["symbol"]
+    name = html.escape(rec.get("name", sym))
+    secs = ", ".join(rec.get("sections") or []).replace("_", " ")
+    sectag = f'<div class="cat">{html.escape(secs)}</div>' if secs else ""
+    body = (f'<header><a class="back" href="index.html">← all watchlist tokens</a></header>'
+            f'<main><section class="card"><div class="info" style="grid-column:1/-1">'
+            f'<h2>{name} <span class="sym">{html.escape(sym)}</span> {_venue_badges(sym)}</h2>'
+            f'{sectag}<p class="note">On the manipulated-coin perp screener — no curated '
+            f'market/holder data for this coin (signal data only).</p></div></section>'
+            f'{_signals_section(sym)}</main>')
+    title = f"{sym} — Manipulated"
+    desc = (f"{sym} on the manipulated-coin perp screener — Binance+Bybit open interest, "
+            f"funding and Buy v1/v2/v3 signals.")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta(title, desc)}'
+            f'<title>{html.escape(sym)} — Manipulated</title>'
+            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
+
+
 def _detail(rec, platforms) -> str:
     sym = rec["symbol"]
     name = html.escape(rec.get("name", sym))
@@ -993,7 +1171,8 @@ def _detail(rec, platforms) -> str:
     warn = ("" if rec.get("resolved", True) else
             '<div class="cat" style="background:#fdecea;color:#c0392b">⚠ identity auto-matched by symbol — verify</div>')
     chips = _flag_chips(rec)
-    flagrow = f'<div class="flagrow">{chips}</div>' if chips else ""
+    buys = _buy_badges(sym)
+    flagrow = f'<div class="flagrow">{buys}{chips}</div>' if (chips or buys) else ""
     memo = html.escape(rec.get("memo_en") or "—")
     mc, fdv = rec.get("mcap") or rec.get("csv_mc"), rec.get("fdv") or rec.get("csv_fdv")
     fdvmc = f"<dt>FDV / MC</dt><dd>{fdv / mc:.1f}×</dd>" if (mc and fdv) else ""
@@ -1001,7 +1180,7 @@ def _detail(rec, platforms) -> str:
 <header><a class="back" href="index.html">← all watchlist tokens</a></header>
 <main><section class="card">
   <div class="info">
-    <h2>{name} <span class="sym">{html.escape(sym)}</span></h2>
+    <h2>{name} <span class="sym">{html.escape(sym)}</span> {_venue_badges(sym)}</h2>
     {warn}
     {flagrow}
     {_links(rec)}
@@ -1027,6 +1206,7 @@ def _detail(rec, platforms) -> str:
   {_perp_table(perp)}
   {_perp_extras(rec, perp, sym)}
 </section>
+{_signals_section(sym)}
 {_supply_valuation_block(rec)}
 <section class="card span">
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
@@ -1045,11 +1225,20 @@ def _detail(rec, platforms) -> str:
 
 
 def _filter_bar() -> str:
-    return """
+    def seg(name, label, opts):
+        btns = "".join(
+            f'<button class="seg{" active" if i == 0 else ""}" data-filter="{name}" '
+            f'data-value="{v}">{lbl}</button>'
+            for i, (v, lbl) in enumerate(opts))
+        return f'<span class="segrow"><span class="flabel">{label}</span>{btns}</span>'
+    return f"""
 <div class="filters">
-  <input id="search" type="search" placeholder="Search token…" autocomplete="off">
-  <label class="fdv"><input type="checkbox" id="fdvchk"> FDV &gt; $
-    <input type="number" id="fdvval" value="1" step="0.5" min="0" style="width:54px"> B</label>
+  <input id="search" type="search" placeholder="Search coin…" autocomplete="off">
+  {seg("strat", "Signal", [("all", "All"), ("v1", "Buy v1"), ("v2", "Buy v2"), ("v3", "Buy v3")])}
+  {seg("oi", "OI", [("all", "All"), ("5m", "&gt;$5M"), ("10m", "&gt;$10M")])}
+  {seg("gate", "Gate", [("all", "All"), ("pass", "≥8% OI/FDV")])}
+  {seg("fdv", "FDV", [("all", "All"), ("lt150", "&lt;$150M"), ("gte150", "≥$150M")])}
+  {seg("wl", "List", [("all", "All"), ("manip", "Manip")])}
   <span class="viewtoggle"><button id="view-grid" type="button" class="active">▦ Thumbnails</button>
     <button id="view-list" type="button">☰ List</button></span>
   <span id="count" class="count"></span>
@@ -1068,15 +1257,16 @@ def _index(recs) -> str:
         funnel_n = None
     react_lbl = f"Binance Alpha &amp; Perps ({reactions_n})" if reactions_n else "Binance Alpha &amp; Perps"
     fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
-    screener_n = screener_count()
-    scr_lbl = f"Screener ({screener_n})" if screener_n else "Screener"
+    c = SCREENER_META.get("counts") or {}
+    as_of = SCREENER_META.get("as_of_hour")
+    asof_txt = _dt_hour(as_of) if as_of else "—"
     body = f"""
 <header><h1>Manipulated</h1>
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
-<a class="active" href="index.html">Manipulated ({len(recs)})</a>
-<a href="../screener/index.html">{scr_lbl}</a></nav>
-<p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour · updated {build_stamp()} UTC</p></header>
+<a class="active" href="index.html">Manipulated ({len(recs)})</a></nav>
+<p>{len(recs)} coins · Buy v1 <b>{c.get('v1', 0)}</b> · v2 <b>{c.get('v2', 0)}</b> · v3 <b>{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC</p>
+<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
   {_spark_defs()}
@@ -1097,23 +1287,22 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (14 cols: #, Token, TGE, Since, 24h, 7d, 30d, 90d,
-   FDV, MC, OI%, OI/Vol, Funding, Memo). Fixed layout reads widths from the header
-   row. A min-width keeps every column readable — when the viewport is narrower
-   the wrapper (.listwrap, overflow-x:auto) scrolls horizontally instead of
-   crunching the columns (esp. Memo). */
-#ltab{table-layout:fixed;min-width:1160px}
+/* deterministic column widths (9 cols: #, Token, Signal, OI (BN+BYB), OI/FDV %,
+   FDV, Funding, 24h, Memo). Fixed layout reads widths from the header row; a
+   min-width lets the wrapper (.listwrap, overflow-x:auto) scroll instead of
+   crunching columns on narrow screens. */
+#ltab{table-layout:fixed;min-width:900px}
 #ltab th{overflow:hidden}
-#ltab th:nth-child(1){width:3%}                                   /* # */
-#ltab th:nth-child(2){width:15.5%;text-align:left}                /* Token */
-#ltab th:nth-child(3){width:7.5%;text-align:left}                 /* TGE */
-#ltab th:nth-child(4),#ltab th:nth-child(5),#ltab th:nth-child(6),
-#ltab th:nth-child(7),#ltab th:nth-child(8){width:5.5%}           /* Since,24h,7d,30d,90d */
-#ltab th:nth-child(9),#ltab th:nth-child(10){width:7.5%}          /* FDV, MC */
-#ltab th:nth-child(11){width:5.5%}                                /* OI% */
-#ltab th:nth-child(12){width:5.5%}                                /* OI/Vol */
-#ltab th:nth-child(13){width:9.5%;text-align:left}                /* Funding */
-#ltab th:nth-child(14){width:11%;text-align:left}                 /* Memo */
+#ltab th:nth-child(1){width:3.5%}                  /* # */
+#ltab th:nth-child(2){width:20%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:16%;text-align:left}   /* Signal */
+#ltab th:nth-child(4){width:12%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(5){width:9%}                    /* OI/FDV % */
+#ltab th:nth-child(6){width:10%}                   /* FDV */
+#ltab th:nth-child(7){width:9%}                    /* Funding */
+#ltab th:nth-child(8){width:7%}                    /* 24h */
+#ltab th:nth-child(9){width:13.5%;text-align:left} /* Memo */
+td.sig{text-align:left;white-space:normal}
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
 .flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
@@ -1207,22 +1396,68 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
   table.perp,table.holders{font-size:12.5px}
   table.perp th,table.holders th,table.perp td,table.holders td{padding:7px 8px}
 }
+/* ── screener: segmented filters, Buy/venue badges, signal cards ───────────── */
+.filters{flex-wrap:wrap;gap:8px 12px}
+.segrow{display:inline-flex;align-items:center;gap:0}
+.segrow .flabel{font-size:11px;color:#6b7785;font-weight:700;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
+.seg{font:inherit;font-size:12px;border:1px solid #d7dee6;background:#fff;color:#42505e;padding:4px 9px;cursor:pointer;border-right:0}
+.seg:first-of-type{border-radius:7px 0 0 7px}
+.seg:last-of-type{border-radius:0 7px 7px 0;border-right:1px solid #d7dee6}
+.seg.active{background:#1f4e79;color:#fff;border-color:#1f4e79}
+.buy{display:inline-block;border-radius:9px;font-size:10.5px;font-weight:700;padding:1px 8px;white-space:nowrap;color:#fff;margin:0 4px 2px 0}
+.buy i{font-style:normal;opacity:.8;font-weight:600}
+.buy.v1{background:#1e7a46}.buy.v2{background:#1f4e79}.buy.v3{background:#9b2d8f}
+.buy.mini{font-size:10px;padding:1px 6px}
+.buyrow{margin:2px 0 0;display:flex;flex-wrap:wrap}
+.ven{display:inline-block;border-radius:6px;font-size:9.5px;font-weight:700;padding:1px 5px;margin-left:5px;vertical-align:middle}
+.ven.bn{background:#f3ba2f;color:#3a2c00}
+.ven.byb{background:#e9eef5;color:#1f4e79;border:1px solid #cdd9e8}
+td.sig .buy{margin:1px 3px 1px 0}
+.sigmeta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 14px;font-size:13px;color:#42505e}
+.sigmeta b{color:#6b7785;font-weight:600;margin-right:4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+.buycards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
+.buycard{border:1px solid #e1e7ee;border-radius:10px;padding:12px 14px;background:#fbfcfd}
+.buycard.fired{border-color:#1e7a46;background:#f3faf5}
+.bc-head{font-weight:700;font-size:13px;color:#1d2733;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.bc-head span{font-weight:400;font-size:11.5px;color:#8a96a3}
+.bc-head .buy{margin:0}
+.bc-no{font-size:11px;color:#8a96a3;font-weight:600;margin-left:auto}
+.bc-rec{font-size:12px;color:#42505e;margin:-2px 0 8px}
+.bc-state.na{font-size:12px;color:#8a96a3;font-style:italic}
+.conds{list-style:none;margin:0;padding:0;font-size:11.5px;display:grid;gap:3px}
+.conds li.ok{color:#1e7a46}
+.conds li.x{color:#9aa6b2}
+.binance-btn{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:8px;background:#f3ba2f;color:#3a2c00;font-weight:700;font-size:13px;text-decoration:none}
+.binance-btn:hover{background:#e0a91d}
 """
 
 JS = """
 <script>
-const boxes=[];const tiles=[...document.querySelectorAll('.tile')];
+const tiles=[...document.querySelectorAll('.tile')];
 const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows];
 const search=document.getElementById('search'),count=document.getElementById('count');
-const chk=document.getElementById('fdvchk'),val=document.getElementById('fdvval');
-function apply(){
+const F={strat:'all',oi:'all',gate:'all',fdv:'all',wl:'all'};
+function ok(el){
   const q=search.value.trim().toLowerCase();
-  const thr=chk.checked?parseFloat(val.value||'0')*1e9:null;
-  const ok=el=>(!q||el.dataset.search.includes(q))&&(thr===null||parseFloat(el.dataset.fdv)>thr);
-  for(const el of items) el.style.display=ok(el)?'':'none';
-  count.textContent=tiles.filter(ok).length+' / '+tiles.length+' tokens';
+  if(q && !el.dataset.search.includes(q)) return false;
+  if(F.strat!=='all' && !(el.dataset.strat||'').includes('|'+F.strat+'|')) return false;
+  const oi=parseFloat(el.dataset.oi||'0');
+  if(F.oi==='5m' && !(oi>5e6)) return false;
+  if(F.oi==='10m' && !(oi>1e7)) return false;
+  if(F.gate==='pass' && el.dataset.gate!=='1') return false;
+  const fdv=parseFloat(el.dataset.fdvnum||'-1');
+  if(F.fdv==='lt150' && !(fdv>=0 && fdv<150e6)) return false;
+  if(F.fdv==='gte150' && !(fdv>=150e6)) return false;
+  if(F.wl==='manip' && el.dataset.wl!=='manip') return false;
+  return true;
 }
-search.addEventListener('input',apply);chk.addEventListener('change',apply);val.addEventListener('input',apply);
+function apply(){for(const el of items)el.style.display=ok(el)?'':'none';
+  count.textContent=tiles.filter(ok).length+' / '+tiles.length+' coins';}
+search.addEventListener('input',apply);
+document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{
+  F[b.dataset.filter]=b.dataset.value;
+  b.parentElement.querySelectorAll('.seg').forEach(x=>x.classList.toggle('active',x===b));
+  apply();}));
 const bG=document.getElementById('view-grid'),bL=document.getElementById('view-list');
 const views=document.getElementById('views');
 // remember the chosen view (per report) so returning from a token detail page
@@ -1256,21 +1491,34 @@ def main():
     FUNDING.update(_load_funding([r["symbol"].upper() for r in data.values()]))
     if TGE_CACHE.exists():
         TGE.update(json.loads(TGE_CACHE.read_text(encoding="utf-8")))
+    _load_screener()
     platforms = _load_platforms()
-    # Default order: by TGE date, newest first (tokens without a known date last) —
-    # mirrors the Listing Reactions report's newest-first ordering. The list is still
-    # client-side re-sortable by any column header.
-    recs = sorted(data.values(),
-                  key=lambda r: (_tge_dt(r).timestamp() if _tge_dt(r) else float("-inf")),
-                  reverse=True)
+
+    # Combine the curated watchlist (rich data) with the screener universe: every
+    # screener coin that isn't already a watchlist token is ADDED as a signal-only
+    # record, so the whole manipulated-coin list lives on this one tab.
+    recs = list(data.values())
+    have = {r["symbol"].upper() for r in recs}
+    for sym, sr in SCREENER.items():
+        if sym in have:
+            continue
+        recs.append({"symbol": sym, "name": sym, "screener_only": True,
+                     "sections": sr.get("sections", []), "sources": sr.get("sources", [])})
+
+    # Default order: coins with a live Buy signal first, then by combined
+    # Binance+Bybit OI. Still client-side re-sortable by any column header.
+    recs.sort(key=lambda r: (len(_fired_strats(r["symbol"])),
+                             _sig(r["symbol"]).get("oi_combined") or 0), reverse=True)
+
     SITE.mkdir(parents=True, exist_ok=True)
-    # ONE shared stylesheet instead of ~35KB of CSS inlined into every page —
-    # cached across the index + all detail pages.
+    # ONE shared stylesheet instead of CSS inlined into every page.
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     for r in recs:
-        (SITE / f"{r['symbol'].lower()}.html").write_text(_detail(r, platforms), encoding="utf-8")
-    print(f"wrote {SITE/'index.html'} + {len(recs)} detail pages")
+        page = _screener_detail(r) if r.get("screener_only") else _detail(r, platforms)
+        (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
+    print(f"wrote {SITE/'index.html'} + {len(recs)} detail pages "
+          f"({len(data)} curated + {len(recs) - len(data)} screener-only)")
 
 
 if __name__ == "__main__":

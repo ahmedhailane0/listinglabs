@@ -912,14 +912,12 @@ def _index(cfgs: list[dict]) -> str:
     tiles = "\n".join(_tile(c) for c in cfgs)
     tracked = {c["token"].upper() for c in cfgs}
     funnel_n, scams_n = sibling_counts()
-    screener_n = screener_count()
     fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
     scam_lbl = f"Manipulated ({scams_n})" if scams_n else "Manipulated"
-    scr_lbl = f"Screener ({screener_n})" if screener_n else "Screener"
     defs = spark_defs(_SPARK_BODIES.items())
     body = f"""
 <header><h1>Binance Alpha &amp; Perps</h1>
-<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">{fun_lbl}</a><a href="../scams/index.html">{scam_lbl}</a><a href="../screener/index.html">{scr_lbl}</a></nav>
+<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">{fun_lbl}</a><a href="../scams/index.html">{scam_lbl}</a></nav>
 <p>{len(cfgs)} tokens · click a token for its info + chart · updated {build_stamp()} UTC, rebuilds every ~20 min</p></header>
 {_news_strip(tracked)}
 {_filter_bar(cfgs)}
