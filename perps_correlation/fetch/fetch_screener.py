@@ -1,4 +1,4 @@
-"""Hourly perp-screener fetcher for the manipulated-coin Screener tab.
+"""Hourly perp-screener fetcher for the Manipulated tab.
 
 RUNS ON THE ALWAYS-ON BOX, not GitHub CI: Binance's futures API (fapi.binance.com)
 returns 451 to datacenter IPs, so CI can't fetch this. For every screenable coin
@@ -8,9 +8,11 @@ in cache/manip_watchlist.json (has_perp) it pulls from Binance:
   * 1H klines                     (fapi/v1/klines, interval=1h)
   * funding history + interval    (fapi/v1/fundingRate, fapi/v1/fundingInfo)
 
-plus current Bybit OI (one bulk call) for the page-level (BN+BYB OI)/FDV gate and
-CMC FDV (cached, slow-moving). It runs the Buy v1/v2/v3 engine (lib.signals) and
-writes ONE compact file the site builds from: cache/screener/screener.json.
+plus current Bybit OI (one bulk call), price-checked CMC market data
+(FDV/mcap/vol/supply/%changes/chain/contract — the PRICE CHECK kills wrong-coin
+slug matches like TRUTH->truth-technology), and best-effort GoPlus holders for
+EVM contracts. Runs the Buy v1/v2/v3 engine (lib.signals) and writes ONE compact
+file the site builds from: cache/screener/screener.json.
 
 Stateless on history: openInterestHist returns ~real hourly OI each call, so the
 signals are correct from the very first run (no multi-day warm-up).
@@ -23,41 +25,75 @@ from __future__ import annotations
 import json
 import sys
 import time
+import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
 import sys as _sys
 from pathlib import Path as _Path
-_sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch. importable
+_sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))
 from fetch.fetch_perp_markets import _get, _f, _bulk_bybit, _binance_intervals
-from fetch.fetch_token_market import fetch_one as cmc_fetch
 from lib import signals
 from lib.signals import evaluate
 
-HERE = Path(__file__).resolve().parents[1]   # perps_correlation/ (project root, NOT this subfolder)
+HERE = Path(__file__).resolve().parents[1]   # perps_correlation/
 CACHE = HERE.parent / "cache"
 WATCHLIST = CACHE / "manip_watchlist.json"
 OUTDIR = CACHE / "screener"
 OUT = OUTDIR / "screener.json"
-FDV_CACHE = OUTDIR / "fdv.json"
 
 FAPI = "https://fapi.binance.com"
-OI_LIMIT = 300        # hours of OI history (~12.5d) — covers the 72h scan + EMA60 warmup
-KLINE_LIMIT = 300     # hours of 1H klines
-FUND_LIMIT = 20       # funding settlements (~6d at 8h)
-GATE = 0.08           # page-level: (Binance OI + Bybit OI) / FDV >= 8%
-FDV_TTL_S = 6 * 3600  # refresh a coin's FDV at most every 6h
-FDV_MAX_PER_RUN = 25  # cap CMC calls per run (it throttles)
+OI_LIMIT = 300
+KLINE_LIMIT = 300
+FUND_LIMIT = 20
+GATE = 0.08
 WORKERS = 6
+SPARK_POINTS = 120
+
+# ── Market enrichment (CMC keyless detail endpoint) ──────────────────────────
+MARKET_CACHE_FILE = OUTDIR / "market.json"
+MARKET_TTL_S = 6 * 3600      # refresh a coin's market data at most every 6h
+MARKET_MAX_PER_RUN = 40       # cap CMC detail calls per run
+CMC_DETAIL_URL = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detail?slug={slug}"
+CMC_UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
+CMC_MAP_FILE = HERE.parent / "cmc_map.json"   # may not exist on the box (gitignored)
+PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
+
+# ── Holders (best-effort, EVM only) ─────────────────────────────────────────
+HOLDERS_DIR = CACHE / "scam_holders"
+HOLDER_MAX_PER_RUN = 30
+HOLDER_TTL_S = 24 * 3600
+
+# CMC contractPlatform name → CoinGecko platform key (GoPlus chain mapping)
+CMC_TO_CG_PLATFORM = {
+    "Ethereum": "ethereum",
+    "BNB Smart Chain (BEP20)": "binance-smart-chain",
+    "BNB Chain": "binance-smart-chain",
+    "Base": "base",
+    "Polygon": "polygon-pos",
+    "Arbitrum": "arbitrum-one",
+    "Arbitrum One": "arbitrum-one",
+    "Optimism": "optimistic-ethereum",
+    "Avalanche C-Chain": "avalanche",
+    "Avalanche": "avalanche",
+}
 
 
 def _now() -> int:
     return int(time.time())
 
 
+def _load_json(p: Path, default):
+    try:
+        return json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        return default
+
+
+# ── Binance data fetchers ────────────────────────────────────────────────────
+
 def _oi_hist(sym: str) -> list[tuple[int, float]]:
-    """Hourly (ts_sec, OI_usd) from Binance, ascending. Empty on failure."""
     d = _get(f"{FAPI}/futures/data/openInterestHist?symbol={sym}USDT&period=1h&limit={OI_LIMIT}")
     out = []
     for p in d or []:
@@ -69,20 +105,17 @@ def _oi_hist(sym: str) -> list[tuple[int, float]]:
 
 
 def _klines_1h(sym: str) -> list[tuple]:
-    """Hourly (open_ts_sec, o, h, l, c, vol) — CLOSED candles only, ascending."""
     d = _get(f"{FAPI}/fapi/v1/klines?symbol={sym}USDT&interval=1h&limit={KLINE_LIMIT}")
     now_ms = _now() * 1000
     out = []
     for k in d or []:
-        # k = [openTime, o, h, l, c, vol, closeTime, ...]
-        if len(k) < 7 or k[6] >= now_ms:      # drop the still-forming candle
+        if len(k) < 7 or k[6] >= now_ms:
             continue
         out.append((int(k[0]) // 1000, _f(k[1]), _f(k[2]), _f(k[3]), _f(k[4]), _f(k[5])))
     return out
 
 
 def _funding(sym: str) -> list[tuple[int, float]]:
-    """(ts_sec, rate) funding settlements, ascending."""
     d = _get(f"{FAPI}/fapi/v1/fundingRate?symbol={sym}USDT&limit={FUND_LIMIT}")
     out = []
     for x in d or []:
@@ -92,29 +125,134 @@ def _funding(sym: str) -> list[tuple[int, float]]:
     return sorted(out)
 
 
-def _load_json(p: Path, default):
-    try:
-        return json.loads(p.read_text(encoding="utf-8"))
-    except Exception:
-        return default
+# ── Spark series (for tile sparklines + detail chart fallback) ───────────────
+
+def _spark_series(klines: list) -> list:
+    """Downsample 1H klines to ~SPARK_POINTS close prices.
+    Returns [[t_sec, close], ...] ascending."""
+    if len(klines) < 2:
+        return []
+    step = max(1, len(klines) // SPARK_POINTS)
+    pts = klines[::step]
+    if pts[-1][0] != klines[-1][0]:
+        pts.append(klines[-1])
+    return [[k[0], round(k[4], 8)] for k in pts]
 
 
-def _fdv_for(slug: str, cache: dict) -> tuple[float | None, float | None, bool]:
-    """Cached FDV/mcap for a CMC slug. Returns (fdv, mcap, did_fetch)."""
-    if not slug:
-        return None, None, False
-    rec = cache.get(slug)
-    if rec and (_now() - rec.get("ts", 0)) < FDV_TTL_S:
-        return rec.get("fdv"), rec.get("mcap"), False
-    res = cmc_fetch(slug)
-    fdv, mcap = res.get("fdv_usd"), res.get("mcap_usd")
-    if "error" not in res:
-        cache[slug] = {"fdv": fdv, "mcap": mcap, "ts": _now()}
-    return fdv, mcap, True
+# ── CMC market enrichment with price-checking ────────────────────────────────
+
+def _cmc_detail_full(slug: str) -> dict | None:
+    """Full CMC detail: price, FDV, mcap, vol, supplies, %changes, chain, TGE."""
+    url = CMC_DETAIL_URL.format(slug=slug)
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(url, headers=CMC_UA)
+            with urllib.request.urlopen(req, timeout=30) as r:
+                payload = json.loads(r.read().decode("utf-8"))
+        except Exception:
+            time.sleep(3.0 * (attempt + 1))
+            continue
+        status = (payload.get("status") or {})
+        if status.get("error_code") not in (0, "0", None):
+            time.sleep(3.0 * (attempt + 1))
+            continue
+        data = payload.get("data") or {}
+        if not data.get("name"):
+            return None
+        st = data.get("statistics") or {}
+        chain, contract = None, None
+        for p in (data.get("platforms") or []):
+            cg = CMC_TO_CG_PLATFORM.get(p.get("contractPlatform"))
+            if cg and p.get("contractAddress"):
+                chain, contract = cg, p["contractAddress"]
+                break
+        return {
+            "slug": slug, "name": data.get("name"), "symbol": data.get("symbol"),
+            "price": st.get("price"),
+            "fdv": st.get("fullyDilutedMarketCap"),
+            "mcap": st.get("marketCap"),
+            "vol24h": st.get("volume24h"),
+            "circ_supply": st.get("circulatingSupply"),
+            "total_supply": st.get("totalSupply"),
+            "max_supply": st.get("maxSupply"),
+            "p24h": st.get("priceChangePercentage24h"),
+            "p7d": st.get("priceChangePercentage7d"),
+            "p30d": st.get("priceChangePercentage30d"),
+            "p90d": st.get("priceChangePercentage90d"),
+            "chain": chain, "contract": contract,
+            "tge": data.get("dateLaunched"),
+            "ts": _now(),
+        }
+    return None
+
+
+def _price_ok(cmc_price, bn_price) -> bool:
+    """True if CMC and Binance perp prices are within PRICE_TOL of each other."""
+    if not cmc_price or not bn_price or cmc_price <= 0 or bn_price <= 0:
+        return False
+    ratio = cmc_price / bn_price
+    return (1.0 / PRICE_TOL) <= ratio <= PRICE_TOL
+
+
+def _load_cmc_map() -> dict[str, list[str]]:
+    """Symbol(upper) -> [slug, ...] from cmc_map.json (local-only fallback)."""
+    entries = _load_json(CMC_MAP_FILE, [])
+    if not isinstance(entries, list):
+        return {}
+    by_sym: dict[str, list] = {}
+    for e in entries:
+        sym = (e.get("symbol") or "").upper()
+        if sym and e.get("slug") and e.get("is_active"):
+            by_sym.setdefault(sym, []).append(e["slug"])
+    return by_sym
+
+
+def _resolve_market(sym: str, bn_price: float | None, wl_slug: str | None,
+                    cmc_by_sym: dict, market_cache: dict,
+                    allow_fetch: bool = True) -> tuple[dict | None, int]:
+    """Price-verified CMC market data. Returns (market_dict | None, api_calls_made).
+    Tries: watchlist slug -> lowercase-symbol guess -> cmc_map slugs.
+    A slug is REJECTED if CMC price is off the Binance mark by >3x."""
+    candidates = []
+    if wl_slug:
+        candidates.append(wl_slug)
+    guess = sym.lower()
+    if guess not in candidates:
+        candidates.append(guess)
+    for slug in cmc_by_sym.get(sym, []):
+        if slug not in candidates:
+            candidates.append(slug)
+
+    fetched = 0
+    for slug in candidates:
+        cached = market_cache.get(slug)
+        fresh = cached and (_now() - cached.get("ts", 0)) < MARKET_TTL_S
+        if not fresh:
+            if not allow_fetch:
+                continue
+            detail = _cmc_detail_full(slug)
+            if detail:
+                market_cache[slug] = detail
+                fetched += 1
+                time.sleep(1.5)
+            cached = detail
+        if not cached or not cached.get("price"):
+            continue
+        if not bn_price or _price_ok(cached["price"], bn_price):
+            return cached, fetched
+    return None, fetched
+
+
+# ── Per-coin Binance pull ────────────────────────────────────────────────────
+
+MARKET_KEYS = ("slug", "name", "price", "fdv", "mcap", "vol24h",
+               "circ_supply", "total_supply", "max_supply",
+               "p24h", "p7d", "p30d", "p90d",
+               "chain", "contract", "tge")
 
 
 def _fetch_token(sym: str, intervals: dict) -> dict:
-    """Per-coin Binance pull + signal compute (FDV/gate filled in by the caller)."""
+    """Per-coin Binance pull + signal compute + spark series."""
     oi = _oi_hist(sym)
     kl = _klines_1h(sym)
     fund = _funding(sym)
@@ -123,34 +261,40 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
     sig = evaluate(oi, kl, funding=fund, current_funding=cur_funding,
                    funding_interval_h=float(interval_h))
     oi_bn = oi[-1][1] if oi else None
+    mark_price = kl[-1][4] if kl else None
+    spark = _spark_series(kl)
     ok = bool(oi and kl)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
-            "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial"}
+            "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
+            "mark_price": mark_price, "spark": spark}
 
+
+# ── main ─────────────────────────────────────────────────────────────────────
 
 def main(argv: list[str]) -> int:
     OUTDIR.mkdir(parents=True, exist_ok=True)
     wl = _load_json(WATCHLIST, {})
     if not wl:
-        print(f"{WATCHLIST} missing/empty — run tools/seed_manip_watchlist.py first")
+        print(f"{WATCHLIST} missing/empty -- run tools/seed_manip_watchlist.py first")
         return 1
     only = {a.upper() for a in argv}
     screenable = [s for s, r in wl.items() if r.get("has_perp") and (not only or s in only)]
     screenable.sort()
 
-    # Shared one-shot pulls.
+    # ── Shared one-shot pulls ────────────────────────────────────────────────
     intervals = {}
     try:
         intervals = _binance_intervals()
     except Exception:
         pass
     try:
-        byb = _bulk_bybit()                       # {base: {oi_usd, ...}}
+        byb = _bulk_bybit()
     except Exception:
         byb = {}
-    fdv_cache = _load_json(FDV_CACHE, {})
+    market_cache = _load_json(MARKET_CACHE_FILE, {})
+    cmc_by_sym = _load_cmc_map()
 
-    # Per-coin Binance pull + signals (concurrent).
+    # ── Per-coin Binance pull + signals (concurrent) ─────────────────────────
     recs: dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = {ex.submit(_fetch_token, s, intervals): s for s in screenable}
@@ -159,18 +303,27 @@ def main(argv: list[str]) -> int:
                 recs[s] = fut.result()
             except Exception as e:
                 recs[s] = {"data": "error", "error": f"{type(e).__name__}: {e}",
-                           "signals": evaluate([], []), "oi_bn": None}
+                           "signals": evaluate([], []), "oi_bn": None,
+                           "mark_price": None, "spark": []}
 
-    # FDV (cached/slow) + Bybit OI + the page-level gate.
-    fdv_fetches = 0
+    # ── Market enrichment: price-checked CMC data (capped) ───────────────────
+    market_fetches = 0
     for s in screenable:
         rec = recs[s]
         slug = wl[s].get("cmc_slug")
-        do_fetch = fdv_fetches < FDV_MAX_PER_RUN
-        fdv, mcap, fetched = (_fdv_for(slug, fdv_cache) if do_fetch
-                              else (fdv_cache.get(slug, {}).get("fdv"),
-                                    fdv_cache.get(slug, {}).get("mcap"), False))
-        fdv_fetches += 1 if fetched else 0
+        bn_price = rec.get("mark_price")
+        allow = market_fetches < MARKET_MAX_PER_RUN
+        mkt, n = _resolve_market(s, bn_price, slug, cmc_by_sym, market_cache, allow)
+        market_fetches += n
+        if mkt:
+            rec["market"] = {k: mkt[k] for k in MARKET_KEYS if k in mkt}
+
+    # ── Bybit OI + FDV gate (uses market-verified FDV) ───────────────────────
+    for s in screenable:
+        rec = recs[s]
+        mkt = rec.get("market") or {}
+        fdv = mkt.get("fdv")
+        mcap = mkt.get("mcap")
         oi_byb = (byb.get(s) or {}).get("oi_usd")
         oi_bn = rec.get("oi_bn")
         oi_comb = (oi_bn or 0) + (oi_byb or 0) if (oi_bn or oi_byb) else None
@@ -181,12 +334,61 @@ def main(argv: list[str]) -> int:
             "sections": wl[s].get("sections", []), "sources": wl[s].get("sources", []),
         })
 
-    # Carry the not-screenable coins through so the page can show them.
+    # ── Non-screenable coins (no Binance perp) ──────────────────────────────
     for s, r in wl.items():
         if not r.get("has_perp") and (not only or s in only):
             recs[s] = {"data": "no_perp", "sections": r.get("sections", []),
-                       "sources": r.get("sources", []), "signals": evaluate([], [])}
+                       "sources": r.get("sources", []), "signals": evaluate([], []),
+                       "spark": []}
+            slug = r.get("cmc_slug")
+            if slug and market_fetches < MARKET_MAX_PER_RUN:
+                mkt, n = _resolve_market(s, None, slug, cmc_by_sym, market_cache, True)
+                market_fetches += n
+                if mkt:
+                    recs[s]["market"] = {k: mkt[k] for k in MARKET_KEYS if k in mkt}
 
+    # ── Best-effort holders (EVM contracts, capped) ──────────────────────────
+    holder_fetches = 0
+    try:
+        from fetch.fetch_holders import fetch_holders as _hld_fetch
+    except ImportError:
+        _hld_fetch = None
+    if _hld_fetch and HOLDER_MAX_PER_RUN > 0:
+        HOLDERS_DIR.mkdir(parents=True, exist_ok=True)
+        for s in screenable:
+            if holder_fetches >= HOLDER_MAX_PER_RUN:
+                break
+            mkt = recs[s].get("market") or {}
+            chain, contract = mkt.get("chain"), mkt.get("contract")
+            if not chain or not contract:
+                continue
+            hf = HOLDERS_DIR / f"{s}.json"
+            if hf.exists():
+                try:
+                    hdata = json.loads(hf.read_text(encoding="utf-8"))
+                    if (_now() - hdata.get("fetched_at", 0)) < HOLDER_TTL_S:
+                        continue
+                except Exception:
+                    pass
+            try:
+                h = _hld_fetch(s, chain, contract)
+                hf.write_text(json.dumps(h, ensure_ascii=False), encoding="utf-8")
+                holder_fetches += 1
+                tag = f"top10={h['top10_share']}%" if h.get("available") else "unavailable"
+                print(f"  holders {s}: {tag} on {chain}")
+            except Exception as e:
+                print(f"  holders {s}: error {e}")
+            time.sleep(1.5)
+
+    # ── Persist market cache ─────────────────────────────────────────────────
+    MARKET_CACHE_FILE.write_text(
+        json.dumps(market_cache, separators=(",", ":")), encoding="utf-8")
+
+    # ── Strip internal fields from output ────────────────────────────────────
+    for rec in recs.values():
+        rec.pop("mark_price", None)
+
+    # ── Write screener.json ──────────────────────────────────────────────────
     def _fired(strat):
         return sum(1 for r in recs.values()
                    if (r.get("signals") or {}).get(strat, {}).get("fired"))
@@ -206,11 +408,13 @@ def main(argv: list[str]) -> int:
         "tokens": recs,
     }
     OUT.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
-    FDV_CACHE.write_text(json.dumps(fdv_cache, separators=(",", ":")), encoding="utf-8")
     c = payload["counts"]
+    mkt_ok = sum(1 for r in recs.values() if r.get("market"))
     print(f"wrote {OUT}")
     print(f"  screenable={c['screenable']}  gate-pass={c['passing_gate']}  "
-          f"v1={c['v1']} v2={c['v2']} v3={c['v3']}  (FDV fetched {fdv_fetches})")
+          f"v1={c['v1']} v2={c['v2']} v3={c['v3']}")
+    print(f"  market={mkt_ok}  (CMC fetched {market_fetches})  "
+          f"holders={holder_fetches}")
     return 0
 
 

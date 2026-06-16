@@ -147,6 +147,26 @@ _SW, _SH = 100.0, 32.0
 _SPARK_BODIES: dict[str, str] = {}
 
 
+def _spark_from_series(series) -> str:
+    """Build SVG spark body from a [[t, price], ...] series."""
+    if len(series) < 2:
+        return ""
+    step = max(1, len(series) // 120)
+    pts = series[::step]
+    if pts[-1][0] != series[-1][0]:
+        pts.append(series[-1])
+    vals = [v for _t, v in pts]
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1.0
+    n = len(vals)
+    x = lambda i: round(i / (n - 1) * _SW, 2)
+    y = lambda v: round(_SH - (v - lo) / span * (_SH - 2) - 1, 2)
+    line = " ".join(f"{x(i)},{y(v)}" for i, v in enumerate(vals))
+    area = f"0,{_SH} {line} {_SW},{_SH}"
+    return (f'<polygon class="spark-fill" points="{area}"/>'
+            f'<polyline class="spark-line" points="{line}"/>')
+
+
 def _spark_body(sym: str) -> str:
     if sym in _SPARK_BODIES:
         return _SPARK_BODIES[sym]
@@ -154,21 +174,10 @@ def _spark_body(sym: str) -> str:
     p = PRICES / f"{sym}.json"
     if p.exists():
         series = json.loads(p.read_text(encoding="utf-8"))
-        if len(series) >= 2:
-            step = max(1, len(series) // 120)
-            pts = series[::step]
-            if pts[-1][0] != series[-1][0]:
-                pts.append(series[-1])      # always end on the real latest price
-            vals = [v for _t, v in pts]
-            lo, hi = min(vals), max(vals)
-            span = (hi - lo) or 1.0
-            n = len(vals)
-            x = lambda i: round(i / (n - 1) * _SW, 2)
-            y = lambda v: round(_SH - (v - lo) / span * (_SH - 2) - 1, 2)
-            line = " ".join(f"{x(i)},{y(v)}" for i, v in enumerate(vals))
-            area = f"0,{_SH} {line} {_SW},{_SH}"
-            body = (f'<polygon class="spark-fill" points="{area}"/>'
-                    f'<polyline class="spark-line" points="{line}"/>')
+        body = _spark_from_series(series)
+    if not body:
+        spark = (_sig(sym) or {}).get("spark") or []
+        body = _spark_from_series(spark)
     _SPARK_BODIES[sym] = body
     return body
 
@@ -191,17 +200,16 @@ def _sparkline(sym: str) -> str:
 
 def _price_chart(sym: str, name: str) -> str:
     p = PRICES / f"{sym}.json"
-    if not p.exists():
-        return '<div class="missing">no price data</div>'
-    series = json.loads(p.read_text(encoding="utf-8"))
+    if p.exists():
+        series = json.loads(p.read_text(encoding="utf-8"))
+    else:
+        spark = (_sig(sym) or {}).get("spark") or []
+        series = [[t * 1000, v] for t, v in spark] if spark else []
     if len(series) < 2:
         return '<div class="missing">no price data</div>'
     ys = [v for _t, v in series]
     ref = min([v for v in ys if v > 0] or [1])
     dec = max(4, 2 - math.floor(math.log10(ref))) if ref > 0 else 4
-    # Same engine as the Listing Reactions price charts: TradingView Lightweight
-    # Charts, so the price/time trading charts are consistent across the whole site.
-    # (The OI/funding history + donuts on this page stay on Plotly.)
     points = [[int(t / 1000), v] for t, v in series]
     return timeseries_html(f"chart-{sym.lower()}", [{
         "data": points, "kind": "area", "color": "#1f4e79", "scale": "right",
@@ -284,40 +292,41 @@ def _series(sym):
 
 
 def _perf(rec):
-    """Price-reaction metrics computed from the token's own 180-day daily price
-    history — the watchlist analogue of metrics.reaction() for the reactions
-    report. 'Since' = change over the full available window (no listing event to
-    anchor to). Returns None when there isn't enough history."""
+    """Price-reaction metrics. Uses the 180-day daily price history when
+    available, otherwise falls back to CMC %changes from screener market data."""
     s = _series(rec["symbol"])
-    if len(s) < 2:
-        return None
-    last_t, last = s[-1]
-    first = s[0][1]
-    DAY = 86400_000
+    if len(s) >= 2:
+        last_t, last = s[-1]
+        first = s[0][1]
+        DAY = 86400_000
 
-    def chg(n_days):
-        # Nearest point to the target, capped at 2 days off — a gapped series
-        # must omit the checkpoint rather than quote a far-away price as "n days
-        # ago" (same rule as lib.metrics.CHECKPOINT_TOL).
-        target = last_t - n_days * DAY
-        base_t, base = min(s, key=lambda p: abs(p[0] - target))
-        if abs(base_t - target) > 2 * DAY or not base:
-            return None
-        return (last / base - 1) * 100
+        def chg(n_days):
+            target = last_t - n_days * DAY
+            base_t, base = min(s, key=lambda p: abs(p[0] - target))
+            if abs(base_t - target) > 2 * DAY or not base:
+                return None
+            return (last / base - 1) * 100
 
-    prices = [p[1] for p in s]
-    ath, atl = max(prices), min(prices)
-    peak, mdd = -1.0, 0.0
-    for _t, v in s:
-        peak = max(peak, v)
-        if peak > 0:
-            mdd = min(mdd, (v / peak - 1) * 100)
-    return {
-        "since": (last / first - 1) * 100 if first else None,
-        "p24": chg(1), "p7": chg(7), "p30": chg(30), "p90": chg(90),
-        "launch": first, "last": last, "ath": ath, "atl": atl,
-        "dd": mdd, "peak_gain": (ath / first - 1) * 100 if first else None,
-    }
+        prices = [p[1] for p in s]
+        ath, atl = max(prices), min(prices)
+        peak, mdd = -1.0, 0.0
+        for _t, v in s:
+            peak = max(peak, v)
+            if peak > 0:
+                mdd = min(mdd, (v / peak - 1) * 100)
+        return {
+            "since": (last / first - 1) * 100 if first else None,
+            "p24": chg(1), "p7": chg(7), "p30": chg(30), "p90": chg(90),
+            "launch": first, "last": last, "ath": ath, "atl": atl,
+            "dd": mdd, "peak_gain": (ath / first - 1) * 100 if first else None,
+        }
+    mkt = (_sig(rec["symbol"]) or {}).get("market") or {}
+    if mkt.get("p24h") is not None or mkt.get("p7d") is not None:
+        return {"since": None, "p24": mkt.get("p24h"), "p7": mkt.get("p7d"),
+                "p30": mkt.get("p30d"), "p90": mkt.get("p90d"),
+                "launch": None, "last": mkt.get("price"),
+                "ath": None, "atl": None, "dd": None, "peak_gain": None}
+    return None
 
 
 def _investor_links(invs, limit=8):
@@ -395,7 +404,7 @@ def _tile(rec) -> str:
 # (BN+BYB)/FDV ratio drive the scan; price 24h + memo carry the curated-coin
 # context. Full rich data (chart/holders/funding rounds) stays on each coin's
 # detail page. 9 cols — keep the nth-child widths in EXTRA_CSS in sync.
-LIST_COLS = ["#", "Token", "Signal", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
+LIST_COLS = ["#", "Token", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
 
 
 def _ratio_cell(rec) -> str:
@@ -448,16 +457,13 @@ def _list_row(rec) -> str:
     oi = r.get("oi_combined")
     oifdv = r.get("oi_fdv_pct")
     p = _perf(rec) or {}
-    fired = _fired_strats(sym)
     tok = (f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
            f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
-    sig_html = "".join(f'<span class="buy {k} mini">{STRAT_NAME[k]}</span>' for k in fired) or "—"
     memo = html.escape(rec.get("memo_en") or "")
     return (
         f'<tr class="lrow" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f'<td class="sig" data-s="{len(fired)}">{sig_html}</td>'
         f'{_num_cell(oi, pct=False, color=False)}'
         f'{_num_cell(oifdv, pct=True, color=False) if oifdv is not None else _num_cell(None)}'
         f'{_num_cell(fdv, pct=False, color=False)}'
@@ -472,13 +478,14 @@ def _reaction_block(rec) -> str:
     p = _perf(rec)
     if not p:
         return ""
+    def _px(v): return fmt_subscript_price(v) if v else '—'
     stats = f"""
-    <div class="stat"><span class="k">First (180d)</span><span class="v">{fmt_subscript_price(p['launch'])}</span></div>
-    <div class="stat"><span class="k">All-time high</span><span class="v">{fmt_subscript_price(p['ath'])}</span></div>
-    <div class="stat"><span class="k">All-time low</span><span class="v">{fmt_subscript_price(p['atl'])}</span></div>
+    <div class="stat"><span class="k">First (180d)</span><span class="v">{_px(p['launch'])}</span></div>
+    <div class="stat"><span class="k">All-time high</span><span class="v">{_px(p['ath'])}</span></div>
+    <div class="stat"><span class="k">All-time low</span><span class="v">{_px(p['atl'])}</span></div>
     <div class="stat"><span class="k">Since (180d)</span><span class="v">{_pct(p['since']) if p['since'] is not None else '—'}</span></div>
     <div class="stat"><span class="k">Peak gain</span><span class="v">{_pct(p['peak_gain']) if p['peak_gain'] is not None else '—'}</span></div>
-    <div class="stat"><span class="k">Max drawdown</span><span class="v">{_pct(p['dd'])}</span></div>"""
+    <div class="stat"><span class="k">Max drawdown</span><span class="v">{_pct(p['dd']) if p['dd'] is not None else '—'}</span></div>"""
     checks = "".join(
         f'<div class="chk"><span class="k">{lbl}</span><span class="v">{_pct(v)}</span></div>'
         for lbl, v in [("24h", p["p24"]), ("7d", p["p7"]), ("30d", p["p30"]), ("90d", p["p90"])]
@@ -1126,29 +1133,6 @@ def _signals_section(sym) -> str:
             f'funding — research signals, not financial advice.</p></section>')
 
 
-def _screener_detail(rec) -> str:
-    """Detail page for a screener-only coin (no curated price/holder/memo data) —
-    header + the perp signals section + the Binance link."""
-    sym = rec["symbol"]
-    name = html.escape(rec.get("name", sym))
-    secs = ", ".join(rec.get("sections") or []).replace("_", " ")
-    sectag = f'<div class="cat">{html.escape(secs)}</div>' if secs else ""
-    body = (f'<header><a class="back" href="index.html">← all watchlist tokens</a></header>'
-            f'<main><section class="card"><div class="info" style="grid-column:1/-1">'
-            f'<h2>{name} <span class="sym">{html.escape(sym)}</span> {_venue_badges(sym)}</h2>'
-            f'{sectag}<p class="note">On the manipulated-coin perp screener — no curated '
-            f'market/holder data for this coin (signal data only).</p></div></section>'
-            f'{_signals_section(sym)}</main>')
-    title = f"{sym} — Manipulated"
-    desc = (f"{sym} on the manipulated-coin perp screener — Binance+Bybit open interest, "
-            f"funding and Buy v1/v2/v3 signals.")
-    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta(title, desc)}'
-            f'<title>{html.escape(sym)} — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
-
-
 def _detail(rec, platforms) -> str:
     sym = rec["symbol"]
     name = html.escape(rec.get("name", sym))
@@ -1287,22 +1271,18 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (9 cols: #, Token, Signal, OI (BN+BYB), OI/FDV %,
-   FDV, Funding, 24h, Memo). Fixed layout reads widths from the header row; a
-   min-width lets the wrapper (.listwrap, overflow-x:auto) scroll instead of
-   crunching columns on narrow screens. */
-#ltab{table-layout:fixed;min-width:900px}
+/* deterministic column widths (8 cols: #, Token, OI (BN+BYB), OI/FDV %,
+   FDV, Funding, 24h, Memo). */
+#ltab{table-layout:fixed;min-width:820px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3.5%}                  /* # */
-#ltab th:nth-child(2){width:20%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:16%;text-align:left}   /* Signal */
-#ltab th:nth-child(4){width:12%}                   /* OI (BN+BYB) */
-#ltab th:nth-child(5){width:9%}                    /* OI/FDV % */
-#ltab th:nth-child(6){width:10%}                   /* FDV */
-#ltab th:nth-child(7){width:9%}                    /* Funding */
-#ltab th:nth-child(8){width:7%}                    /* 24h */
-#ltab th:nth-child(9){width:13.5%;text-align:left} /* Memo */
-td.sig{text-align:left;white-space:normal}
+#ltab th:nth-child(2){width:24%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:13%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(4){width:10%}                   /* OI/FDV % */
+#ltab th:nth-child(5){width:11%}                   /* FDV */
+#ltab th:nth-child(6){width:10%}                   /* Funding */
+#ltab th:nth-child(7){width:8%}                    /* 24h */
+#ltab th:nth-child(8){width:20.5%;text-align:left} /* Memo */
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
 .flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
@@ -1409,7 +1389,7 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 .buy.v1{background:#1e7a46}.buy.v2{background:#1f4e79}.buy.v3{background:#9b2d8f}
 .buy.mini{font-size:10px;padding:1px 6px}
 .buyrow{margin:2px 0 0;display:flex;flex-wrap:wrap}
-.ven{display:inline-block;border-radius:6px;font-size:9.5px;font-weight:700;padding:1px 5px;margin-left:5px;vertical-align:middle}
+.ven{display:inline-block;border-radius:6px;font-size:9.5px;font-weight:700;padding:1px 5px;margin-left:5px;vertical-align:middle;white-space:nowrap}
 .ven.bn{background:#f3ba2f;color:#3a2c00}
 .ven.byb{background:#e9eef5;color:#1f4e79;border:1px solid #cdd9e8}
 td.sig .buy{margin:1px 3px 1px 0}
@@ -1483,9 +1463,45 @@ apply();
 </script>"""
 
 
+def _enrich_from_screener(rec):
+    """Map screener market data into the same field names scam_data uses, so
+    all existing renderers (_detail, _tile, _perf, _supply_dl, etc.) work."""
+    sym = rec["symbol"]
+    sr = _sig(sym)
+    mkt = sr.get("market") or {}
+    if mkt.get("name") and rec.get("name") == sym:
+        rec["name"] = mkt["name"]
+    if mkt.get("price") and not rec.get("price"):
+        rec["price"] = mkt["price"]
+    if mkt.get("fdv") and not (rec.get("fdv") or rec.get("csv_fdv")):
+        rec["fdv"] = mkt["fdv"]
+    if mkt.get("mcap") and not (rec.get("mcap") or rec.get("csv_mc")):
+        rec["mcap"] = mkt["mcap"]
+    if mkt.get("vol24h") and not rec.get("vol"):
+        rec["vol"] = mkt["vol24h"]
+    if mkt.get("circ_supply") and not rec.get("circ_supply"):
+        rec["circ_supply"] = mkt["circ_supply"]
+    if mkt.get("total_supply") and not rec.get("total_supply"):
+        rec["total_supply"] = mkt["total_supply"]
+    if mkt.get("max_supply") and not rec.get("max_supply"):
+        rec["max_supply"] = mkt["max_supply"]
+    if mkt.get("chain") and not rec.get("chain"):
+        rec["chain"] = mkt["chain"]
+    if mkt.get("contract") and not rec.get("contract"):
+        rec["contract"] = mkt["contract"]
+    if mkt.get("slug") and not rec.get("cmc_slug"):
+        rec["cmc_slug"] = mkt["slug"]
+    if mkt.get("tge") and not TGE.get(sym):
+        TGE[sym] = mkt["tge"]
+    tot = rec.get("total_supply") or rec.get("max_supply")
+    circ = rec.get("circ_supply")
+    if circ and tot and tot > 0:
+        rec["circ_ratio"] = circ / tot
+
+
 def main():
     if not DATA.exists():
-        print(f"{DATA} missing — run fetch_scam_data.py first")
+        print(f"{DATA} missing -- run fetch_scam_data.py first")
         return
     data = json.loads(DATA.read_text(encoding="utf-8"))
     FUNDING.update(_load_funding([r["symbol"].upper() for r in data.values()]))
@@ -1494,31 +1510,32 @@ def main():
     _load_screener()
     platforms = _load_platforms()
 
-    # Combine the curated watchlist (rich data) with the screener universe: every
-    # screener coin that isn't already a watchlist token is ADDED as a signal-only
-    # record, so the whole manipulated-coin list lives on this one tab.
     recs = list(data.values())
     have = {r["symbol"].upper() for r in recs}
     for sym, sr in SCREENER.items():
         if sym in have:
             continue
-        recs.append({"symbol": sym, "name": sym, "screener_only": True,
+        recs.append({"symbol": sym, "name": sym,
                      "sections": sr.get("sections", []), "sources": sr.get("sources", [])})
 
-    # Default order: coins with a live Buy signal first, then by combined
-    # Binance+Bybit OI. Still client-side re-sortable by any column header.
+    for r in recs:
+        _enrich_from_screener(r)
+
     recs.sort(key=lambda r: (len(_fired_strats(r["symbol"])),
                              _sig(r["symbol"]).get("oi_combined") or 0), reverse=True)
 
     SITE.mkdir(parents=True, exist_ok=True)
-    # ONE shared stylesheet instead of CSS inlined into every page.
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     for r in recs:
-        page = _screener_detail(r) if r.get("screener_only") else _detail(r, platforms)
+        page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
+    n_curated = len(data)
+    n_screener = len(recs) - n_curated
+    n_market = sum(1 for r in recs if r not in data.values() and
+                   (_sig(r["symbol"]) or {}).get("market"))
     print(f"wrote {SITE/'index.html'} + {len(recs)} detail pages "
-          f"({len(data)} curated + {len(recs) - len(data)} screener-only)")
+          f"({n_curated} curated + {n_screener} screener, {n_market} enriched)")
 
 
 if __name__ == "__main__":

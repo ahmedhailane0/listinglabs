@@ -23,8 +23,9 @@ if ! "$PY" fetch/fetch_screener.py; then
   echo "error: fetch_screener.py failed"; exit 1
 fi
 
-# 3) Commit ONLY the compact outputs (raw hourly series stay on the box).
-git -C "$REPO" add cache/screener/screener.json cache/screener/fdv.json
+# 3) Commit the compact outputs + any new holder files.
+git -C "$REPO" add cache/screener/screener.json cache/screener/market.json
+git -C "$REPO" add cache/scam_holders/ 2>/dev/null || true
 if git -C "$REPO" diff --cached --quiet; then
   echo "no change to commit"; exit 0
 fi
