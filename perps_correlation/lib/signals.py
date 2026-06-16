@@ -39,12 +39,20 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
 """
 from __future__ import annotations
 
-import sys as _sys
-from pathlib import Path as _Path
-_sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib. importable from anywhere
-from lib.metrics import ema
-
 HOUR = 3600
+
+
+def ema(values: list[float], n: int) -> list[float]:
+    """Exponential moving average aligned to `values` (same length), seeded on the
+    first value. Kept INLINE (pure stdlib) so this engine has zero project import
+    deps — the box that runs it needs no matplotlib/chart stack, just Python."""
+    if not values:
+        return []
+    k = 2.0 / (n + 1)
+    out = [float(values[0])]
+    for v in values[1:]:
+        out.append(v * k + out[-1] * (1 - k))
+    return out
 
 # ── thresholds (named so the page can quote them) ─────────────────────────────
 V1_OI_3H = 0.08          # >= +8% OI over 3h

@@ -119,19 +119,6 @@ def reaction(cfg: dict) -> dict | None:
     }
 
 
-def ema(values: list[float], n: int) -> list[float]:
-    """Exponential moving average aligned to `values` (same length), seeded on the
-    first value. Used by the perp screener's Buy v2 signal (lib/signals.py). Pure
-    — no project deps — so the signal engine and its unit tests stay isolated."""
-    if not values:
-        return []
-    k = 2.0 / (n + 1)
-    out = [float(values[0])]
-    for v in values[1:]:
-        out.append(v * k + out[-1] * (1 - k))
-    return out
-
-
 def fmt_duration(td: timedelta) -> str:
     mins = int(td.total_seconds() // 60)
     d, rem = divmod(mins, 1440)
