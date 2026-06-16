@@ -7,7 +7,7 @@ from pathlib import Path
 
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # make lib./build. importable
-from build.build_listing_report import page_meta, build_stamp  # shared CSP/OG head + stamp
+from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
 
 HERE = Path(__file__).parent
 OUT = HERE.parent / "Listinglabs" / "funnel" / "report"
@@ -183,6 +183,8 @@ def findings_block():
 def index_html():
     head = "".join(f'<th data-i="{i}">{lbl}</th>' for i, (_k, lbl, _ki) in enumerate(COLS)) + '<th>KR</th>'
     scam_lbl = f"Manipulated ({SCAMS_N})" if SCAMS_N else "Manipulated"
+    _scr_n = screener_count()
+    scr_lbl = f"Screener ({_scr_n})" if _scr_n else "Screener"
     desc = (f"Alpha → Binance Perp → Coinbase → Korea funnel study: {len(M)} tokens "
             f"with listing-to-listing timing gaps and FDV-at-listing.")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -190,7 +192,7 @@ def index_html():
 {page_meta("CEX → Korea funnel — ListingLabs", desc, favicon_rel="../../favicon.svg")}
 <title>Alpha→Perp→Coinbase→Korea funnel</title><style>{CSS}</style></head><body>
 <header><h1>CEX → Korea <span style="opacity:.6;font-weight:400">· Binance Alpha → Perp → Coinbase → Korea</span></h1>
-<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">{scam_lbl}</a></nav>
+<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">{scam_lbl}</a><a href="../../screener/index.html">{scr_lbl}</a></nav>
 <p>{len(M)} tokens · 2025-01-01 → today · click a token for its timing detail · updated {build_stamp()} UTC</p></header>
 {findings_block()}
 <section class="tablewrap"><h3>Funnel table <span class="hint">(click a header to sort)</span></h3>

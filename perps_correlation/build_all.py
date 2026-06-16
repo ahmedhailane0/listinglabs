@@ -31,6 +31,11 @@ try:
     SCAMS_N = len(json.loads((HERE.parent / "cache" / "scam_data.json").read_text(encoding="utf-8")))
 except Exception:
     SCAMS_N = None
+try:
+    SCREENER_N = json.loads((HERE.parent / "cache" / "screener" / "screener.json")
+                            .read_text(encoding="utf-8")).get("counts", {}).get("screenable")
+except Exception:
+    SCREENER_N = None
 
 # One favicon for the whole site, written to Listinglabs/favicon.svg; every page
 # references it relatively (report/: ../favicon.svg, funnel/report/: ../../…).
@@ -96,6 +101,14 @@ img,svg{{max-width:100%;height:auto}}
        FDV&nbsp;&gt;&nbsp;$1B filter.</p>
     <span class="go">Open watchlist →</span>
   </a>
+  <a class="card" href="screener/index.html">
+    <h2>Screener</h2><span class="n">{f"{SCREENER_N} coins" if SCREENER_N else "hourly"}</span>
+    <p>Hourly Binance-perp screener for the manipulated-coin list: combined
+       Binance&nbsp;+&nbsp;Bybit open interest vs FDV, funding, and Buy v1/v2/v3
+       accumulation &amp; washout-reversal signals. Filter by OI, watchlist, setup
+       and FDV.</p>
+    <span class="go">Open screener →</span>
+  </a>
 </div></div>
 <footer>Updated {stamp} UTC · rebuilds every ~20 min. Reactions filter backfilled with
 daily-resolution earliest-candle listing dates across all major CEX venues; per-token
@@ -119,6 +132,7 @@ def main():
     _run(HERE / "build" / "build_listing_report.py")          # -> Listinglabs/report
     _run(HERE / "funnel" / "funnel_report.py")       # -> Listinglabs/funnel/report
     _run(HERE / "build" / "build_scams.py")                    # -> Listinglabs/scams
+    _run(HERE / "build" / "build_screener.py")                 # -> Listinglabs/screener (reads cache/screener/)
 
     (SITE / "index.html").write_text(landing(), encoding="utf-8")
     (SITE / "favicon.svg").write_text(FAVICON_SVG, encoding="utf-8")

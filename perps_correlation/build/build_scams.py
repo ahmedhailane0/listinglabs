@@ -21,7 +21,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch./build. importable from anywhere
 from build.build_listing_report import CSS as RCSS          # reuse reactions styling
 from build.build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
-from build.build_listing_report import page_meta, build_stamp     # shared CSP/OG head + stamp
+from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from lib.interactive_chart import timeseries_html
@@ -1068,11 +1068,14 @@ def _index(recs) -> str:
         funnel_n = None
     react_lbl = f"Binance Alpha &amp; Perps ({reactions_n})" if reactions_n else "Binance Alpha &amp; Perps"
     fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
+    screener_n = screener_count()
+    scr_lbl = f"Screener ({screener_n})" if screener_n else "Screener"
     body = f"""
 <header><h1>Manipulated</h1>
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
-<a class="active" href="index.html">Manipulated ({len(recs)})</a></nav>
+<a class="active" href="index.html">Manipulated ({len(recs)})</a>
+<a href="../screener/index.html">{scr_lbl}</a></nav>
 <p>{len(recs)} tokens · price, MC, FDV, OI &amp; funding · notes on $1B-FDV behaviour · updated {build_stamp()} UTC</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
