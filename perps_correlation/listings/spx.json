@@ -13,7 +13,7 @@
   "total_supply": 930993090.07,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2024-12-10T06:45:00Z",
-  "window_end_utc": "2025-09-11T00:00:00Z",
+  "window_end_utc": "2026-06-16T08:22:15Z",
   "events": [
     {
       "exchange": "Bybit Perp",
@@ -76,6 +76,18 @@
       "exchange": "Coinone",
       "iso_time_utc": "2026-01-08T01:33:00Z",
       "note": "first Coinone KRW candle"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-06-16T02:12:30Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 에스피엑스6900(SPX) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: [交易] SPX6900 (SPX) 新交易支持通知 (KRW, BTC, USDT 市场) BTC MarketCap: 1.\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16262",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-06-16T02:22:15Z",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场新增] 韩元市场新增SPX6900(SPX) SPX MarketCap: 317M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 2026-06\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16263",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
