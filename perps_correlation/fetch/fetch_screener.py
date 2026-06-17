@@ -332,9 +332,14 @@ def main(argv: list[str]) -> int:
     print(f"  alpha-tag slugs: {len(alpha_slugs)}")
 
     # ── Per-coin Binance pull + signals (concurrent) ─────────────────────────
+    # A token's Binance perp ticker can differ from its watchlist key (e.g. the
+    # PlaysOut token trades as PLAYUSDT, Banana Gun as BANANAUSDT). Honour an
+    # optional `perp_sym` override; fall back to the key.
+    def _tkr(s):
+        return wl[s].get("perp_sym") or s
     recs: dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
-        futs = {ex.submit(_fetch_token, s, intervals): s for s in screenable}
+        futs = {ex.submit(_fetch_token, _tkr(s), intervals): s for s in screenable}
         for fut, s in futs.items():
             try:
                 recs[s] = fut.result()
@@ -380,7 +385,7 @@ def main(argv: list[str]) -> int:
         mkt = rec.get("market") or {}
         fdv = mkt.get("fdv")
         mcap = mkt.get("mcap")
-        oi_byb = (byb.get(s) or {}).get("oi_usd")
+        oi_byb = (byb.get(_tkr(s)) or {}).get("oi_usd")
         oi_bn = rec.get("oi_bn")
         oi_comb = (oi_bn or 0) + (oi_byb or 0) if (oi_bn or oi_byb) else None
         rec.update({

@@ -251,7 +251,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "ageio-stagnum"
+    "cmc_slug": "alaya-ai"
   },
   "LYN": {
     "sections": [
@@ -291,7 +291,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "bohr"
+    "cmc_slug": "bedrock-dao"
   },
   "AIOT": {
     "sections": [
@@ -374,7 +374,7 @@
     "sources": [
       "tradingview"
     ],
-    "has_perp": true,
+    "has_perp": false,
     "cmc_slug": "solana-poker"
   },
   "AIO": {
@@ -395,7 +395,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "microvisionchain"
+    "cmc_slug": "spacecoin-org"
   },
   "ZBT": {
     "sections": [
@@ -415,7 +415,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "teleport-system-token"
+    "cmc_slug": "test-token-bsc"
   },
   "ENSO": {
     "sections": [
@@ -435,7 +435,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "arc"
+    "cmc_slug": "ai-rig-complex"
   },
   "SOPH": {
     "sections": [
@@ -607,7 +607,7 @@
     "sources": [
       "tradingview"
     ],
-    "has_perp": false,
+    "has_perp": true,
     "cmc_slug": "xion"
   },
   "PARTI": {
@@ -740,7 +740,8 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "banana-gun"
+    "cmc_slug": "banana-gun",
+    "perp_sym": "BANANA"
   },
   "XPIN": {
     "sections": [
@@ -982,7 +983,7 @@
     "sources": [
       "tradingview"
     ],
-    "has_perp": false,
+    "has_perp": true,
     "cmc_slug": "blast"
   },
   "ANIME": {
@@ -1093,7 +1094,7 @@
     "sources": [
       "tradingview"
     ],
-    "has_perp": false,
+    "has_perp": true,
     "cmc_slug": "highstreet"
   },
   "MYX": {
@@ -1174,7 +1175,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "bitrue-coin"
+    "cmc_slug": "bitlayer"
   },
   "AIA": {
     "sections": [
@@ -1184,7 +1185,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "aia-smart-chain"
+    "cmc_slug": "deagentai"
   },
   "PUMPBTC": {
     "sections": [
@@ -1254,7 +1255,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "lightning"
+    "cmc_slug": "light"
   },
   "ZKJ": {
     "sections": [
@@ -1492,7 +1493,8 @@
     "sources": [
       "tradingview"
     ],
-    "has_perp": false,
-    "cmc_slug": "playsout"
+    "has_perp": true,
+    "cmc_slug": "playsout",
+    "perp_sym": "PLAY"
   }
 }
