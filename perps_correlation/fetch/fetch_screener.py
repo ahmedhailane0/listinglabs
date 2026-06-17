@@ -355,6 +355,25 @@ def main(argv: list[str]) -> int:
         if mkt:
             rec["market"] = {k: mkt[k] for k in MARKET_KEYS if k in mkt}
 
+    # ── Fallback FDV for live-perp tokens whose CMC page is deactivated ───────
+    # The price-check rejects a CMC slug whose page no longer reports a price
+    # (delisted/deactivated), so such tokens get no market block — yet their
+    # Binance perp still trades. Derive a CURRENT FDV the project's own way:
+    # mark price × total supply (last-known supply from the cached CMC detail).
+    for s in screenable:
+        rec = recs[s]
+        if (rec.get("market") or {}).get("fdv"):
+            continue
+        bn_price = rec.get("mark_price")
+        cand = market_cache.get(wl[s].get("cmc_slug") or "")
+        ts = (cand or {}).get("total_supply")
+        if bn_price and ts:
+            m = {k: cand[k] for k in MARKET_KEYS if cand.get(k) is not None}
+            m["price"] = bn_price
+            m["fdv"] = bn_price * ts
+            m["fdv_src"] = "perp_price_x_supply"
+            rec["market"] = m
+
     # ── Bybit OI + FDV gate (uses market-verified FDV) ───────────────────────
     for s in screenable:
         rec = recs[s]
