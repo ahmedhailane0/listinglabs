@@ -369,9 +369,12 @@ def _filter_attrs(rec) -> str:
     sources = rec.get("sources") or r.get("sources") or []
     wl = "manip" if "tradingview" in sources else "other"
     strat = "|" + "|".join(_fired_strats(sym)) + "|"
+    mc = rec.get("mcap") or rec.get("csv_mc")
+    oimc = (oi / mc) if (oi and mc) else -1
     return (f'data-search="{search}" data-fdvnum="{fdv if fdv else -1:.0f}" '
             f'data-oi="{oi or 0:.0f}" data-wl="{wl}" data-strat="{strat}" '
-            f'data-gate="{1 if r.get("pass_gate") else 0}"')
+            f'data-gate="{1 if r.get("pass_gate") else 0}" '
+            f'data-oimc="{oimc:.6f}"')
 
 
 def _tile(rec) -> str:
@@ -1222,6 +1225,7 @@ def _filter_bar() -> str:
   {seg("strat", "Signal", [("all", "All"), ("v1", "Buy v1"), ("v2", "Buy v2"), ("v3", "Buy v3")])}
   {seg("oi", "OI", [("all", "All"), ("5m", "&gt;$5M"), ("10m", "&gt;$10M")])}
   {seg("gate", "Gate", [("all", "All"), ("pass", "≥8% OI/FDV")])}
+  {seg("oimc", "OI/MC", [("all", "All"), ("gt50", "&gt;50%")])}
   {seg("fdv", "FDV", [("all", "All"), ("lt150", "&lt;$150M"), ("gte150", "≥$150M")])}
   {seg("wl", "List", [("all", "All"), ("manip", "Manip")])}
   <span class="viewtoggle"><button id="view-grid" type="button" class="active">▦ Thumbnails</button>
@@ -1419,7 +1423,7 @@ JS = """
 const tiles=[...document.querySelectorAll('.tile')];
 const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows];
 const search=document.getElementById('search'),count=document.getElementById('count');
-const F={strat:'all',oi:'all',gate:'all',fdv:'all',wl:'all'};
+const F={strat:'all',oi:'all',gate:'all',oimc:'all',fdv:'all',wl:'all'};
 function ok(el){
   const q=search.value.trim().toLowerCase();
   if(q && !el.dataset.search.includes(q)) return false;
@@ -1428,6 +1432,7 @@ function ok(el){
   if(F.oi==='5m' && !(oi>5e6)) return false;
   if(F.oi==='10m' && !(oi>1e7)) return false;
   if(F.gate==='pass' && el.dataset.gate!=='1') return false;
+  if(F.oimc==='gt50'){const om=parseFloat(el.dataset.oimc||'-1');if(!(om>=0.5))return false;}
   const fdv=parseFloat(el.dataset.fdvnum||'-1');
   if(F.fdv==='lt150' && !(fdv>=0 && fdv<150e6)) return false;
   if(F.fdv==='gte150' && !(fdv>=150e6)) return false;
