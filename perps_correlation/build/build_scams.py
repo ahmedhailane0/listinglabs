@@ -1224,8 +1224,7 @@ def _filter_bar() -> str:
   <input id="search" type="search" placeholder="Search coin…" autocomplete="off">
   {seg("strat", "Signal", [("all", "All"), ("v1", "Buy v1"), ("v2", "Buy v2"), ("v3", "Buy v3")])}
   {seg("oi", "OI", [("all", "All"), ("5m", "&gt;$5M"), ("10m", "&gt;$10M")])}
-  {seg("gate", "Gate", [("all", "All"), ("pass", "≥8% OI/FDV")])}
-  {seg("oimc", "OI/MC", [("all", "All"), ("gt50", "&gt;50%")])}
+  {seg("gate", "Gate", [("all", "All"), ("pass", "≥8% OI/FDV"), ("oimc", "&gt;50% OI/MC")])}
   {seg("fdv", "FDV", [("all", "All"), ("lt150", "&lt;$150M"), ("gte150", "≥$150M")])}
   {seg("wl", "List", [("all", "All"), ("manip", "Manip")])}
   <span class="viewtoggle"><button id="view-grid" type="button" class="active">▦ Thumbnails</button>
@@ -1423,7 +1422,7 @@ JS = """
 const tiles=[...document.querySelectorAll('.tile')];
 const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows];
 const search=document.getElementById('search'),count=document.getElementById('count');
-const F={strat:'all',oi:'all',gate:'all',oimc:'all',fdv:'all',wl:'all'};
+const F={strat:'all',oi:'all',gate:'all',fdv:'all',wl:'all'};
 function ok(el){
   const q=search.value.trim().toLowerCase();
   if(q && !el.dataset.search.includes(q)) return false;
@@ -1432,7 +1431,7 @@ function ok(el){
   if(F.oi==='5m' && !(oi>5e6)) return false;
   if(F.oi==='10m' && !(oi>1e7)) return false;
   if(F.gate==='pass' && el.dataset.gate!=='1') return false;
-  if(F.oimc==='gt50'){const om=parseFloat(el.dataset.oimc||'-1');if(!(om>=0.5))return false;}
+  if(F.gate==='oimc'){const om=parseFloat(el.dataset.oimc||'-1');if(!(om>=0.5))return false;}
   const fdv=parseFloat(el.dataset.fdvnum||'-1');
   if(F.fdv==='lt150' && !(fdv>=0 && fdv<150e6)) return false;
   if(F.fdv==='gte150' && !(fdv>=150e6)) return false;
