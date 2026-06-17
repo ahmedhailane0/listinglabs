@@ -345,16 +345,6 @@
     "has_perp": true,
     "cmc_slug": null
   },
-  "MAGHA": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": null
-  },
   "JCT": {
     "sections": [
       "short_term_interest"
@@ -374,7 +364,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": null
+    "cmc_slug": "banana-for-scale"
   },
   "PLAY": {
     "sections": [
@@ -506,7 +496,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "sohei"
+    "cmc_slug": "heima"
   },
   "AKE": {
     "sections": [
@@ -608,7 +598,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": null
+    "cmc_slug": "ava-ai-top"
   },
   "XION": {
     "sections": [
@@ -780,7 +770,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "latoken"
+    "cmc_slug": "lagrange"
   },
   "AERGO": {
     "sections": [
@@ -870,7 +860,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": null
+    "cmc_slug": "allora"
   },
   "SAHARA": {
     "sections": [
@@ -910,7 +900,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "bankercoinada"
+    "cmc_slug": "lorenzo-protocol"
   },
   "PIPPIN": {
     "sections": [
@@ -1034,16 +1024,6 @@
     ],
     "has_perp": true,
     "cmc_slug": "lisk"
-  },
-  "MEU": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "metaunit"
   },
   "OG": {
     "sections": [
@@ -1335,7 +1315,7 @@
       "tradingview"
     ],
     "has_perp": true,
-    "cmc_slug": "waves-community-token"
+    "cmc_slug": "walletconnect-token"
   },
   "STO": {
     "sections": [
@@ -1474,5 +1454,45 @@
     ],
     "has_perp": true,
     "cmc_slug": "bitway-btw"
+  },
+  "MAGMA": {
+    "sections": [
+      "short_term_interest"
+    ],
+    "sources": [
+      "tradingview"
+    ],
+    "has_perp": false,
+    "cmc_slug": "magma-finance"
+  },
+  "ME": {
+    "sections": [
+      "just_neg_funding_no_manip"
+    ],
+    "sources": [
+      "tradingview"
+    ],
+    "has_perp": false,
+    "cmc_slug": "magiceden"
+  },
+  "MMT": {
+    "sections": [
+      "full_list"
+    ],
+    "sources": [
+      "tradingview"
+    ],
+    "has_perp": true,
+    "cmc_slug": "mammoth"
+  },
+  "PLAYSOUT": {
+    "sections": [
+      "short_term_interest"
+    ],
+    "sources": [
+      "tradingview"
+    ],
+    "has_perp": false,
+    "cmc_slug": "playsout"
   }
 }
