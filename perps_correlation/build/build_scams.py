@@ -104,13 +104,9 @@ def _buy_badges(sym, mini=False) -> str:
 
 
 def _venue_badges(sym) -> str:
-    r = _sig(sym)
-    out = ""
-    if r.get("oi_bn"):
-        out += '<span class="ven bn" title="Binance USDT-perp open interest">BN</span>'
-    if r.get("oi_byb"):
-        out += '<span class="ven byb" title="Bybit USDT-perp open interest">BYB</span>'
-    return out
+    # BN/BYB perp-venue chips removed per request — OI(BN+BYB) column already
+    # conveys the venues; the badges were visual noise.
+    return ""
 
 
 def _tge_dt(rec):
