@@ -80,6 +80,38 @@ CMC_TO_CG_PLATFORM = {
 }
 
 
+_ALPHA_SLUG_CACHE: dict[str, str] = {}
+
+
+def _load_alpha_slugs() -> dict[str, str]:
+    """Bulk-fetch CMC binance-alpha tagged coins → {SYM: slug}. One call covers
+    ~400 coins. Cached for the run."""
+    if _ALPHA_SLUG_CACHE:
+        return _ALPHA_SLUG_CACHE
+    by_sym: dict[str, str] = {}
+    for start in range(1, 600, 100):
+        url = ("https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing"
+               f"?start={start}&limit=100&sortBy=market_cap&sortType=desc"
+               "&cryptoType=all&tagType=all&audited=false&aux=cmc_rank"
+               "&tagSlugs=binance-alpha")
+        req = urllib.request.Request(url, headers=CMC_UA)
+        try:
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                items = json.loads(resp.read()).get("data", {}).get("cryptoCurrencyList", [])
+        except Exception:
+            break
+        for c in items:
+            sym = (c.get("symbol") or "").upper()
+            slug = c.get("slug") or ""
+            if sym and slug:
+                by_sym.setdefault(sym, slug)
+        if len(items) < 100:
+            break
+        time.sleep(0.5)
+    _ALPHA_SLUG_CACHE.update(by_sym)
+    return _ALPHA_SLUG_CACHE
+
+
 def _now() -> int:
     return int(time.time())
 
@@ -211,11 +243,14 @@ def _resolve_market(sym: str, bn_price: float | None, wl_slug: str | None,
                     cmc_by_sym: dict, market_cache: dict,
                     allow_fetch: bool = True) -> tuple[dict | None, int]:
     """Price-verified CMC market data. Returns (market_dict | None, api_calls_made).
-    Tries: watchlist slug -> lowercase-symbol guess -> cmc_map slugs.
+    Tries: watchlist slug -> alpha-tag slug -> lowercase-symbol guess -> cmc_map slugs.
     A slug is REJECTED if CMC price is off the Binance mark by >3x."""
     candidates = []
     if wl_slug:
         candidates.append(wl_slug)
+    alpha_slug = _ALPHA_SLUG_CACHE.get(sym)
+    if alpha_slug and alpha_slug not in candidates:
+        candidates.append(alpha_slug)
     guess = sym.lower()
     if guess not in candidates:
         candidates.append(guess)
@@ -293,6 +328,8 @@ def main(argv: list[str]) -> int:
         byb = {}
     market_cache = _load_json(MARKET_CACHE_FILE, {})
     cmc_by_sym = _load_cmc_map()
+    alpha_slugs = _load_alpha_slugs()
+    print(f"  alpha-tag slugs: {len(alpha_slugs)}")
 
     # ── Per-coin Binance pull + signals (concurrent) ─────────────────────────
     recs: dict[str, dict] = {}
