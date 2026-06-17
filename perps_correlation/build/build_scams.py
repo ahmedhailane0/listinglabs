@@ -358,23 +358,44 @@ def _funding_str(rec):
     return (f"{_usd(amt) if amt else '—'}{src_tag}"), inv
 
 
+COND_KEY_MAP = {
+    "oi_3up": "oi3up", "oi_3h>=8%": "oi3h8", "oi_3h>=5%": "oi3h5",
+    "price_3h<=8%": "px3h8", "breaks_6h_high": "brk6h",
+    "near_ema20<=5%": "ema20", "ema20>ema60+cross": "emacross",
+    "oi/price>=1.5": "oipx15", "oi/price>=1.0": "oipx10",
+    "funding<0.1%": "fund01", "|funding_8h|<=0.02%": "fund002",
+    "oi_dd>=15%": "oidd15", "price_dd<=10%": "pxdd10",
+    "price/oi_dd<=0.5": "pxoidd", "oi_rebuild>=8%": "oireb8",
+    "breaks_postwashout_high": "brkwash",
+}
+
+
+def _cond_str(sym) -> str:
+    """Pipe-delimited string of condition short-keys that are TRUE for this coin."""
+    sigs = (_sig(sym) or {}).get("signals") or {}
+    passed = []
+    for strat in ("v1", "v2", "v3"):
+        for raw_key, ok in ((sigs.get(strat) or {}).get("conditions") or {}).items():
+            short = COND_KEY_MAP.get(raw_key)
+            if ok and short and short not in passed:
+                passed.append(short)
+    return "|" + "|".join(passed) + "|" if passed else "||"
+
+
 def _filter_attrs(rec) -> str:
-    """The data-* attributes the index filter JS reads (search/OI/FDV/WL/Strategy/
-    Gate). Shared by the tile and the list row so both filter identically."""
+    """The data-* attributes the index filter JS reads. Shared by the tile and
+    the list row so both filter identically."""
     sym = rec["symbol"]
     r = _sig(sym)
     search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
     fdv = rec.get("fdv") or rec.get("csv_fdv") or r.get("fdv")
     oi = r.get("oi_combined")
-    sources = rec.get("sources") or r.get("sources") or []
-    wl = "manip" if "tradingview" in sources else "other"
-    strat = "|" + "|".join(_fired_strats(sym)) + "|"
     mc = rec.get("mcap") or rec.get("csv_mc")
     oimc = (oi / mc) if (oi and mc) else -1
+    oifdv = (oi / fdv) if (oi and fdv) else -1
     return (f'data-search="{search}" data-fdvnum="{fdv if fdv else -1:.0f}" '
-            f'data-oi="{oi or 0:.0f}" data-wl="{wl}" data-strat="{strat}" '
-            f'data-gate="{1 if r.get("pass_gate") else 0}" '
-            f'data-oimc="{oimc:.6f}"')
+            f'data-oi="{oi or 0:.0f}" data-oimc="{oimc:.6f}" '
+            f'data-oifdv="{oifdv:.6f}" data-cond="{_cond_str(sym)}"')
 
 
 def _tile(rec) -> str:
@@ -407,7 +428,7 @@ def _tile(rec) -> str:
 # (BN+BYB)/FDV ratio drive the scan; price 24h + memo carry the curated-coin
 # context. Full rich data (chart/holders/funding rounds) stays on each coin's
 # detail page. 9 cols — keep the nth-child widths in EXTRA_CSS in sync.
-LIST_COLS = ["#", "Token", "TGE", "OI (BN+BYB)", "OI/FDV %", "FDV", "Funding", "24h", "Memo"]
+LIST_COLS = ["#", "Token", "TGE", "OI (BN+BYB)", "FDV", "Funding", "24h", "Memo"]
 
 
 def _ratio_cell(rec) -> str:
@@ -469,7 +490,6 @@ def _list_row(rec) -> str:
         f'<td class="rank"></td>{tok}'
         f'{_tge_cell(rec)}'
         f'{_num_cell(oi, pct=False, color=False)}'
-        f'{_num_cell(oifdv, pct=True, color=False) if oifdv is not None else _num_cell(None)}'
         f'{_num_cell(fdv, pct=False, color=False)}'
         f'{_fundcell(r)}'
         f'{_num_cell(p.get("p24"))}'
@@ -1213,23 +1233,45 @@ def _detail(rec, platforms) -> str:
 
 
 def _filter_bar() -> str:
-    def seg(name, label, opts):
-        btns = "".join(
-            f'<button class="seg{" active" if i == 0 else ""}" data-filter="{name}" '
-            f'data-value="{v}">{lbl}</button>'
-            for i, (v, lbl) in enumerate(opts))
-        return f'<span class="segrow"><span class="flabel">{label}</span>{btns}</span>'
-    return f"""
+    def _cb(key, label):
+        return (f'<label class="fcb"><input type="checkbox" data-k="{key}">'
+                f'<span>{label}</span></label>')
+    return """
 <div class="filters">
   <input id="search" type="search" placeholder="Search coin…" autocomplete="off">
-  {seg("strat", "Signal", [("all", "All"), ("v1", "Buy v1"), ("v2", "Buy v2"), ("v3", "Buy v3")])}
-  {seg("oi", "OI", [("all", "All"), ("5m", "&gt;$5M"), ("10m", "&gt;$10M")])}
-  {seg("gate", "Gate", [("all", "All"), ("pass", "≥8% OI/FDV"), ("oimc", "&gt;50% OI/MC")])}
-  {seg("fdv", "FDV", [("all", "All"), ("lt150", "&lt;$150M"), ("gte150", "≥$150M")])}
-  {seg("wl", "List", [("all", "All"), ("manip", "Manip")])}
-  <span class="viewtoggle"><button id="view-grid" type="button" class="active">▦ Thumbnails</button>
+  <span class="viewtoggle">
+    <button id="btn-filter" type="button">⚙ Filter</button>
+    <button id="view-grid" type="button" class="active">▦ Thumbnails</button>
     <button id="view-list" type="button">☰ List</button></span>
   <span id="count" class="count"></span>
+</div>
+<div id="fpanel" class="fpanel" style="display:none">
+  <div class="fp-presets">
+    <button class="fp-pre" data-pre="v1">Buy v1</button>
+    <button class="fp-pre" data-pre="v2">Buy v2</button>
+    <button class="fp-pre" data-pre="v3">Buy v3</button>
+    <button class="fp-clear" id="fp-clear">Clear all</button>
+  </div>
+  <div class="fp-grid">
+    <fieldset class="fp-group"><legend>OI momentum</legend>
+      """ + _cb("oi3up", "OI rising 3 candles") + _cb("oi3h8", "OI 3h ≥8%") + _cb("oi3h5", "OI 3h ≥5%") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Price action</legend>
+      """ + _cb("px3h8", "Price 3h ≤8%") + _cb("brk6h", "Breaks 6h high") + _cb("ema20", "Near EMA20 ≤5%") + _cb("emacross", "EMA20&gt;EMA60 cross") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>OI / price ratio</legend>
+      """ + _cb("oipx15", "OI/price ≥1.5") + _cb("oipx10", "OI/price ≥1.0") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Funding</legend>
+      """ + _cb("fund01", "Funding &lt;0.1%") + _cb("fund002", "|Funding 8h| ≤0.02%") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Washout (v3)</legend>
+      """ + _cb("oidd15", "OI drawdown ≥15%") + _cb("pxdd10", "Price dd ≤10%") + _cb("pxoidd", "Price/OI dd ≤0.5") + _cb("oireb8", "OI rebuild ≥8%") + _cb("brkwash", "Breaks washout high") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Thresholds</legend>
+      """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oimc50", "OI/MC &gt; 50%") + """
+    </fieldset>
+  </div>
 </div>"""
 
 
@@ -1275,19 +1317,18 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
 .links.note{color:#8a96a3;font-style:italic}
-/* deterministic column widths (9 cols: #, Token, TGE, OI (BN+BYB), OI/FDV %,
+/* deterministic column widths (8 cols: #, Token, TGE, OI (BN+BYB),
    FDV, Funding, 24h, Memo). */
-#ltab{table-layout:fixed;min-width:900px}
+#ltab{table-layout:fixed;min-width:820px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3.5%}                  /* # */
-#ltab th:nth-child(2){width:21%;text-align:left}   /* Token */
+#ltab th:nth-child(2){width:23%;text-align:left}   /* Token */
 #ltab th:nth-child(3){width:8%}                    /* TGE */
 #ltab th:nth-child(4){width:12%}                   /* OI (BN+BYB) */
-#ltab th:nth-child(5){width:9%}                    /* OI/FDV % */
-#ltab th:nth-child(6){width:10%}                   /* FDV */
-#ltab th:nth-child(7){width:9%}                    /* Funding */
-#ltab th:nth-child(8){width:7%}                    /* 24h */
-#ltab th:nth-child(9){width:20%;text-align:left}   /* Memo */
+#ltab th:nth-child(5){width:11%}                   /* FDV */
+#ltab th:nth-child(6){width:10%}                   /* Funding */
+#ltab th:nth-child(7){width:8%}                    /* 24h */
+#ltab th:nth-child(8){width:24.5%;text-align:left} /* Memo */
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
 .flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
@@ -1382,14 +1423,22 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
   table.perp,table.holders{font-size:12.5px}
   table.perp th,table.holders th,table.perp td,table.holders td{padding:7px 8px}
 }
-/* ── screener: segmented filters, Buy/venue badges, signal cards ───────────── */
+/* ── screener: filter panel, Buy/venue badges, signal cards ───────────── */
 .filters{flex-wrap:wrap;gap:8px 12px}
-.segrow{display:inline-flex;align-items:center;gap:0}
-.segrow .flabel{font-size:11px;color:#6b7785;font-weight:700;margin-right:6px;text-transform:uppercase;letter-spacing:.04em}
-.seg{font:inherit;font-size:12px;border:1px solid #d7dee6;background:#fff;color:#42505e;padding:4px 9px;cursor:pointer;border-right:0}
-.seg:first-of-type{border-radius:7px 0 0 7px}
-.seg:last-of-type{border-radius:0 7px 7px 0;border-right:1px solid #d7dee6}
-.seg.active{background:#1f4e79;color:#fff;border-color:#1f4e79}
+#btn-filter{background:#1f4e79;color:#fff;border:none;border-radius:7px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#btn-filter.open{background:#163a5b}
+.fpanel{background:#f7f9fb;border:1px solid #e1e7ee;border-radius:10px;padding:14px 18px;margin:10px 0 0}
+.fp-presets{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+.fp-pre{font:inherit;font-size:12px;font-weight:700;border:1px solid #d7dee6;background:#fff;color:#42505e;padding:4px 10px;border-radius:7px;cursor:pointer}
+.fp-pre.active{background:#1f4e79;color:#fff;border-color:#1f4e79}
+.fp-clear{font:inherit;font-size:11px;color:#8a96a3;background:none;border:none;cursor:pointer;margin-left:auto}
+.fp-clear:hover{color:#c0392b}
+.fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 18px}
+.fp-group{border:1px solid #e1e7ee;border-radius:8px;padding:8px 10px;margin:0}
+.fp-group legend{font-size:11px;font-weight:700;color:#6b7785;text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
+.fcb{display:flex;align-items:center;gap:5px;font-size:12px;color:#42505e;cursor:pointer;padding:2px 0}
+.fcb input{margin:0;accent-color:#1f4e79}
+.fcb span{user-select:none}
 .buy{display:inline-block;border-radius:9px;font-size:10.5px;font-weight:700;padding:1px 8px;white-space:nowrap;color:#fff;margin:0 4px 2px 0}
 .buy i{font-style:normal;opacity:.8;font-weight:600}
 .buy.v1{background:#1e7a46}.buy.v2{background:#1f4e79}.buy.v3{background:#9b2d8f}
@@ -1422,33 +1471,50 @@ JS = """
 const tiles=[...document.querySelectorAll('.tile')];
 const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows];
 const search=document.getElementById('search'),count=document.getElementById('count');
-const F={strat:'all',oi:'all',gate:'all',fdv:'all',wl:'all'};
+const panel=document.getElementById('fpanel'),btnF=document.getElementById('btn-filter');
+const cbs=[...panel.querySelectorAll('input[data-k]')];
+const PRESETS={
+  v1:['oi3up','oi3h8','px3h8','brk6h','fund01','oipx15'],
+  v2:['oi3up','oi3h5','emacross','ema20','oipx10','fund01'],
+  v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash']};
+const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oimc50']);
+btnF.addEventListener('click',()=>{const open=panel.style.display==='none';
+  panel.style.display=open?'':'none';btnF.classList.toggle('open',open);});
+function checked(){return cbs.filter(c=>c.checked).map(c=>c.dataset.k);}
+function numOk(el,k){
+  if(k==='oi5m')return parseFloat(el.dataset.oi||'0')>5e6;
+  if(k==='oi10m')return parseFloat(el.dataset.oi||'0')>1e7;
+  if(k==='fdvlt150'){const f=parseFloat(el.dataset.fdvnum||'-1');return f>=0&&f<150e6;}
+  if(k==='fdvgte150')return parseFloat(el.dataset.fdvnum||'-1')>=150e6;
+  if(k==='oifdv8')return parseFloat(el.dataset.oifdv||'-1')>=0.08;
+  if(k==='oimc50')return parseFloat(el.dataset.oimc||'-1')>=0.5;
+  return true;}
 function ok(el){
   const q=search.value.trim().toLowerCase();
-  if(q && !el.dataset.search.includes(q)) return false;
-  if(F.strat!=='all' && !(el.dataset.strat||'').includes('|'+F.strat+'|')) return false;
-  const oi=parseFloat(el.dataset.oi||'0');
-  if(F.oi==='5m' && !(oi>5e6)) return false;
-  if(F.oi==='10m' && !(oi>1e7)) return false;
-  if(F.gate==='pass' && el.dataset.gate!=='1') return false;
-  if(F.gate==='oimc'){const om=parseFloat(el.dataset.oimc||'-1');if(!(om>=0.5))return false;}
-  const fdv=parseFloat(el.dataset.fdvnum||'-1');
-  if(F.fdv==='lt150' && !(fdv>=0 && fdv<150e6)) return false;
-  if(F.fdv==='gte150' && !(fdv>=150e6)) return false;
-  if(F.wl==='manip' && el.dataset.wl!=='manip') return false;
-  return true;
-}
+  if(q&&!el.dataset.search.includes(q))return false;
+  const ck=checked();if(!ck.length)return true;
+  const cond=el.dataset.cond||'||';
+  for(const k of ck){
+    if(NUM_KEYS.has(k)){if(!numOk(el,k))return false;}
+    else{if(!cond.includes('|'+k+'|'))return false;}}
+  return true;}
 function apply(){for(const el of items)el.style.display=ok(el)?'':'none';
   count.textContent=tiles.filter(ok).length+' / '+tiles.length+' coins';}
 search.addEventListener('input',apply);
-document.querySelectorAll('.seg').forEach(b=>b.addEventListener('click',()=>{
-  F[b.dataset.filter]=b.dataset.value;
-  b.parentElement.querySelectorAll('.seg').forEach(x=>x.classList.toggle('active',x===b));
-  apply();}));
+cbs.forEach(c=>c.addEventListener('change',()=>{syncPresets();apply();}));
+function syncPresets(){
+  const ck=new Set(checked());
+  document.querySelectorAll('.fp-pre').forEach(b=>{
+    const keys=PRESETS[b.dataset.pre]||[];
+    b.classList.toggle('active',keys.length>0&&keys.every(k=>ck.has(k)));});}
+document.querySelectorAll('.fp-pre').forEach(b=>b.addEventListener('click',()=>{
+  const keys=PRESETS[b.dataset.pre]||[];const isOn=b.classList.contains('active');
+  cbs.forEach(c=>{if(keys.includes(c.dataset.k))c.checked=!isOn;});
+  syncPresets();apply();}));
+document.getElementById('fp-clear').addEventListener('click',()=>{
+  cbs.forEach(c=>c.checked=false);syncPresets();apply();});
 const bG=document.getElementById('view-grid'),bL=document.getElementById('view-list');
 const views=document.getElementById('views');
-// remember the chosen view (per report) so returning from a token detail page
-// via the back link lands on the same view instead of resetting to thumbnails.
 const VIEW_KEY='ll-view-scams';
 function setView(v,persist){views.className='view-'+v;bG.classList.toggle('active',v=='grid');bL.classList.toggle('active',v=='list');
   if(persist){try{localStorage.setItem(VIEW_KEY,v);}catch(e){}}}
