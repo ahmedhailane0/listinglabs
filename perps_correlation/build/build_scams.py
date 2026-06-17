@@ -1590,8 +1590,14 @@ def main():
     for r in recs:
         _enrich_from_screener(r)
 
-    recs.sort(key=lambda r: (_tge_dt(r).timestamp() if _tge_dt(r) else 0,
-                             _sig(r["symbol"]).get("oi_combined") or 0), reverse=True)
+    # Default order = trending: biggest 24h price movers first. Tokens with no
+    # 24h change sink to the bottom (ordered by OI as a tiebreaker). The list
+    # stays click-sortable on every column.
+    def _trend_key(r):
+        p24 = (_perf(r) or {}).get("p24")
+        oi = _sig(r["symbol"]).get("oi_combined") or 0
+        return (0 if p24 is None else 1, p24 if p24 is not None else 0, oi)
+    recs.sort(key=_trend_key, reverse=True)
 
     SITE.mkdir(parents=True, exist_ok=True)
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
