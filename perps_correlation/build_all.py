@@ -49,7 +49,7 @@ FAVICON_SVG = (
 
 def landing() -> str:
     from datetime import datetime, timezone
-    from build.build_listing_report import page_meta
+    from build.build_listing_report import page_meta, THEME_VARS, theme_toggle_button, THEME_JS
     stamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
     scam_n = f"{SCAMS_N} tokens" if SCAMS_N else "tracker"
     meta = page_meta(
@@ -61,23 +61,26 @@ def landing() -> str:
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {meta}
-<title>Binance Alpha — Listing Studies</title><style>
-*{{box-sizing:border-box}}body{{font:15px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f4f6f9;color:#1d2733}}
-header{{padding:28px;background:#1f4e79;color:#fff}}header h1{{margin:0;font-size:22px}}header p{{margin:6px 0 0;opacity:.85}}
+<title>Binance Alpha — Listing Studies</title><style>{THEME_VARS}
+*{{box-sizing:border-box}}body{{font:15px/1.6 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text)}}
+header{{padding:28px;background:var(--header-bg);color:var(--header-fg);display:flex;align-items:flex-start}}header h1{{margin:0;font-size:22px}}header p{{margin:6px 0 0;opacity:.85}}
+.htext{{flex:1 1 auto}}
 .wrap{{max-width:920px;margin:0 auto;padding:28px}}
 .cards{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))}}
-.card{{background:#fff;border:1px solid #e1e7ee;border-radius:12px;padding:22px;text-decoration:none;color:inherit;display:block;transition:.15s;min-width:0}}
-.card:hover{{border-color:#1f4e79;box-shadow:0 4px 18px rgba(31,78,121,.12)}}
-.card h2{{margin:0 0 4px;font-size:18px;color:#1f4e79}}
-.card .n{{font-size:13px;color:#6b7785;font-weight:600}}
-.card p{{margin:10px 0 0;font-size:13.5px;color:#42505e}}
-.go{{margin-top:14px;display:inline-block;font-size:13px;font-weight:600;color:#1f6fb2}}
-footer{{max-width:920px;margin:0 auto;padding:0 28px 36px;color:#8a96a3;font-size:12.5px}}
+.card{{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:22px;text-decoration:none;color:inherit;display:block;transition:.15s;min-width:0}}
+.card:hover{{border-color:var(--primary);box-shadow:0 4px 18px rgba(31,78,121,.12)}}
+.card h2{{margin:0 0 4px;font-size:18px;color:var(--primary)}}
+.card .n{{font-size:13px;color:var(--text-3);font-weight:600}}
+.card p{{margin:10px 0 0;font-size:13.5px;color:var(--text-2)}}
+.go{{margin-top:14px;display:inline-block;font-size:13px;font-weight:600;color:var(--link)}}
+footer{{max-width:920px;margin:0 auto;padding:0 28px 36px;color:var(--text-4);font-size:12.5px}}
 img,svg{{max-width:100%;height:auto}}
+.theme-toggle{{margin-left:auto;font-size:16px;line-height:1;cursor:pointer;background:rgba(255,255,255,.1);color:var(--header-fg);border:1px solid rgba(255,255,255,.35);border-radius:999px;width:32px;height:32px;padding:0;flex:0 0 auto}}
+.theme-toggle:hover{{background:rgba(255,255,255,.2)}}
 @media(max-width:640px){{header{{padding:18px 16px}}header h1{{font-size:19px}}.wrap{{padding:18px 16px}}footer{{padding:0 16px 28px}}}}
 </style></head><body>
-<header><h1>Binance Alpha — Listing Studies</h1>
-<p>Two views of the same Alpha-listed token set, under one roof.</p></header>
+<header><div class="htext"><h1>Binance Alpha — Listing Studies</h1>
+<p>Two views of the same Alpha-listed token set, under one roof.</p></div>{theme_toggle_button()}</header>
 <div class="wrap"><div class="cards">
   <a class="card" href="report/index.html">
     <h2>Binance Alpha &amp; Perps</h2><span class="n">{REACTIONS_N} tokens</span>
@@ -106,6 +109,7 @@ img,svg{{max-width:100%;height:auto}}
 <footer>Updated {stamp} UTC · rebuilds every ~20 min. Reactions filter backfilled with
 daily-resolution earliest-candle listing dates across all major CEX venues; per-token
 current open interest from CoinMarketCap.</footer>
+{THEME_JS}
 </body></html>"""
 
 

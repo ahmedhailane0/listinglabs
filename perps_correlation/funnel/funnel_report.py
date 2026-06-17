@@ -8,6 +8,7 @@ from pathlib import Path
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # make lib./build. importable
 from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
+from build.build_listing_report import THEME_VARS, theme_toggle_button, THEME_JS  # shared dark/light theme
 
 HERE = Path(__file__).parent
 OUT = HERE.parent / "Listinglabs" / "funnel" / "report"
@@ -190,14 +191,15 @@ def index_html():
 {page_meta("CEX → Korea funnel — ListingLabs", desc, favicon_rel="../../favicon.svg")}
 <title>Alpha→Perp→Coinbase→Korea funnel</title><style>{CSS}</style></head><body>
 <header><h1>CEX → Korea <span style="opacity:.6;font-weight:400">· Binance Alpha → Perp → Coinbase → Korea</span></h1>
-<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">{scam_lbl}</a></nav>
+<nav class="topnav"><a href="../../report/index.html">Binance Alpha &amp; Perps ({REACTIONS_N})</a><a class="active" href="index.html">CEX → Korea ({len(M)})</a><a href="../../scams/index.html">{scam_lbl}</a>{theme_toggle_button()}</nav>
 <p>{len(M)} tokens · 2025-01-01 → today · click a token for its timing detail · updated {build_stamp()} UTC</p></header>
 {findings_block()}
 <section class="tablewrap"><h3>Funnel table <span class="hint">(click a header to sort)</span></h3>
 <table id="ft"><thead><tr>{head}</tr></thead><tbody>
 {table_rows()}
 </tbody></table></section>
-<script>{SORT_JS}</script></body></html>"""
+<script>{SORT_JS}</script>
+{THEME_JS}</body></html>"""
 
 
 def detail_html(m):
@@ -218,45 +220,49 @@ def detail_html(m):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 {page_meta(f"{m['symbol']} — funnel", _desc, favicon_rel="../../favicon.svg")}
 <title>{html.escape(m['symbol'])} — funnel</title><style>{CSS}</style></head><body>
-<header><a class="back" href="index.html">← all {len(M)} tokens</a></header>
+<header style="display:flex;align-items:center"><a class="back" href="index.html">← all {len(M)} tokens</a>{theme_toggle_button()}</header>
 <main class="detail"><div class="info"><h2>{html.escape(m.get('name') or m['symbol'])} <span class="sym">{html.escape(m['symbol'])}</span></h2>
 {cmc}<dl>{dl}</dl><h4>Listing lags</h4><div class="lags">{lag_html}</div></div></main>
-</body></html>"""
+{THEME_JS}</body></html>"""
 
 
-CSS = """
-*{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#f4f6f9;color:#1d2733}
-header{padding:16px 28px;background:#1f4e79;color:#fff}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.85;font-size:13px}
-a{color:#1f6fb2;text-decoration:none}a:hover{text-decoration:underline}.back{color:#fff}
-section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:#6b7785}
-.topnav{margin:8px 0 2px;display:flex;gap:8px}.topnav a{font-size:13px;color:#fff;opacity:.8;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)}
-.topnav a:hover{opacity:1;text-decoration:none;background:rgba(255,255,255,.1)}.topnav a.active{opacity:1;background:#fff;color:#1f4e79;border-color:#fff;font-weight:600}
-.findings{background:#fff;border-bottom:1px solid #e1e7ee}.findings ul{margin:8px 0;padding-left:18px}.findings li{margin:4px 0}
-.ref{color:#1a8f4c;font-weight:600;font-size:12px}.amb{color:#b9770e;font-weight:600;font-size:12px}
-.cav{color:#8a96a3;font-size:12px;font-style:italic}.findings .sub{color:#42505e;font-size:13px;margin:2px 0 6px}
-.findings h3{margin:12px 0 4px;color:#1f4e79}
-.hint{font-weight:400;text-transform:none;color:#aab3bd;font-size:11px}
+CSS = THEME_VARS + """
+*{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text)}
+header{padding:16px 28px;background:var(--header-bg);color:var(--header-fg)}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.85;font-size:13px}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.back{color:var(--header-fg)}
+section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+.topnav{margin:8px 0 2px;display:flex;gap:8px;align-items:center}.topnav a{font-size:13px;color:var(--header-fg);opacity:.8;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)}
+.topnav a:hover{opacity:1;text-decoration:none;background:rgba(255,255,255,.1)}.topnav a.active{opacity:1;background:var(--header-fg);color:var(--header-bg);border-color:var(--header-fg);font-weight:600}
+.theme-toggle{margin-left:auto;font-size:15px;line-height:1;cursor:pointer;background:rgba(255,255,255,.1);color:var(--header-fg);border:1px solid rgba(255,255,255,.35);border-radius:999px;width:30px;height:30px;padding:0;flex:0 0 auto}
+.theme-toggle:hover{background:rgba(255,255,255,.2)}
+.findings{background:var(--bg-card);border-bottom:1px solid var(--border)}.findings ul{margin:8px 0;padding-left:18px}.findings li{margin:4px 0}
+.ref{color:var(--pos);font-weight:600;font-size:12px}.amb{color:var(--amber);font-weight:600;font-size:12px}
+.cav{color:var(--text-4);font-size:12px;font-style:italic}.findings .sub{color:var(--text-2);font-size:13px;margin:2px 0 6px}
+.findings h3{margin:12px 0 4px;color:var(--primary)}
+.hint{font-weight:400;text-transform:none;color:var(--text-4);font-size:11px}
 /* lag-distribution strips (inline SVG, one dot per token) */
 .lagviz{margin:4px 0 8px}
 .lagrow{display:flex;align-items:center;gap:12px;padding:3px 0}
-.laglbl{flex:0 0 250px;font-size:12.5px;color:#42505e;font-weight:600}
+.laglbl{flex:0 0 250px;font-size:12.5px;color:var(--text-2);font-weight:600}
 .lagsvg{flex:1 1 auto;min-width:0;height:30px;display:block}
-.lagax{font-size:9.5px;fill:#8a96a3}
-.lagsum{flex:0 0 auto;font-size:12px;color:#6b7785;white-space:nowrap}
+.lagax{font-size:9.5px;fill:var(--text-4)}
+.lagsum{flex:0 0 auto;font-size:12px;color:var(--text-3);white-space:nowrap}
 @media(max-width:700px){.lagrow{flex-wrap:wrap}.laglbl{flex-basis:100%}.lagsum{order:3}}
-table{width:100%;border-collapse:collapse;font-size:12.5px;background:#fff}
-th{position:sticky;top:0;background:#eef2f6;text-align:left;padding:6px 8px;border-bottom:2px solid #d6dee6;cursor:pointer;white-space:nowrap}
-td{padding:5px 8px;border-bottom:1px solid #eef2f6}td.n{text-align:right;font-variant-numeric:tabular-nums}
-tr:hover td{background:#f7faff}
-.b{padding:1px 7px;border-radius:6px;font-weight:600}.b-u100M{background:#fdecea;color:#c0392b}.b-100-300M{background:#fff4e0;color:#b9770e}
-.b-300M-1B{background:#eaf6ec;color:#1a8f4c}.b-o1B{background:#e7f0fb;color:#1652f0}.b-unknown{background:#eee;color:#888}
+table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--bg-card)}
+th{position:sticky;top:0;background:var(--bg-thead);text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap}
+td{padding:5px 8px;border-bottom:1px solid var(--border-2)}td.n{text-align:right;font-variant-numeric:tabular-nums}
+tr:hover td{background:var(--bg-hover)}
+/* FDV-bucket badges: colored text + currentColor outline (theme-safe, no pastel bg) */
+.b{padding:1px 7px;border-radius:6px;font-weight:600;border:1px solid currentColor}
+.b-u100M{color:var(--neg)}.b-100-300M{color:var(--amber)}
+.b-300M-1B{color:var(--pos)}.b-o1B{color:var(--link)}.b-unknown{color:var(--text-4)}
 .detail{padding:24px 28px;max-width:760px}
-.info{background:#fff;border:1px solid #e1e7ee;border-radius:10px;padding:18px}
-.sym{background:#eaf2fb;color:#1f4e79;padding:2px 8px;border-radius:6px;font-size:13px}
-dl{display:grid;grid-template-columns:96px 1fr;gap:3px 10px;margin:12px 0}dt{color:#6b7785;font-weight:600}dd{margin:0;word-break:break-word}
-h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;color:#6b7785}
-.lags{display:grid;grid-template-columns:1fr 1fr;gap:6px}.lag{background:#f7f9fc;border:1px solid #e7edf3;border-radius:7px;padding:6px 9px}
-.lag .k{display:block;font-size:10.5px;color:#8a96a3}.lag .v{font-weight:700}
+.info{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:18px}
+.sym{background:var(--bg-chip);color:var(--primary);padding:2px 8px;border-radius:6px;font-size:13px}
+dl{display:grid;grid-template-columns:96px 1fr;gap:3px 10px;margin:12px 0}dt{color:var(--text-3);font-weight:600}dd{margin:0;word-break:break-word}
+h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;color:var(--text-3)}
+.lags{display:grid;grid-template-columns:1fr 1fr;gap:6px}.lag{background:var(--bg-subtle);border:1px solid var(--border);border-radius:7px;padding:6px 9px}
+.lag .k{display:block;font-size:10.5px;color:var(--text-4)}.lag .v{font-weight:700}
 /* responsive */
 img,svg{max-width:100%;height:auto}
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}

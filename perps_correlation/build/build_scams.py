@@ -22,6 +22,7 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetc
 from build.build_listing_report import CSS as RCSS          # reuse reactions styling
 from build.build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
 from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
+from build.build_listing_report import theme_toggle_button, THEME_JS  # shared dark/light toggle
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from lib.interactive_chart import timeseries_html
@@ -1181,7 +1182,7 @@ def _detail(rec, platforms) -> str:
     mc, fdv = rec.get("mcap") or rec.get("csv_mc"), rec.get("fdv") or rec.get("csv_fdv")
     fdvmc = f"<dt>FDV / MC</dt><dd>{fdv / mc:.1f}×</dd>" if (mc and fdv) else ""
     body = f"""
-<header><a class="back" href="index.html">← all watchlist tokens</a></header>
+<header style="display:flex;align-items:center"><a class="back" href="index.html">← all watchlist tokens</a>{theme_toggle_button()}</header>
 <main><section class="card">
   <div class="info">
     <h2>{name} <span class="sym">{html.escape(sym)}</span> {_venue_badges(sym)}</h2>
@@ -1215,7 +1216,8 @@ def _detail(rec, platforms) -> str:
 <section class="card span">
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
   {_holders_block(rec, platforms)}
-</section></main>"""
+</section></main>
+{THEME_JS}"""
     title = f"{rec.get('name', sym)} ({sym}) — Manipulated"
     desc = (f"{rec.get('name', sym)} ({sym}) on the Manipulated watchlist — price history, "
             f"per-venue perp OI & funding, OI/volume trend, supply and top holders.")
@@ -1290,7 +1292,7 @@ def _index(recs) -> str:
 <header><h1>Manipulated</h1>
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
-<a class="active" href="index.html">Manipulated ({len(recs)})</a></nav>
+<a class="active" href="index.html">Manipulated ({len(recs)})</a>{theme_toggle_button()}</nav>
 <p>{len(recs)} coins · Buy v1 <b>{c.get('v1', 0)}</b> · v2 <b>{c.get('v2', 0)}</b> · v3 <b>{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC</p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {_filter_bar()}
@@ -1300,7 +1302,8 @@ def _index(recs) -> str:
   <div class="listwrap"><table class="list" id="ltab"><thead><tr>{head}</tr></thead>
   <tbody>{rows}</tbody></table></div>
 </div>
-{JS}"""
+{JS}
+{THEME_JS}"""
     desc = ("Manipulated-token watchlist — tokens propped to extreme FDV: price history, "
             "per-venue perp open interest, funding, OI/volume trend and holder concentration.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
@@ -1311,8 +1314,8 @@ def _index(recs) -> str:
 
 
 EXTRA_CSS = """
-.fdv{font-size:13px;color:#42505e;display:inline-flex;align-items:center;gap:6px}
-.links.note{color:#8a96a3;font-style:italic}
+.fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
+.links.note{color:var(--text-4);font-style:italic}
 /* deterministic column widths (8 cols: #, Token, TGE, OI (BN+BYB),
    FDV, Funding, 24h, Memo). */
 #ltab{table-layout:fixed;min-width:820px}
@@ -1327,14 +1330,14 @@ EXTRA_CSS = """
 #ltab th:nth-child(8){width:24.5%;text-align:left} /* Memo */
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
-.flag{background:#fdecea;color:#c0392b;border-radius:9px;font-size:10.5px;
+.flag{background:var(--flag-bg);color:var(--neg);border-radius:9px;font-size:10.5px;
   font-weight:700;padding:1px 8px;white-space:nowrap;cursor:help}
 .tile-head .flags{margin-left:auto}
 .flagrow{margin:0 0 10px}
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
-#ltab td.tge{font-size:12px;color:#42505e;text-align:center}
-#ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:#42505e}
+#ltab td.tge{font-size:12px;color:var(--text-2);text-align:center}
+#ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:var(--text-2)}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* per-token detail: full-width sections for perp + holders tables.
    The base .card delegates its padding to .info/.chart children, but these span
@@ -1342,8 +1345,8 @@ EXTRA_CSS = """
    their own padding — without it titles sit flush in the top-left corner and the
    right edge (donut legends, wide tables) gets clipped by .card{overflow:hidden}. */
 section.card.span{display:block;margin-top:18px;padding:20px 24px}
-section.card.span h3{margin:0 0 12px;font-size:15px;color:#1d2733}
-section.card.span h3 .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:8px}
+section.card.span h3{margin:0 0 12px;font-size:15px;color:var(--text)}
+section.card.span h3 .asof{font-size:12px;color:var(--text-4);font-weight:400;margin-left:8px}
 .badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
 /* in the narrow info panel a long ratio badge would overflow the dl value column
    and get clipped by .card{overflow:hidden}; let it wrap there instead of nowrap */
@@ -1356,23 +1359,23 @@ table.perp,table.holders{width:100%;border-collapse:collapse;font-size:13px}
    scroll there). Mirrors the index list table's approach. */
 table.perp{min-width:520px}
 table.holders{min-width:430px}
-table.perp th,table.holders th{text-align:right;padding:7px 10px;color:#6b7785;font-weight:600;
-  border-bottom:2px solid #e1e7ee;font-size:12px}
+table.perp th,table.holders th{text-align:right;padding:7px 10px;color:var(--text-3);font-weight:600;
+  border-bottom:2px solid var(--border);font-size:12px}
 table.perp th:first-child,table.holders th:nth-child(2){text-align:left}
-table.perp td,table.holders td{text-align:right;padding:7px 10px;border-bottom:1px solid #eef2f6}
+table.perp td,table.holders td{text-align:right;padding:7px 10px;border-bottom:1px solid var(--border-2)}
 table.perp td.venue,table.holders td:nth-child(2){text-align:left}
-table.perp td.iv{color:#8a96a3}
-table.perp tr.allrow td{font-weight:700;background:#f7f9fb}
+table.perp td.iv{color:var(--text-4)}
+table.perp tr.allrow td{font-weight:700;background:var(--bg-subtle)}
 /* Others = aggregate of untracked venues; muted so it reads as a catch-all */
-table.perp tr.otherrow td{color:#8a96a3;background:#fbfcfd}
-table.perp tr.otherrow td.venue{color:#6b7785}
+table.perp tr.otherrow td{color:var(--text-4);background:var(--bg-subtle)}
+table.perp tr.otherrow td.venue{color:var(--text-3)}
 table.perp tr.otherrow .htag{margin-left:7px}
 table.holders td.mono,table.holders a.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
-section.card.span .missing{color:#8a96a3;font-style:italic;padding:8px 0}
-section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
+section.card.span .missing{color:var(--text-4);font-style:italic;padding:8px 0}
+section.card.span p.note{font-size:12px;color:var(--text-4);margin:10px 0 0}
 /* holder rows: a small tag chip for CEX/contract/burn wallets */
 .htag{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:9px;font-size:11px;
-  font-weight:600;color:#6b7785;background:#eef2f6;vertical-align:middle}
+  font-weight:600;color:var(--text-3);background:var(--bg-thead);vertical-align:middle}
 /* holders table + donut side by side (stacks on narrow screens) */
 .hol-grid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:20px;align-items:start}
 .hol-grid>*{min-width:0}
@@ -1382,30 +1385,30 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 .donut-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:8px}
 .donut-grid>*{min-width:0}
 /* static SVG donuts (build-time; replaced the Plotly pies) */
-.sdonut{margin:0;background:#fff}
-.sdonut figcaption{text-align:center;font-size:13px;font-weight:600;color:#1d2733;margin:6px 0 8px}
+.sdonut{margin:0;background:var(--bg-card)}
+.sdonut figcaption{text-align:center;font-size:13px;font-weight:600;color:var(--text);margin:6px 0 8px}
 .sd-row{display:flex;align-items:center;gap:14px}
 .sd-svg{flex:0 0 150px;width:150px;height:150px}
-.sd-ctr{font-size:11.5px;fill:#42505e;font-weight:600}
-.sd-legend{list-style:none;margin:0;padding:0;font-size:11.5px;color:#42505e;min-width:0}
+.sd-ctr{font-size:11.5px;fill:var(--text-2);font-weight:600}
+.sd-legend{list-style:none;margin:0;padding:0;font-size:11.5px;color:var(--text-2);min-width:0}
 .sd-legend li{display:flex;align-items:center;gap:6px;padding:1.5px 0;flex-wrap:wrap}
 .sd-legend li i{flex:0 0 9px;width:9px;height:9px;border-radius:50%;display:inline-block}
-.sd-legend li b{font-weight:600;color:#1d2733;margin-left:auto;padding-left:8px;white-space:nowrap}
+.sd-legend li b{font-weight:600;color:var(--text);margin-left:auto;padding-left:8px;white-space:nowrap}
 @media(max-width:640px){.sd-svg{flex-basis:120px;width:120px;height:120px}}
 /* wide tables (perp/holders) scroll horizontally on small screens instead of
    overflowing the card */
 .tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
-.hist-h{margin:18px 0 4px;font-size:14px;color:#1d2733}
-.hist-h .asof{font-size:12px;color:#8a96a3;font-weight:400;margin-left:6px}
+.hist-h{margin:18px 0 4px;font-size:14px;color:var(--text)}
+.hist-h .asof{font-size:12px;color:var(--text-4);font-weight:400;margin-left:6px}
 /* ── Top-holders chain picker + Bubblemaps link ──────────────────────────── */
-.chainsel{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:13px;color:#42505e}
-.chainsel select{font:inherit;padding:5px 8px;border:1px solid #d7dee6;border-radius:7px;
-  background:#fff;color:#1d2733;cursor:pointer}
-.chainsel .chaincount{color:#8a96a3;font-size:12px}
+.chainsel{display:flex;align-items:center;gap:12px;margin:0 0 14px;font-size:13px;color:var(--text-2)}
+.chainsel select{font:inherit;padding:5px 8px;border:1px solid var(--border-input);border-radius:7px;
+  background:var(--bg-card);color:var(--text);cursor:pointer}
+.chainsel .chaincount{color:var(--text-4);font-size:12px}
 .bmap-row{margin-top:14px}
-.bmap-btn{display:inline-block;padding:9px 14px;border-radius:8px;background:#1f4e79;color:#fff;
+.bmap-btn{display:inline-block;padding:9px 14px;border-radius:8px;background:var(--primary);color:#fff;
   font-size:13px;font-weight:600;text-decoration:none}
-.bmap-btn:hover{background:#163a5b}
+.bmap-btn:hover{background:var(--primary-deep)}
 @media(max-width:640px){
   section.card.span{padding:16px 14px}
   section.card.span h3{font-size:14px}
@@ -1421,19 +1424,19 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 }
 /* ── screener: filter panel, Buy/venue badges, signal cards ───────────── */
 .filters{flex-wrap:wrap;gap:8px 12px}
-#btn-filter{background:#1f4e79;color:#fff;border:none;border-radius:7px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
-#btn-filter.open{background:#163a5b}
-.fpanel{background:#f7f9fb;border:1px solid #e1e7ee;border-radius:10px;padding:14px 18px;margin:10px 0 0}
+#btn-filter{background:var(--primary);color:#fff;border:none;border-radius:7px;padding:5px 12px;font:inherit;font-size:12px;font-weight:700;cursor:pointer}
+#btn-filter.open{background:var(--primary-deep)}
+.fpanel{background:var(--bg-subtle);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin:10px 0 0}
 .fp-presets{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
-.fp-pre{font:inherit;font-size:12px;font-weight:700;border:1px solid #d7dee6;background:#fff;color:#42505e;padding:4px 10px;border-radius:7px;cursor:pointer}
-.fp-pre.active{background:#1f4e79;color:#fff;border-color:#1f4e79}
-.fp-clear{font:inherit;font-size:11px;color:#8a96a3;background:none;border:none;cursor:pointer;margin-left:auto}
-.fp-clear:hover{color:#c0392b}
+.fp-pre{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--border-input);background:var(--bg-card);color:var(--text-2);padding:4px 10px;border-radius:7px;cursor:pointer}
+.fp-pre.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.fp-clear{font:inherit;font-size:11px;color:var(--text-4);background:none;border:none;cursor:pointer;margin-left:auto}
+.fp-clear:hover{color:var(--neg)}
 .fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 18px}
-.fp-group{border:1px solid #e1e7ee;border-radius:8px;padding:8px 10px;margin:0}
-.fp-group legend{font-size:11px;font-weight:700;color:#6b7785;text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
-.fcb{display:flex;align-items:center;gap:5px;font-size:12px;color:#42505e;cursor:pointer;padding:2px 0}
-.fcb input{margin:0;accent-color:#1f4e79}
+.fp-group{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:0}
+.fp-group legend{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
+.fcb{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-2);cursor:pointer;padding:2px 0}
+.fcb input{margin:0;accent-color:var(--primary)}
 .fcb span{user-select:none}
 .buy{display:inline-block;border-radius:9px;font-size:10.5px;font-weight:700;padding:1px 8px;white-space:nowrap;color:#fff;margin:0 4px 2px 0}
 .buy i{font-style:normal;opacity:.8;font-weight:600}
@@ -1444,20 +1447,20 @@ section.card.span p.note{font-size:12px;color:#8a96a3;margin:10px 0 0}
 .ven.bn{background:#f3ba2f;color:#3a2c00}
 .ven.byb{background:#e9eef5;color:#1f4e79;border:1px solid #cdd9e8}
 td.sig .buy{margin:1px 3px 1px 0}
-.sigmeta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 14px;font-size:13px;color:#42505e}
-.sigmeta b{color:#6b7785;font-weight:600;margin-right:4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+.sigmeta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 14px;font-size:13px;color:var(--text-2)}
+.sigmeta b{color:var(--text-3);font-weight:600;margin-right:4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
 .buycards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
-.buycard{border:1px solid #e1e7ee;border-radius:10px;padding:12px 14px;background:#fbfcfd}
-.buycard.fired{border-color:#1e7a46;background:#f3faf5}
-.bc-head{font-weight:700;font-size:13px;color:#1d2733;display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-.bc-head span{font-weight:400;font-size:11.5px;color:#8a96a3}
+.buycard{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg-subtle)}
+.buycard.fired{border-color:var(--pos);background:var(--fired-bg)}
+.bc-head{font-weight:700;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.bc-head span{font-weight:400;font-size:11.5px;color:var(--text-4)}
 .bc-head .buy{margin:0}
-.bc-no{font-size:11px;color:#8a96a3;font-weight:600;margin-left:auto}
-.bc-rec{font-size:12px;color:#42505e;margin:-2px 0 8px}
-.bc-state.na{font-size:12px;color:#8a96a3;font-style:italic}
+.bc-no{font-size:11px;color:var(--text-4);font-weight:600;margin-left:auto}
+.bc-rec{font-size:12px;color:var(--text-2);margin:-2px 0 8px}
+.bc-state.na{font-size:12px;color:var(--text-4);font-style:italic}
 .conds{list-style:none;margin:0;padding:0;font-size:11.5px;display:grid;gap:3px}
-.conds li.ok{color:#1e7a46}
-.conds li.x{color:#9aa6b2}
+.conds li.ok{color:var(--pos)}
+.conds li.x{color:var(--text-4)}
 .binance-btn{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:8px;background:#f3ba2f;color:#3a2c00;font-weight:700;font-size:13px;text-decoration:none}
 .binance-btn:hover{background:#e0a91d}
 """

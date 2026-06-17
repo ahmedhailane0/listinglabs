@@ -229,11 +229,22 @@ def chart_html(cfg: dict, height: int = 560) -> str | None:
 # Lightweight Charts v4 API. Aggregates the 5m rows into the active timeframe and
 # snaps markers to the matching bucket so they always land on a real data point.
 _CHART_JS = r"""
+function llTheme(){
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return dark
+    ? { bg:'#1a212b', text:'#e6ebf1', grid:'#232c38', border:'#2c3744',
+        cross:'#3a4654', crossLabel:'#4a90d0', line:'#4a90d0',
+        areaTop:'rgba(74,144,208,0.22)', areaBot:'rgba(74,144,208,0.02)' }
+    : { bg:'#ffffff', text:'#1d2733', grid:'#eef2f6', border:'#e1e7ee',
+        cross:'#c5ccd3', crossLabel:'#1f4e79', line:'#1f4e79',
+        areaTop:'rgba(31,78,121,0.18)', areaBot:'rgba(31,78,121,0.02)' };
+}
 function mount(id, cfg){
   var el = document.getElementById(id);
   if(!el || !window.LightweightCharts){ return; }
   var DEC = cfg.dec, minMove = 1/Math.pow(10, DEC);
   var LC = window.LightweightCharts;
+  var T = llTheme();
   var chart = LC.createChart(el, {
     // autoSize lets Lightweight Charts measure the container itself and fit the
     // plot + price axis INSIDE it. Without it we passed el.clientWidth read before
@@ -243,22 +254,34 @@ function mount(id, cfg){
     autoSize: true,   // size to the container; do NOT also pass width/height (that
                       // pins an initial size that fights autoSize and let the price
                       // scale overflow the card).
-    layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
+    layout: { background:{ type:'solid', color:T.bg }, textColor:T.text,
               fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
-    grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
-    rightPriceScale: { visible:true, borderColor:'#e1e7ee' },
-    timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
+    grid: { vertLines:{ visible:false }, horzLines:{ color:T.grid } },
+    rightPriceScale: { visible:true, borderColor:T.border },
+    timeScale: { borderColor:T.border, timeVisible:true, secondsVisible:false },
     crosshair: { mode: LC.CrosshairMode.Normal,
-                 vertLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' },
-                 horzLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' } },
+                 vertLine:{ color:T.cross, width:1, style:0, labelBackgroundColor:T.crossLabel },
+                 horzLine:{ color:T.cross, width:1, style:0, labelBackgroundColor:T.crossLabel } },
     localization: { priceFormatter: function(p){ return '$' + p.toFixed(DEC); } },
     handleScale: true, handleScroll: true,
   });
   var series = chart.addAreaSeries({
-    lineColor:'#1f4e79', topColor:'rgba(31,78,121,0.18)', bottomColor:'rgba(31,78,121,0.02)',
+    lineColor:T.line, topColor:T.areaTop, bottomColor:T.areaBot,
     lineWidth:2, priceFormat:{ type:'price', precision:DEC, minMove:minMove },
     priceLineVisible:false, lastValueVisible:true,
   });
+  (window.__llCharts = window.__llCharts || []).push(function(){
+    var t = llTheme();
+    chart.applyOptions({ layout:{ background:{ type:'solid', color:t.bg }, textColor:t.text },
+      grid:{ horzLines:{ color:t.grid } }, rightPriceScale:{ borderColor:t.border },
+      timeScale:{ borderColor:t.border },
+      crosshair:{ vertLine:{ color:t.cross, labelBackgroundColor:t.crossLabel },
+                  horzLine:{ color:t.cross, labelBackgroundColor:t.crossLabel } } });
+    series.applyOptions({ lineColor:t.line, topColor:t.areaTop, bottomColor:t.areaBot });
+  });
+  window.__llThemeCharts = window.__llThemeCharts || function(){
+    (window.__llCharts||[]).forEach(function(f){ try{ f(); }catch(e){} });
+  };
 
   function agg(rows, mins){
     var bs = mins*60, map = {}, order = [];
@@ -405,10 +428,19 @@ def timeseries_html(div_id: str, series: list[dict], height: int = 520,
 # Generic time-series mount (no markers). Shared by reports that just need a robust
 # price/value-vs-time chart on the same engine as the listing charts.
 _TS_JS = r"""
+function llThemeTS(){
+  var dark = document.documentElement.getAttribute('data-theme') === 'dark';
+  return dark
+    ? { bg:'#1a212b', text:'#e6ebf1', grid:'#232c38', border:'#2c3744',
+        cross:'#3a4654', crossLabel:'#4a90d0' }
+    : { bg:'#ffffff', text:'#1d2733', grid:'#eef2f6', border:'#e1e7ee',
+        cross:'#c5ccd3', crossLabel:'#1f4e79' };
+}
 function mountTS(id, cfg){
   var el = document.getElementById(id);
   if(!el || !window.LightweightCharts){ return; }
   var LC = window.LightweightCharts;
+  var T = llThemeTS();
   function usdC(v){ var a=Math.abs(v);
     if(a>=1e9) return '$'+(v/1e9).toFixed(2)+'B';
     if(a>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
@@ -439,16 +471,16 @@ function mountTS(id, cfg){
     // without it the price scale spilled past the card and got clipped, hiding the
     // y-axis labels).
     autoSize: true,   // size to container; no explicit width/height (see _CHART_JS).
-    layout: { background:{ type:'solid', color:'#ffffff' }, textColor:'#1d2733',
+    layout: { background:{ type:'solid', color:T.bg }, textColor:T.text,
               fontFamily:'Segoe UI, -apple-system, Roboto, sans-serif', fontSize:12 },
-    grid: { vertLines:{ visible:false }, horzLines:{ color:'#eef2f6' } },
+    grid: { vertLines:{ visible:false }, horzLines:{ color:T.grid } },
     localization: single ? { priceFormatter: function(p){ return fmtVal(primaryFmt, p); } } : {},
-    rightPriceScale: { visible: usesRight, borderColor:'#e1e7ee' },
-    leftPriceScale:  { visible: usesLeft,  borderColor:'#e1e7ee' },
-    timeScale: { borderColor:'#e1e7ee', timeVisible:true, secondsVisible:false },
+    rightPriceScale: { visible: usesRight, borderColor:T.border },
+    leftPriceScale:  { visible: usesLeft,  borderColor:T.border },
+    timeScale: { borderColor:T.border, timeVisible:true, secondsVisible:false },
     crosshair: { mode: LC.CrosshairMode.Normal,
-                 vertLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' },
-                 horzLine:{ color:'#c5ccd3', width:1, style:0, labelBackgroundColor:'#1f4e79' } },
+                 vertLine:{ color:T.cross, width:1, style:0, labelBackgroundColor:T.crossLabel },
+                 horzLine:{ color:T.cross, width:1, style:0, labelBackgroundColor:T.crossLabel } },
     handleScale: true, handleScroll: true,
   });
 
@@ -489,6 +521,20 @@ function mountTS(id, cfg){
     built.push({ s:ser, def:s });
   });
   chart.timeScale().fitContent();
+
+  // Live re-theme on toggle: re-apply the chrome (bg/text/grid/borders/crosshair).
+  // Categorical series colours stay fixed — they read fine on a dark card.
+  (window.__llCharts = window.__llCharts || []).push(function(){
+    var t = llThemeTS();
+    chart.applyOptions({ layout:{ background:{ type:'solid', color:t.bg }, textColor:t.text },
+      grid:{ horzLines:{ color:t.grid } }, rightPriceScale:{ borderColor:t.border },
+      leftPriceScale:{ borderColor:t.border }, timeScale:{ borderColor:t.border },
+      crosshair:{ vertLine:{ color:t.cross, labelBackgroundColor:t.crossLabel },
+                  horzLine:{ color:t.cross, labelBackgroundColor:t.crossLabel } } });
+  });
+  window.__llThemeCharts = window.__llThemeCharts || function(){
+    (window.__llCharts||[]).forEach(function(f){ try{ f(); }catch(e){} });
+  };
 
   // Cross-chart sync (cfg.sync = group name): hovering one chart shows the
   // crosshair at the same time on its siblings, and pan/zoom follows. The
