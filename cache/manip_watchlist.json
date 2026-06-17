@@ -117,16 +117,6 @@
     "has_perp": true,
     "cmc_slug": "zerebro"
   },
-  "TAU": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": null
-  },
   "UB": {
     "sections": [
       "short_term_interest"
@@ -538,16 +528,6 @@
     "has_perp": true,
     "cmc_slug": "intuition"
   },
-  "BTRUST": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": null
-  },
   "JELLYJELLY": {
     "sections": [
       "full_list",
@@ -649,16 +629,6 @@
     ],
     "has_perp": true,
     "cmc_slug": "falcon-finance-ff"
-  },
-  "AWT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "abyss-world"
   },
   "AWE": {
     "sections": [
@@ -1257,16 +1227,6 @@
     "has_perp": true,
     "cmc_slug": "light"
   },
-  "ZKJ": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "polyhedra-network"
-  },
   "ARIA": {
     "sections": [
       "old"
@@ -1347,26 +1307,6 @@
     ],
     "has_perp": true,
     "cmc_slug": "space-id"
-  },
-  "OM": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "mantra"
-  },
-  "ALPACA": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "alpaca-finance"
   },
   "HYPE": {
     "sections": [],
