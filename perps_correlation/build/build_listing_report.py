@@ -369,11 +369,19 @@ CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; "
 SITE_NAME = "ListingLabs"
 
 
-def page_meta(title: str, desc: str, favicon_rel: str = "../favicon.svg") -> str:
+def page_meta(title: str, desc: str, favicon_rel: str = "../favicon.svg",
+              connect_extra: str = "") -> str:
     """The shared head block: CSP + description + OG tags + favicon. Every page
-    on the site goes through this (reactions here; scams/funnel import it)."""
+    on the site goes through this (reactions here; scams/funnel import it).
+
+    `connect_extra` appends extra origins to the CSP connect-src (only the
+    Manipulated page uses it, to allow the box's live-data endpoint) — every
+    other page keeps the strict `connect-src 'self'`."""
     t, d = html.escape(title), html.escape(desc)
-    return (f'<meta http-equiv="Content-Security-Policy" content="{CSP}">\n'
+    csp = CSP
+    if connect_extra:
+        csp = csp.replace("connect-src 'self'", f"connect-src 'self' {connect_extra}")
+    return (f'<meta http-equiv="Content-Security-Policy" content="{csp}">\n'
             f'<meta name="description" content="{d}">\n'
             f'<meta property="og:title" content="{t}">\n'
             f'<meta property="og:description" content="{d}">\n'

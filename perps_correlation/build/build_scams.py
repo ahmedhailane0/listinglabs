@@ -53,6 +53,13 @@ TGE_CACHE = HERE.parent / "cache" / "scam_tge.json"
 SCREENER_FILE = HERE.parent / "cache" / "screener" / "screener.json"
 SCREENER: dict[str, dict] = {}     # SYM(upper) -> screener token record
 SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
+
+# The always-on box also serves a tiny live.json (price/24h/OI/funding, refreshed
+# ~60s) over HTTPS via Caddy on an sslip.io host. LIVE_JS polls it client-side and
+# updates the matching cells in place, so the Manipulated tab is live without a
+# rebuild. Only this page widens its CSP connect-src to allow it (page_meta arg).
+LIVE_ORIGIN = "https://45-32-102-44.sslip.io"
+LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
 STRATS = ("v1", "v2", "v3")
 STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3"}
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
@@ -410,7 +417,7 @@ def _tile(rec) -> str:
     if r.get("oi_fdv_pct") is not None:
         metas.append(f'<span><b>OI/FDV</b> {r["oi_fdv_pct"]:.0f}%</span>')
     return f"""
-    <a class="tile" href="{sym.lower()}.html" {_filter_attrs(rec)}>
+    <a class="tile" data-sym="{html.escape(sym)}" href="{sym.lower()}.html" {_filter_attrs(rec)}>
       {_sparkline(sym)}
       <div class="tile-body">
         <div class="tile-head"><span class="name">{html.escape(rec.get('name', sym))}</span>
@@ -456,10 +463,13 @@ def _price24_cell(rec) -> str:
     if px is None and p24 is None:
         return f'<td class="n" data-s="{_NEG_INF}">—</td>'
     pxt = fmt_subscript_price(px) if px else "—"
+    # `pxmain` span + data-sym-driven cell let the live poller (LIVE_JS) swap the
+    # price/24h in place without a rebuild; same structure it re-renders to, so
+    # only genuinely-changed cells flash on the first poll.
     if p24 is None:
-        return f'<td class="n" data-s="{_NEG_INF}">{pxt}</td>'
+        return f'<td class="n" data-live="px24" data-s="{_NEG_INF}"><span class="pxmain">{pxt}</span></td>'
     cls = "pos" if p24 >= 0 else "neg"
-    return (f'<td class="n" data-s="{p24:.4f}">{pxt}'
+    return (f'<td class="n" data-live="px24" data-s="{p24:.4f}"><span class="pxmain">{pxt}</span>'
             f'<span class="p24 {cls}">{p24:+.1f}%</span></td>')
 
 
@@ -498,7 +508,7 @@ def _list_row(rec) -> str:
            f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
     memo = html.escape(rec.get("memo_en") or "")
     return (
-        f'<tr class="lrow" {_filter_attrs(rec)}>'
+        f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
         f'{_price24_cell(rec)}'
         f'{_num_cell(oi, pct=False, color=False)}'
@@ -1288,6 +1298,56 @@ def _filter_bar() -> str:
 </div>"""
 
 
+# Client-side live updater: polls the box's live.json every ~60s and swaps the
+# 24h (price+%), OI(BN+BYB) and Funding cells in the list + the Price/OI tile
+# metas in place. Column positions are resolved from the header text (survives a
+# column reorder). Formatting mirrors fmt_subscript_price / fmt_usd_compact and
+# the Python cell formatters so live values look identical to a fresh build.
+LIVE_JS = (
+    "<script>(function(){"
+    f'var SRC="{LIVE_SRC}";'
+    'var SUB="\\u2080\\u2081\\u2082\\u2083\\u2084\\u2085\\u2086\\u2087\\u2088\\u2089";'
+    'function fmtUsd(v){if(v==null)return "\\u2014";v=+v;if(!isFinite(v)||v===0)return "\\u2014";'
+    'if(v>=1e9)return "$"+(v/1e9).toFixed(2)+"B";if(v>=1e6)return "$"+(v/1e6).toFixed(1)+"M";'
+    'if(v>=1e3)return "$"+(v/1e3).toFixed(1)+"K";return "$"+Math.round(v).toLocaleString("en-US");}'
+    'function fmtPrice(p){if(p==null)return "\\u2014";p=+p;if(!(p>0))return "$0";'
+    'if(p>=1)return "$"+p.toLocaleString("en-US",{minimumFractionDigits:4,maximumFractionDigits:4});'
+    'var s=p.toFixed(20).split(".")[1],st=s.replace(/^0+/,""),nz=s.length-st.length;'
+    'if(nz<4)return "$"+p.toFixed(nz+3);'
+    'var dg=(st+"000").slice(0,3),sb=String(nz).split("").map(function(d){return SUB[+d];}).join("");'
+    'return "$0.0"+sb+dg;}'
+    'function flash(el){if(!el)return;el.classList.remove("liveflash");void el.offsetWidth;el.classList.add("liveflash");}'
+    'function setCell(td,h,sv){if(!td)return;if(sv!=null)td.setAttribute("data-s",sv);if(td.innerHTML!==h){td.innerHTML=h;flash(td);}}'
+    'function p24cell(price,p24){var pxt=fmtPrice(price);'
+    'if(p24==null)return "<span class=\\"pxmain\\">"+pxt+"</span>";'
+    'var cls=p24>=0?"pos":"neg",sg=p24>=0?"+":"";'
+    'return "<span class=\\"pxmain\\">"+pxt+"</span><span class=\\"p24 "+cls+"\\">"+sg+p24.toFixed(1)+"%</span>";}'
+    'function tileMeta(t,label,txt){var sp=t.querySelectorAll(".tile-meta span");'
+    'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
+    'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
+    'var tab=document.getElementById("ltab");if(!tab)return;'
+    'var ths=tab.tHead.rows[0].cells,ci={};'
+    'for(var i=0;i<ths.length;i++){var t=ths[i].textContent.trim().toLowerCase();'
+    'if(t.indexOf("24h")>-1)ci.px24=i;else if(t.indexOf("oi")>-1&&t.indexOf("fdv")<0)ci.oi=i;'
+    'else if(t.indexOf("funding")>-1)ci.fund=i;}'
+    'var rb={},rows=tab.tBodies[0].rows;'
+    'for(var r=0;r<rows.length;r++){var s=rows[r].getAttribute("data-sym");if(s)rb[s]=rows[r];}'
+    'var tb={};document.querySelectorAll(".tile[data-sym]").forEach(function(t){tb[t.getAttribute("data-sym")]=t;});'
+    'var badge=document.getElementById("live-badge");'
+    'function apply(d){var tk=(d&&d.tokens)||{};'
+    'for(var sym in tk){var v=tk[sym],row=rb[sym];'
+    'if(row){if(ci.px24!=null&&(v.price!=null||v.p24!=null))setCell(row.cells[ci.px24],p24cell(v.price,v.p24),v.p24!=null?(+v.p24).toFixed(4):null);'
+    'if(ci.oi!=null&&v.oi_combined!=null)setCell(row.cells[ci.oi],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
+    'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));}'
+    'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));}}'
+    'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
+    'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
+    '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'
+    'poll();setInterval(poll,60000);'
+    "})();</script>"
+)
+
+
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
@@ -1308,7 +1368,7 @@ def _index(recs) -> str:
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
 <a class="active" href="index.html">Manipulated ({len(recs)})</a>{theme_toggle_button()}</nav>
-<p>{len(recs)} coins · Buy v1 <b>{c.get('v1', 0)}</b> · v2 <b>{c.get('v2', 0)}</b> · v3 <b>{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC</p>
+<p>{len(recs)} coins · Buy v1 <b>{c.get('v1', 0)}</b> · v2 <b>{c.get('v2', 0)}</b> · v3 <b>{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding update live from the box every ~60s">● connecting…</span></p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
@@ -1318,12 +1378,13 @@ def _index(recs) -> str:
   <tbody>{rows}</tbody></table></div>
 </div>
 {JS}
+{LIVE_JS}
 {THEME_JS}"""
     desc = ("Manipulated-token watchlist — tokens propped to extreme FDV: price history, "
             "per-venue perp open interest, funding, OI/volume trend and holder concentration.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("Manipulated — ListingLabs", desc)}'
+            f'{page_meta("Manipulated — ListingLabs", desc, connect_extra=LIVE_ORIGIN)}'
             f'<title>Manipulated</title><link rel="stylesheet" href="style.css"></head>'
             f'<body>{body}</body></html>')
 
@@ -1356,6 +1417,14 @@ EXTRA_CSS = """
 #ltab td .p24{display:block;font-size:11px;font-weight:600}
 #ltab td .p24.pos{color:var(--pos)}
 #ltab td .p24.neg{color:var(--neg)}
+/* live badge + cell flash (LIVE_JS polls the box every ~60s) */
+#live-badge{font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;white-space:nowrap;
+  margin-left:6px;border:1px solid var(--border)}
+#live-badge.live-wait{color:var(--text-2)}
+#live-badge.live-on{color:var(--pos);border-color:var(--pos)}
+#live-badge.live-off{color:var(--neg);border-color:var(--neg)}
+@keyframes liveflash{from{background:rgba(88,166,255,.35)}to{background:transparent}}
+.liveflash{animation:liveflash 1s ease-out}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:var(--text-2)}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* per-token detail: full-width sections for perp + holders tables.
