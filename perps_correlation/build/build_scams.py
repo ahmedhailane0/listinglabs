@@ -21,7 +21,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch./build. importable from anywhere
 from build.build_listing_report import CSS as RCSS          # reuse reactions styling
 from build.build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
-from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
+from build.build_listing_report import page_meta  # shared CSP/OG head
 from build.build_listing_report import theme_toggle_button, THEME_JS  # shared dark/light toggle
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
@@ -89,11 +89,6 @@ def _ago(t, as_of=None) -> str:
         return ""
     h = max(0, int((as_of - t) // 3600))
     return "now" if h == 0 else f"{h}h ago"
-
-
-def _fired_strats(sym) -> list[str]:
-    s = _sig(sym).get("signals") or {}
-    return [k for k in STRATS if (s.get(k) or {}).get("fired")]
 
 
 def _buy_badges(sym, mini=False) -> str:
@@ -440,25 +435,6 @@ LIST_COLS = ["#", "Token", "Price / 24h", "BN OI", "OI (BN+BYB)",
              "Vol", "FDV", "MC", "Memo"]
 
 
-def _ratio_cell(rec) -> str:
-    """OI/Vol ratio cell: plain number, red when it crosses the parked-OI
-    threshold. Sortable so the most-parked tokens rise to the top."""
-    r = _screen(rec)["ratio"]
-    if r is None:
-        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
-    cls = " neg" if r >= FLAG_OI_VOL else ""
-    return f'<td class="n{cls}" data-s="{r:.4f}">{r:.2f}</td>'
-
-
-def _tge_cell(rec) -> str:
-    """TGE date cell (token first-listed), sorted by epoch seconds — mirrors the
-    Listing Reactions report's TGE column."""
-    t = _tge_dt(rec)
-    if t is None:
-        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
-    return f'<td class="tge" data-s="{t.timestamp():.0f}">{t.strftime("%Y-%m-%d")}</td>'
-
-
 def _price24_cell(rec) -> str:
     """24h column: current price (main line) + the 24h % change (colored
     subtitle). Sorts by the 24h move so the column matches its label and the
@@ -476,20 +452,6 @@ def _price24_cell(rec) -> str:
     cls = "pos" if p24 >= 0 else "neg"
     return (f'<td class="n" data-live="px24" data-s="{p24:.4f}"><span class="pxmain">{pxt}</span>'
             f'<span class="p24 {cls}">{p24:+.1f}%</span></td>')
-
-
-def _funding_cell(rec) -> str:
-    """Funding amount cell with the lead/first investor as a subtitle — matches
-    the reactions list's funding column."""
-    f = _fund_rec(rec)
-    amt = f.get("amount")
-    invs = f.get("investors") or []
-    if not amt and not invs:
-        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
-    amt_txt = _usd(amt) if amt else "—"
-    lead = next((i["name"] for i in invs if i.get("lead")), invs[0]["name"] if invs else "")
-    sub = f' <span class="sub">{html.escape(lead)}</span>' if lead else ""
-    return f'<td class="n" data-s="{amt or 0:.0f}">{amt_txt}{sub}</td>'
 
 
 def _fundcell(r) -> str:

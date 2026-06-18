@@ -2,12 +2,11 @@
 page per token (venue dates + day-lags + FDV). No charts — text/table only."""
 from __future__ import annotations
 import html, json, statistics as st
-from datetime import date
 from pathlib import Path
 
 import sys as _sys
 _sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # make lib./build. importable
-from build.build_listing_report import page_meta, build_stamp, screener_count  # shared CSP/OG head + stamp
+from build.build_listing_report import page_meta, build_stamp  # shared CSP/OG head + stamp
 from build.build_listing_report import THEME_VARS, theme_toggle_button, THEME_JS  # shared dark/light theme
 
 HERE = Path(__file__).parent

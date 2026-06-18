@@ -24,7 +24,6 @@ import json
 import os
 import sys
 import time
-from pathlib import Path
 
 import sys as _sys
 from pathlib import Path as _Path
