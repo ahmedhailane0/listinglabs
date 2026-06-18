@@ -21,12 +21,15 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 
-import time
+# Run from any cwd: put perps_correlation/ on the path so `from fetch.fetch_screener
+# import _fetch_token` (the shared signal pull) resolves, like the other scripts.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 HERE = Path(__file__).resolve().parents[1]          # perps_correlation/
 CACHE = HERE.parent / "cache"
