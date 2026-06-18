@@ -29,7 +29,12 @@ git -C "$REPO" add cache/scam_holders/ 2>/dev/null || true
 if git -C "$REPO" diff --cached --quiet; then
   echo "no change to commit"; exit 0
 fi
-git -C "$REPO" commit -m "chore: screener hourly signals [skip ci]" || exit 0
+# NO [skip ci]: this push must trigger the cloud rebuild so fresh hourly signals
+# actually reach the live site. GitHub's schedule cron is best-effort (fires every
+# 3-5h, not every 20min), so the box push is the reliable deploy trigger. The cloud
+# loop's own commit-back keeps [skip ci], so there is no rebuild loop. Public repo =
+# unlimited Actions minutes, so hourly builds cost nothing.
+git -C "$REPO" commit -m "chore: screener hourly signals" || exit 0
 
 # 4) Push with rebase-retry (the cloud loop commits every ~20 min — races happen).
 for i in 1 2 3 4 5; do
