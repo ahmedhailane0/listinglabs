@@ -36,6 +36,12 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     4 |funding_8h| <= 0.02%        5 OI rebuilt >=8% off the washout low
     6 C[0] > the high of the 3h right after the washout low
     -> size 5-10%, stop = the washout low.
+
+  Buy v4 — coiled accumulation (the pre-pump build; fires DAYS before the vertical)
+    1 OI[0] >= +40% vs OI[48]      2 |price move over 48h| <= 15%
+    3 48h high/low range <= 30%    4 oi%48h / price%48h >= 2  (OI leads price)
+    5 funding <= 0 (SQUEEZE)  OR  funding <= 0.05% with EMA20>EMA60 (TREND)
+    -> size 5-10%, stop = the 48h coil low.
 """
 from __future__ import annotations
 
@@ -73,6 +79,13 @@ V3_FUNDING_8H = 0.0002   # |funding normalized to 8h| <= 0.02%
 V3_REBUILD = 0.08        # OI back >= 8% off the low
 V3_WINDOW = 4            # hours
 V3_POST_HIGH = 3         # post-washout high window (hours)
+# Buy v4 — coiled accumulation (the pre-pump build, fires DAYS before the vertical)
+V4_WINDOW = 48           # hours (2-day accumulation window)
+V4_OI_BUILD = 0.40       # OI now >= +40% vs 48h ago
+V4_PRICE_FLAT = 0.15     # |net price move over 48h| <= 15% (price still flat)
+V4_RANGE_MAX = 0.30      # 48h high/low range <= 30% (coiling, not trending hard)
+V4_RATIO = 2.0           # oi%48h / price%48h >= 2 (OI leads price = quiet loading)
+V4_FUNDING_TREND = 0.0005  # trend variant: calm/slightly+ funding cap (<= 0.05%)
 
 
 def _dominance_ratio(oi_pct: float, price_pct: float) -> float:
@@ -220,6 +233,49 @@ def _eval_v3(oi_m, c_m, h_m, l_m, t, funding, interval_h):
                         "funding_8h": funding_8h}}
 
 
+def _eval_v4(oi_m, c_m, h_m, l_m, t, funding):
+    """Coiled accumulation: open interest building over ~2 days while price stays
+    flat and tight — the quiet loading that preceded every pump in the study, days
+    before the vertical. Two flavours: SQUEEZE (funding <= 0) and TREND (calm/+
+    funding with an EMA20>EMA60 uptrend). Stop = the coil low."""
+    W = V4_WINDOW
+    oi0, oiW = oi_m.get(t), oi_m.get(t - W * HOUR)
+    c0, cW = c_m.get(t), c_m.get(t - W * HOUR)
+    highs = [h_m.get(t - k * HOUR) for k in range(W + 1)]
+    lows = [l_m.get(t - k * HOUR) for k in range(W + 1)]
+    if (oi0 is None or not oiW or c0 is None or not cW or funding is None
+            or any(x is None for x in highs + lows)):
+        return {"insufficient": True}
+    oi_pct = (oi0 - oiW) / oiW
+    price_pct = (c0 - cW) / cW
+    hi, lo = max(highs), min(lows)
+    rng = (hi - lo) / lo if lo else float("inf")
+    # trend variant wants an EMA20>EMA60 uptrend (needs contiguous closes); the
+    # squeeze variant doesn't, so a missing EMA only suppresses trend, not v4.
+    closes, ok = [], True
+    for k in range(V2_EMA_SLOW, -1, -1):
+        cc = c_m.get(t - k * HOUR)
+        if cc is None:
+            ok = False
+            break
+        closes.append(cc)
+    uptrend = ok and ema(closes, V2_EMA_FAST)[-1] > ema(closes, V2_EMA_SLOW)[-1]
+    squeeze = funding <= 0
+    trend = (funding <= V4_FUNDING_TREND) and uptrend
+    cond = {
+        "oi_build_48h>=40%": oi_pct >= V4_OI_BUILD,
+        "price_flat_48h<=15%": abs(price_pct) <= V4_PRICE_FLAT,
+        "coiling_range<=30%": rng <= V4_RANGE_MAX,
+        "oi_leads_price>=2x": _dominance_ratio(oi_pct, price_pct) >= V4_RATIO,
+        "funding_squeeze_or_trend": squeeze or trend,
+    }
+    return {"fired": all(cond.values()), "conditions": cond,
+            "stop": lo, "position": "5-10%",
+            "metrics": {"oi_pct_48h": oi_pct, "price_pct_48h": price_pct, "range": rng,
+                        "funding": funding,
+                        "variant": "squeeze" if squeeze else ("trend" if trend else None)}}
+
+
 def evaluate(oi, klines, funding=None, current_funding=None,
              funding_interval_h=8.0, lookback_h=72):
     """Run v1/v2/v3 over the trailing `lookback_h` hours; return, per strategy, the
@@ -231,7 +287,8 @@ def evaluate(oi, klines, funding=None, current_funding=None,
     "conditions": {...}, "stop": float|None, "position": str|None}."""
     oi_m, c_m, h_m, l_m, v_m = _maps(oi, klines)
     if not oi_m or not c_m:
-        return {"as_of": None, "v1": _empty(True), "v2": _empty(True), "v3": _empty(True)}
+        return {"as_of": None, "v1": _empty(True), "v2": _empty(True),
+                "v3": _empty(True), "v4": _empty(True)}
     t0 = min(max(oi_m), max(c_m))                 # latest hour present in BOTH series
     t0 = (t0 // HOUR) * HOUR
 
@@ -240,6 +297,7 @@ def evaluate(oi, klines, funding=None, current_funding=None,
         "v1": lambda tt, f: _eval_v1(oi_m, c_m, h_m, tt, f),
         "v2": lambda tt, f: _eval_v2(oi_m, c_m, v_m, tt, f),
         "v3": lambda tt, f: _eval_v3(oi_m, c_m, h_m, l_m, tt, f, funding_interval_h),
+        "v4": lambda tt, f: _eval_v4(oi_m, c_m, h_m, l_m, tt, f),
     }
     for name, run in runners.items():
         latest = None                              # latest-hour result, for display when no fire

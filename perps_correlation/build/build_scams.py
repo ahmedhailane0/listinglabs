@@ -60,10 +60,11 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 # rebuild. Only this page widens its CSP connect-src to allow it (page_meta arg).
 LIVE_ORIGIN = "https://45-32-102-44.sslip.io"
 LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
-STRATS = ("v1", "v2", "v3")
-STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3"}
+STRATS = ("v1", "v2", "v3", "v4")
+STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4"}
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
-               "v2": "OI + EMA golden cross", "v3": "Washout reversal"}
+               "v2": "OI + EMA golden cross", "v3": "Washout reversal",
+               "v4": "Coiled accumulation (pre-pump build)"}
 
 
 def _load_screener() -> None:
@@ -366,6 +367,10 @@ COND_KEY_MAP = {
     "oi_dd>=15%": "oidd15", "price_dd<=10%": "pxdd10",
     "price/oi_dd<=0.5": "pxoidd", "oi_rebuild>=8%": "oireb8",
     "breaks_postwashout_high": "brkwash",
+    # v4 — coiled accumulation
+    "oi_build_48h>=40%": "oibld48", "price_flat_48h<=15%": "pxflat48",
+    "coiling_range<=30%": "coil30", "oi_leads_price>=2x": "oilead2",
+    "funding_squeeze_or_trend": "fundsqz",
 }
 
 
@@ -373,7 +378,7 @@ def _cond_str(sym) -> str:
     """Pipe-delimited string of condition short-keys that are TRUE for this coin."""
     sigs = (_sig(sym) or {}).get("signals") or {}
     passed = []
-    for strat in ("v1", "v2", "v3"):
+    for strat in STRATS:
         for raw_key, ok in ((sigs.get(strat) or {}).get("conditions") or {}).items():
             short = COND_KEY_MAP.get(raw_key)
             if ok and short and short not in passed:
@@ -392,8 +397,10 @@ def _filter_attrs(rec) -> str:
     mc = rec.get("mcap") or rec.get("csv_mc")
     oimc = (oi / mc) if (oi and mc) else -1
     oifdv = (oi / fdv) if (oi and fdv) else -1
+    fnd = r.get("funding")
     return (f'data-search="{search}" data-fdvnum="{fdv if fdv else -1:.0f}" '
             f'data-mcnum="{mc if mc else -1:.0f}" '
+            f'data-fundingnum="{fnd if fnd is not None else 999:.8f}" '
             f'data-oi="{oi or 0:.0f}" data-oimc="{oimc:.6f}" '
             f'data-oifdv="{oifdv:.6f}" data-cond="{_cond_str(sym)}"')
 
@@ -1165,7 +1172,7 @@ def _signals_section(sym) -> str:
             f'{_dt_hour(as_of) if as_of else "—"} UTC</span>'
             f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
-            f'<p class="note">Buy v1/v2/v3 are mechanical setups on open interest, price and '
+            f'<p class="note">Buy v1–v4 are mechanical setups on open interest, price and '
             f'funding — research signals, not financial advice.</p></section>')
 
 
@@ -1264,6 +1271,7 @@ def _filter_bar() -> str:
     <button class="fp-pre" data-pre="v1">Buy v1</button>
     <button class="fp-pre" data-pre="v2">Buy v2</button>
     <button class="fp-pre" data-pre="v3">Buy v3</button>
+    <button class="fp-pre" data-pre="v4">Buy v4</button>
     <button class="fp-clear" id="fp-clear">Clear all</button>
   </div>
   <div class="fp-grid">
@@ -1282,8 +1290,14 @@ def _filter_bar() -> str:
     <fieldset class="fp-group"><legend>Washout (v3)</legend>
       """ + _cb("oidd15", "OI drawdown ≥15%") + _cb("pxdd10", "Price dd ≤10%") + _cb("pxoidd", "Price/OI dd ≤0.5") + _cb("oireb8", "OI rebuild ≥8%") + _cb("brkwash", "Breaks washout high") + """
     </fieldset>
+    <fieldset class="fp-group"><legend>Coiled accumulation (v4)</legend>
+      """ + _cb("oibld48", "OI +40% (48h)") + _cb("pxflat48", "Price flat ≤15% (48h)") + _cb("coil30", "Coiling range ≤30%") + _cb("oilead2", "OI leads price ≥2×") + _cb("fundsqz", "Funding squeeze/trend") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Funding level</legend>
+      """ + _cb("fundneg", "Funding &lt;0 (squeeze)") + _cb("fundn01", "Funding ≤ −0.1%") + _cb("fundn03", "Funding ≤ −0.3%") + """
+    </fieldset>
     <fieldset class="fp-group"><legend>Thresholds</legend>
-      """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oimc50", "OI/MC &gt; 50%") + """
+      """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oifdv15", "OI/FDV ≥ 15%") + _cb("oimc25", "OI/MC ≥ 25%") + _cb("oimc50", "OI/MC &gt; 50%") + """
     </fieldset>
   </div>
 </div>"""
@@ -1316,7 +1330,7 @@ LIVE_JS = (
     'function tileMeta(t,label,txt){var sp=t.querySelectorAll(".tile-meta span");'
     'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
     'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
-    'function buyBadges(sig){var o="";["v1","v2","v3"].forEach(function(k){'
+    'function buyBadges(sig){var o="";["v1","v2","v3","v4"].forEach(function(k){'
     'if(sig&&sig[k])o+="<span class=\\"buy "+k+" mini\\" title=\\""+k+" fired\\">Buy "+k+"</span>";});return o;}'
     'function setCount(id,val){var el=document.getElementById(id);'
     'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
@@ -1350,7 +1364,7 @@ LIVE_JS = (
     'if(ci.oimc!=null&&v.oi_combined!=null)setCell(row.cells[ci.oimc],pctTxt(v.oi_combined,mcn),pctSort(v.oi_combined,mcn));}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
-    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);}'
+    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
     'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
     'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
     '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'
@@ -1398,6 +1412,59 @@ LIVE_DETAIL_JS = (
 )
 
 
+# Setup explainer: a button (#setup-help) opens this panel. Plain-language so a
+# non-quant can read what each Buy setup looks for. Conditions mirror lib/signals.
+SETUP_PANEL = """
+<div id="setup-modal" class="setup-modal" hidden>
+  <div class="sm-backdrop" data-close></div>
+  <div class="sm-card" role="dialog" aria-modal="true" aria-label="How the setups work">
+    <button class="sm-x" data-close aria-label="Close">×</button>
+    <h2>How the Buy setups work</h2>
+    <p class="sm-lead">Every setup scans for the fingerprint of a coin being
+      quietly <b>set up before a pump</b>: money (open interest) piling in while
+      the operator keeps the price calm — then the markup. The four setups catch
+      different points of that arc. A green <span class="buy v1 mini">Buy</span>
+      badge = firing right now. Research signals, not financial advice.</p>
+    <div class="sm-grid">
+      <div class="sm-setup"><h3><span class="buy v4 mini">Buy v4</span> Coiled accumulation <em>· earliest</em></h3>
+        <p>Open interest building <b>+40% over ~2 days</b> while price stays
+          <b>flat (±15%)</b> and tight — the quiet loading. Fires <b>days before</b>
+          the vertical, so it's the earliest (and noisiest) read.</p>
+        <ul><li><b>Squeeze</b> flavour — funding is negative (shorts trapped = fuel).</li>
+        <li><b>Trend</b> flavour — funding calm/slightly positive with an EMA20&gt;EMA60 uptrend.</li></ul>
+      </div>
+      <div class="sm-setup"><h3><span class="buy v1 mini">Buy v1</span> Accumulation breakout</h3>
+        <p>OI surges <b>≥8% in 3h</b> while price barely moves (<b>≤8%</b>), then
+          price <b>breaks the 6h high</b> with funding still low. Catches the
+          breakout as it starts — later than v4, but more confirmed.</p>
+      </div>
+      <div class="sm-setup"><h3><span class="buy v2 mini">Buy v2</span> OI + trend cross</h3>
+        <p>OI rising and the short moving average crosses <b>above</b> the long one
+          (EMA20&gt;EMA60) near price — momentum confirmation that the trend has turned up.</p>
+      </div>
+      <div class="sm-setup"><h3><span class="buy v3 mini">Buy v3</span> Washout reversal</h3>
+        <p>After a sharp shakeout (OI flushed <b>≥15%</b> but price held, <b>≤10%</b>
+          down), OI <b>rebuilds</b> and price reclaims the post-flush high — a
+          bounce off a cleared-out low.</p>
+      </div>
+    </div>
+    <p class="sm-foot">Use the <b>⚙ Filter</b> panel to build your own screen
+      (OI +40% / price flat / funding &lt;0 / OI/MC…), or click a preset
+      (Buy v1–v4) to load that setup's conditions. Signals recompute each hour
+      and update live.</p>
+  </div>
+</div>
+<script>(function(){
+  var m=document.getElementById("setup-modal"),b=document.getElementById("setup-help");
+  if(!m||!b)return;
+  function open(){m.hidden=false;document.body.style.overflow="hidden";}
+  function close(){m.hidden=true;document.body.style.overflow="";}
+  b.addEventListener("click",open);
+  m.querySelectorAll("[data-close]").forEach(function(e){e.addEventListener("click",close);});
+  document.addEventListener("keydown",function(e){if(e.key==="Escape"&&!m.hidden)close();});
+})();</script>"""
+
+
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
@@ -1418,8 +1485,9 @@ def _index(recs) -> str:
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
 <a class="active" href="index.html">Manipulated ({len(recs)})</a>{theme_toggle_button()}</nav>
-<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1/v2/v3 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
-<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3 setups; click a coin for its detail + signals. Not financial advice.</p></header>
+<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1–v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1–v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
+<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
+{SETUP_PANEL}
 {_filter_bar()}
 <div id="views" class="view-grid">
   {_spark_defs()}
@@ -1588,8 +1656,28 @@ section.card.span p.note{font-size:12px;color:var(--text-4);margin:10px 0 0}
 .fcb span{user-select:none}
 .buy{display:inline-block;border-radius:9px;font-size:10.5px;font-weight:700;padding:1px 8px;white-space:nowrap;color:#fff;margin:0 4px 2px 0}
 .buy i{font-style:normal;opacity:.8;font-weight:600}
-.buy.v1{background:#1e7a46}.buy.v2{background:#1f4e79}.buy.v3{background:#9b2d8f}
+.buy.v1{background:#1e7a46}.buy.v2{background:#1f4e79}.buy.v3{background:#9b2d8f}.buy.v4{background:#b5642a}
 .buy.mini{font-size:10px;padding:1px 6px}
+/* setup explainer button + modal */
+.setup-help{font:inherit;font-size:11px;font-weight:600;border:1px solid var(--border);
+  background:var(--bg-card);color:var(--text-2);padding:1px 8px;border-radius:10px;cursor:pointer;margin-left:6px}
+.setup-help:hover{color:var(--text);border-color:var(--primary)}
+.setup-modal[hidden]{display:none}
+.setup-modal{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;padding:20px}
+.sm-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55)}
+.sm-card{position:relative;max-width:760px;width:100%;max-height:86vh;overflow:auto;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:24px 26px;box-shadow:0 18px 50px rgba(0,0,0,.4)}
+.sm-x{position:absolute;top:12px;right:14px;border:none;background:none;color:var(--text-3);font-size:24px;line-height:1;cursor:pointer}
+.sm-card h2{margin:0 0 8px;font-size:19px;color:var(--text)}
+.sm-lead{font-size:13px;color:var(--text-2);margin:0 0 16px;line-height:1.6}
+.sm-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:620px){.sm-grid{grid-template-columns:1fr}}
+.sm-setup{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg-subtle)}
+.sm-setup h3{margin:0 0 6px;font-size:13.5px;color:var(--text);display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.sm-setup h3 em{font-style:normal;color:var(--text-4);font-weight:500;font-size:11.5px}
+.sm-setup p,.sm-setup li{font-size:12.5px;color:var(--text-2);line-height:1.55;margin:4px 0}
+.sm-setup ul{margin:4px 0 0;padding-left:16px}
+.sm-foot{font-size:12px;color:var(--text-3);margin:16px 0 0;line-height:1.6}
 .buyrow{margin:2px 0 0;display:flex;flex-wrap:wrap}
 .ven{display:inline-block;border-radius:6px;font-size:9.5px;font-weight:700;padding:1px 5px;margin-left:5px;vertical-align:middle;white-space:nowrap}
 .ven.bn{background:#f3ba2f;color:#3a2c00}
@@ -1623,8 +1711,9 @@ const cbs=[...panel.querySelectorAll('input[data-k]')];
 const PRESETS={
   v1:['oi3up','oi3h8','px3h8','brk6h','fund01','oipx15'],
   v2:['oi3up','oi3h5','emacross','ema20','oipx10','fund01'],
-  v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash']};
-const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oimc50']);
+  v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash'],
+  v4:['oibld48','pxflat48','coil30','oilead2','fundsqz']};
+const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oifdv15','oimc25','oimc50','fundneg','fundn01','fundn03']);
 btnF.addEventListener('click',()=>{const open=panel.style.display==='none';
   panel.style.display=open?'':'none';btnF.classList.toggle('open',open);});
 function checked(){return cbs.filter(c=>c.checked).map(c=>c.dataset.k);}
@@ -1634,7 +1723,12 @@ function numOk(el,k){
   if(k==='fdvlt150'){const f=parseFloat(el.dataset.fdvnum||'-1');return f>=0&&f<150e6;}
   if(k==='fdvgte150')return parseFloat(el.dataset.fdvnum||'-1')>=150e6;
   if(k==='oifdv8')return parseFloat(el.dataset.oifdv||'-1')>=0.08;
+  if(k==='oifdv15')return parseFloat(el.dataset.oifdv||'-1')>=0.15;
+  if(k==='oimc25')return parseFloat(el.dataset.oimc||'-1')>=0.25;
   if(k==='oimc50')return parseFloat(el.dataset.oimc||'-1')>=0.5;
+  if(k==='fundneg')return parseFloat(el.dataset.fundingnum||'999')<0;
+  if(k==='fundn01')return parseFloat(el.dataset.fundingnum||'999')<=-0.001;
+  if(k==='fundn03')return parseFloat(el.dataset.fundingnum||'999')<=-0.003;
   return true;}
 function ok(el){
   const q=search.value.trim().toLowerCase();

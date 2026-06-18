@@ -464,7 +464,7 @@ def main(argv: list[str]) -> int:
         "counts": {
             "universe": len(recs), "screenable": len(screenable),
             "passing_gate": sum(1 for r in recs.values() if r.get("pass_gate")),
-            "v1": _fired("v1"), "v2": _fired("v2"), "v3": _fired("v3"),
+            "v1": _fired("v1"), "v2": _fired("v2"), "v3": _fired("v3"), "v4": _fired("v4"),
         },
         "tokens": recs,
     }
@@ -473,7 +473,7 @@ def main(argv: list[str]) -> int:
     mkt_ok = sum(1 for r in recs.values() if r.get("market"))
     print(f"wrote {OUT}")
     print(f"  screenable={c['screenable']}  gate-pass={c['passing_gate']}  "
-          f"v1={c['v1']} v2={c['v2']} v3={c['v3']}")
+          f"v1={c['v1']} v2={c['v2']} v3={c['v3']} v4={c['v4']}")
     print(f"  market={mkt_ok}  (CMC fetched {market_fetches})  "
           f"holders={holder_fetches}")
     return 0

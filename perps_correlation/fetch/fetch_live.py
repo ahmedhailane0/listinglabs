@@ -66,7 +66,7 @@ def _compute_signals(base_by_sym: dict[str, str]) -> dict:
             rec = _fetch_token(base, intervals)
             s = rec.get("signals") or {}
             verdicts[sym] = {k: 1 if (s.get(k) or {}).get("fired") else 0
-                             for k in ("v1", "v2", "v3")}
+                             for k in ("v1", "v2", "v3", "v4")}
             if rec.get("as_of"):
                 as_of[0] = max(as_of[0] or 0, rec["as_of"])
         except Exception:
@@ -74,7 +74,7 @@ def _compute_signals(base_by_sym: dict[str, str]) -> dict:
 
     with ThreadPoolExecutor(max_workers=24) as ex:
         list(ex.map(work, base_by_sym.items()))
-    counts = {k: sum(v[k] for v in verdicts.values()) for k in ("v1", "v2", "v3")}
+    counts = {k: sum(v[k] for v in verdicts.values()) for k in ("v1", "v2", "v3", "v4")}
     return {"verdicts": verdicts, "counts": counts, "as_of": as_of[0]}
 
 
