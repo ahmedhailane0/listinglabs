@@ -213,7 +213,7 @@ def detail_html(m):
             ("Alpha → Korea", m["days_alpha_to_korean"]), ("Coinbase → Perp", m["days_coinbase_to_perp"]),
             ("Coinbase → Korea", m["days_coinbase_to_korean"]), ("Perp → Korea", m["days_perp_to_korean"])]
     lag_html = "".join(f'<div class="lag"><span class="k">{html.escape(k)}</span><span class="v">{("—" if v is None else str(v)+"d")}</span></div>' for k, v in lags)
-    cmc = f'<a href="https://coinmarketcap.com/currencies/{m["cmc_slug"]}/" target="_blank">CoinMarketCap ↗</a>' if m.get("cmc_slug") else ""
+    cmc = f'<a href="https://coinmarketcap.com/currencies/{html.escape(m["cmc_slug"])}/" target="_blank" rel="noopener">CoinMarketCap ↗</a>' if m.get("cmc_slug") else ""
     _desc = (f"{m.get('name') or m['symbol']} ({m['symbol']}) in the CEX → Korea funnel — "
              f"venue listing dates and day-lags from Binance Alpha to Korea.")
     return f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
