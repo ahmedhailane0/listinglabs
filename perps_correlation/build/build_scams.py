@@ -1141,6 +1141,10 @@ def _signals_section(sym) -> str:
         return ""
     s = r.get("signals") or {}
     as_of = SCREENER_META.get("as_of_hour")
+    # `sigmeta` cells the live poller (LIVE_DETAIL_JS) refreshes every ~60s,
+    # matched by their <b> label — OI (BN+BYB) / Binance OI / Funding / Binance
+    # 24h vol come straight from the box screener, so they stay live without a
+    # rebuild. FDV / OI/FDV / Bybit OI move slowly (hourly).
     meta = (f'<div class="sigmeta">'
             f'<span><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}</span>'
             f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
@@ -1148,6 +1152,7 @@ def _signals_section(sym) -> str:
             f'<span><b>FDV</b> {_usd(r.get("fdv"))}</span>'
             f'<span><b>OI/FDV</b> {(format(r["oi_fdv_pct"], ".1f") + "%") if r.get("oi_fdv_pct") is not None else "—"}</span>'
             f'<span><b>Funding</b> {(format(r["funding"] * 100, ".3f") + "%") if r.get("funding") is not None else "—"}</span>'
+            f'<span><b>Binance 24h vol</b> {_usd(r.get("vol24"))}</span>'
             f'</div>')
     cards = []
     for k in STRATS:
@@ -1171,9 +1176,10 @@ def _signals_section(sym) -> str:
         cards.append(f'<div class="buycard{" fired" if fired else ""}">'
                      f'<div class="bc-head">{STRAT_NAME[k]} <span>{STRAT_TITLE[k]}</span>{state}</div>'
                      f'{extra}<ul class="conds">{conds}</ul></div>')
-    return (f'<section class="card span"><h3>Perp signals '
+    return (f'<section class="card span" data-livesym="{html.escape(sym)}"><h3>Perp signals '
             f'<span class="asof">hourly Binance OI · Buy setups · as of '
-            f'{_dt_hour(as_of) if as_of else "—"} UTC</span></h3>'
+            f'{_dt_hour(as_of) if as_of else "—"} UTC</span>'
+            f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
             f'<p class="note">Buy v1/v2/v3 are mechanical setups on open interest, price and '
             f'funding — research signals, not financial advice.</p></section>')
@@ -1242,13 +1248,14 @@ def _detail(rec, platforms) -> str:
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
   {_holders_block(rec, platforms)}
 </section></main>
+{LIVE_DETAIL_JS if _sig(sym) and _sig(sym).get("data") != "no_perp" else ""}
 {THEME_JS}"""
     title = f"{rec.get('name', sym)} ({sym}) — Manipulated"
     desc = (f"{rec.get('name', sym)} ({sym}) on the Manipulated watchlist — price history, "
             f"per-venue perp OI & funding, OI/volume trend, supply and top holders.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta(title, desc)}'
+            f'{page_meta(title, desc, connect_extra=LIVE_ORIGIN)}'
             f'<title>{name} ({html.escape(sym)}) — Manipulated</title>'
             f'<link rel="stylesheet" href="style.css">'
             f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
@@ -1340,6 +1347,45 @@ LIVE_JS = (
     'if(ci.oi!=null&&v.oi_combined!=null)setCell(row.cells[ci.oi],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));}}'
+    'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
+    'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
+    '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'
+    'poll();setInterval(poll,60000);'
+    "})();</script>"
+)
+
+# Per-token detail-page live updater: refreshes the perp block's OI (BN+BYB) /
+# Binance OI / Funding / Binance 24h vol cells (matched by their <b> label) and
+# the Price field every ~60s from the same box live.json. Scoped to the one token
+# via data-livesym on the Perp-signals section.
+LIVE_DETAIL_JS = (
+    "<script>(function(){"
+    f'var SRC="{LIVE_SRC}";'
+    'var SUB="\\u2080\\u2081\\u2082\\u2083\\u2084\\u2085\\u2086\\u2087\\u2088\\u2089";'
+    'function fmtUsd(v){if(v==null)return "\\u2014";v=+v;if(!isFinite(v)||v===0)return "\\u2014";'
+    'if(v>=1e9)return "$"+(v/1e9).toFixed(2)+"B";if(v>=1e6)return "$"+(v/1e6).toFixed(1)+"M";'
+    'if(v>=1e3)return "$"+(v/1e3).toFixed(1)+"K";return "$"+Math.round(v).toLocaleString("en-US");}'
+    'function fmtPrice(p){if(p==null)return "\\u2014";p=+p;if(!(p>0))return "$0";'
+    'if(p>=1)return "$"+p.toLocaleString("en-US",{minimumFractionDigits:4,maximumFractionDigits:4});'
+    'var s=p.toFixed(20).split(".")[1],st=s.replace(/^0+/,""),nz=s.length-st.length;'
+    'if(nz<4)return "$"+p.toFixed(nz+3);'
+    'var dg=(st+"000").slice(0,3),sb=String(nz).split("").map(function(d){return SUB[+d];}).join("");'
+    'return "$0.0"+sb+dg;}'
+    'function flash(el){if(!el)return;el.classList.remove("liveflash");void el.offsetWidth;el.classList.add("liveflash");}'
+    'var sec=document.querySelector("[data-livesym]");if(!sec)return;'
+    'var sym=sec.getAttribute("data-livesym"),badge=document.getElementById("live-badge");'
+    'function metaSet(label,txt){var sp=sec.querySelectorAll(".sigmeta span");'
+    'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
+    'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
+    'function priceSet(txt){var dt=document.querySelectorAll("dl dt");'
+    'for(var i=0;i<dt.length;i++){if(dt[i].textContent.trim()==="Price"){var dd=dt[i].nextElementSibling;'
+    'if(dd&&dd.textContent!==txt){dd.textContent=txt;flash(dd);}return;}}}'
+    'function apply(d){var v=d&&d.tokens&&d.tokens[sym];if(!v)return;'
+    'if(v.oi_combined!=null)metaSet("OI (BN+BYB)",fmtUsd(v.oi_combined));'
+    'if(v.oi_bn!=null)metaSet("Binance OI",fmtUsd(v.oi_bn));'
+    'if(v.funding!=null)metaSet("Funding",(v.funding*100).toFixed(3)+"%");'
+    'if(v.vol24!=null)metaSet("Binance 24h vol",fmtUsd(v.vol24));'
+    'if(v.price!=null)priceSet(fmtPrice(v.price));'
     'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
     'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
     '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'

@@ -95,6 +95,9 @@ def main() -> int:
             "funding_interval_h": fint.get(s),
             "oi_bn": oi_bn,
             "oi_combined": oi_comb,
+            # Binance perp 24h quote volume (USDT) — distinct from a token's CMC
+            # market volume; surfaced as its own "Binance 24h vol" stat.
+            "vol24": float(k["quoteVolume"]) if (k and k.get("quoteVolume")) else None,
         }
 
     payload = {
