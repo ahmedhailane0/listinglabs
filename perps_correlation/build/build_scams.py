@@ -422,7 +422,7 @@ def _tile(rec) -> str:
       <div class="tile-body">
         <div class="tile-head"><span class="name">{html.escape(rec.get('name', sym))}</span>
           <span class="sym">{html.escape(sym)}</span>{_venue_badges(sym)}{_flag_chips(rec)}</div>
-        {f'<div class="buyrow">{buys}</div>' if buys else ''}
+        <div class="buyrow" data-buyrow>{buys}</div>
         <div class="tile-meta">{"".join(metas)}</div>
       </div>
     </a>"""
@@ -1332,6 +1332,10 @@ LIVE_JS = (
     'function tileMeta(t,label,txt){var sp=t.querySelectorAll(".tile-meta span");'
     'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
     'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
+    'function buyBadges(sig){var o="";["v1","v2","v3"].forEach(function(k){'
+    'if(sig&&sig[k])o+="<span class=\\"buy "+k+" mini\\" title=\\""+k+" fired\\">Buy "+k+"</span>";});return o;}'
+    'function setCount(id,val){var el=document.getElementById(id);'
+    'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
     'var tab=document.getElementById("ltab");if(!tab)return;'
     'var ths=tab.tHead.rows[0].cells,ci={};'
     'for(var i=0;i<ths.length;i++){var t=ths[i].textContent.trim().toLowerCase();'
@@ -1346,7 +1350,9 @@ LIVE_JS = (
     'if(row){if(ci.px24!=null&&(v.price!=null||v.p24!=null))setCell(row.cells[ci.px24],p24cell(v.price,v.p24),v.p24!=null?(+v.p24).toFixed(4):null);'
     'if(ci.oi!=null&&v.oi_combined!=null)setCell(row.cells[ci.oi],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));}'
-    'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));}}'
+    'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
+    'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
+    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);}'
     'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
     'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
     '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'
@@ -1414,7 +1420,7 @@ def _index(recs) -> str:
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
 <a class="active" href="index.html">Manipulated ({len(recs)})</a>{theme_toggle_button()}</nav>
-<p>{len(recs)} coins · Buy v1 <b>{c.get('v1', 0)}</b> · v2 <b>{c.get('v2', 0)}</b> · v3 <b>{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding update live from the box every ~60s">● connecting…</span></p>
+<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1/v2/v3 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {_filter_bar()}
 <div id="views" class="view-grid">
@@ -1471,6 +1477,7 @@ EXTRA_CSS = """
 #live-badge.live-off{color:var(--neg);border-color:var(--neg)}
 @keyframes liveflash{from{background:rgba(88,166,255,.35)}to{background:transparent}}
 .liveflash{animation:liveflash 1s ease-out}
+.tile .buyrow:empty{display:none}  /* a coin with no live Buy signal yet */
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:var(--text-2)}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* per-token detail: full-width sections for perp + holders tables.
