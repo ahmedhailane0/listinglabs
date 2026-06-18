@@ -425,7 +425,7 @@ def _tile(rec) -> str:
 # (BN+BYB)/FDV ratio drive the scan; price 24h + memo carry the curated-coin
 # context. Full rich data (chart/holders/funding rounds) stays on each coin's
 # detail page. 9 cols — keep the nth-child widths in EXTRA_CSS in sync.
-LIST_COLS = ["#", "Token", "TGE", "OI (BN+BYB)", "FDV", "Funding", "24h", "Memo"]
+LIST_COLS = ["#", "Token", "24h", "OI (BN+BYB)", "FDV", "Funding", "TGE", "Memo"]
 
 
 def _ratio_cell(rec) -> str:
@@ -485,11 +485,11 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f'{_tge_cell(rec)}'
+        f'{_num_cell(p.get("p24"))}'
         f'{_num_cell(oi, pct=False, color=False)}'
         f'{_num_cell(fdv, pct=False, color=False)}'
         f'{_fundcell(r)}'
-        f'{_num_cell(p.get("p24"))}'
+        f'{_tge_cell(rec)}'
         f'<td class="memo"><span>{memo or "—"}</span></td></tr>')
 
 
@@ -1316,17 +1316,17 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
-/* deterministic column widths (8 cols: #, Token, TGE, OI (BN+BYB),
-   FDV, Funding, 24h, Memo). */
+/* deterministic column widths (8 cols: #, Token, 24h, OI (BN+BYB),
+   FDV, Funding, TGE, Memo). */
 #ltab{table-layout:fixed;min-width:820px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3.5%}                  /* # */
 #ltab th:nth-child(2){width:23%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:8%}                    /* TGE */
+#ltab th:nth-child(3){width:8%}                    /* 24h */
 #ltab th:nth-child(4){width:12%}                   /* OI (BN+BYB) */
 #ltab th:nth-child(5){width:11%}                   /* FDV */
 #ltab th:nth-child(6){width:10%}                   /* Funding */
-#ltab th:nth-child(7){width:8%}                    /* 24h */
+#ltab th:nth-child(7){width:8%}                    /* TGE */
 #ltab th:nth-child(8){width:24.5%;text-align:left} /* Memo */
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
