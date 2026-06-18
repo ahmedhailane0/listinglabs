@@ -1582,6 +1582,11 @@ def _enrich_from_screener(rec):
         rec["contract"] = mkt["contract"]
     if mkt.get("slug") and not rec.get("cmc_slug"):
         rec["cmc_slug"] = mkt["slug"]
+    # The box's combined Binance+Bybit OI is the detail-page fallback when the
+    # CoinGecko 6-venue perp snapshot (fetch_perp_markets) hasn't reached this
+    # screener coin yet — keeps the OI line consistent with the tile.
+    if sr.get("oi_combined") and not rec.get("oi_usd"):
+        rec["oi_usd"] = sr["oi_combined"]
     if mkt.get("tge") and not TGE.get(sym):
         TGE[sym] = mkt["tge"]
     tot = rec.get("total_supply") or rec.get("max_supply")

@@ -618,10 +618,22 @@ def main(argv):
         _append_history(res)
         _print(res)
         return 0
-    # refresh all scam-watchlist tokens
+    # refresh all Manipulated-tab tokens: the curated watchlist (scam_data.json)
+    # UNION the screener universe (screener.json), so per-venue OI/funding is
+    # fetched for screener-only coins too — not just the 28 curated. The CG
+    # derivatives path is a single bulk call filtered to `wanted`, so widening
+    # the universe costs no extra requests.
     data = json.loads((CACHE / "scam_data.json").read_text(encoding="utf-8"))
-    tokens = [(rec["symbol"], rec.get("price") or rec.get("csv_price"))
-              for rec in data.values()]
+    tokens = {rec["symbol"].upper(): (rec.get("price") or rec.get("csv_price"))
+              for rec in data.values()}
+    scr_path = CACHE / "screener" / "screener.json"
+    if scr_path.exists():
+        scr = json.loads(scr_path.read_text(encoding="utf-8")).get("tokens") or {}
+        for sym, sr in scr.items():
+            key = sym.upper()
+            if key not in tokens:
+                tokens[key] = (sr.get("market") or {}).get("price")
+    tokens = [(s, p) for s, p in tokens.items()]
     results = fetch_all(tokens) if direct else fetch_all_cg(tokens)
     for sym, res in sorted(results.items()):
         if not res or not res.get("n_venues"):
