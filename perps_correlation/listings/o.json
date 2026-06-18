@@ -16,9 +16,34 @@
   "window_end_utc": "2026-06-19T14:00:00Z",
   "events": [
     {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-06-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-06-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-06-17T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-06-17T14:00:00Z",
       "note": "Trading start per Binance Alpha listings API (listingTime=1781704800000, contract on BSC)."
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
     }
   ],
   "annotations": [],
