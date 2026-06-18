@@ -447,6 +447,22 @@ def _tge_cell(rec) -> str:
     return f'<td class="tge" data-s="{t.timestamp():.0f}">{t.strftime("%Y-%m-%d")}</td>'
 
 
+def _price24_cell(rec) -> str:
+    """24h column: current price (main line) + the 24h % change (colored
+    subtitle). Sorts by the 24h move so the column matches its label and the
+    default trending sort."""
+    px = rec.get("price") or rec.get("csv_price")
+    p24 = (_perf(rec) or {}).get("p24")
+    if px is None and p24 is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    pxt = fmt_subscript_price(px) if px else "—"
+    if p24 is None:
+        return f'<td class="n" data-s="{_NEG_INF}">{pxt}</td>'
+    cls = "pos" if p24 >= 0 else "neg"
+    return (f'<td class="n" data-s="{p24:.4f}">{pxt}'
+            f'<span class="p24 {cls}">{p24:+.1f}%</span></td>')
+
+
 def _funding_cell(rec) -> str:
     """Funding amount cell with the lead/first investor as a subtitle — matches
     the reactions list's funding column."""
@@ -477,15 +493,14 @@ def _list_row(rec) -> str:
     fdv = rec.get("fdv") or rec.get("csv_fdv") or r.get("fdv")
     oi = r.get("oi_combined")
     oifdv = r.get("oi_fdv_pct")
-    p = _perf(rec) or {}
-    tok = (f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
+    tok =(f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
            f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
     memo = html.escape(rec.get("memo_en") or "")
     return (
         f'<tr class="lrow" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f'{_num_cell(p.get("p24"))}'
+        f'{_price24_cell(rec)}'
         f'{_num_cell(oi, pct=False, color=False)}'
         f'{_num_cell(fdv, pct=False, color=False)}'
         f'{_fundcell(r)}'
@@ -1337,6 +1352,10 @@ EXTRA_CSS = """
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
 #ltab td.tge{font-size:12px;color:var(--text-2);text-align:center}
+/* 24h column: price on top, 24h % change as a colored subtitle */
+#ltab td .p24{display:block;font-size:11px;font-weight:600}
+#ltab td .p24.pos{color:var(--pos)}
+#ltab td .p24.neg{color:var(--neg)}
 #ltab td.memo{max-width:none;white-space:normal;font-size:12px;color:var(--text-2)}
 #ltab td.memo span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 /* per-token detail: full-width sections for perp + holders tables.
