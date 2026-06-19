@@ -546,6 +546,13 @@ CHAIN_NAMES = {
     "cronos": "Cronos", "solana": "Solana", "mantle": "Mantle",
     "the-open-network": "TON", "hyperliquid": "Hyperliquid", "stable": "Stable",
 }
+# Chains we have a KEYLESS top-holder source for (kept in sync with fetch_holders:
+# GoPlus covers these EVM chains; Ethplorer is the Ethereum fallback). Used to
+# tell "we don't have the data yet" apart from "no source covers this chain".
+HOLDER_SOURCE_CHAINS = {
+    "ethereum", "binance-smart-chain", "base", "polygon-pos",
+    "arbitrum-one", "optimistic-ethereum", "avalanche",
+}
 # CG platform key -> Bubblemaps legacy chain code (kept in sync with fetch_holders).
 CG_PLATFORM_TO_BMAPS = {
     "ethereum": "eth", "binance-smart-chain": "bsc", "base": "base",
@@ -811,9 +818,23 @@ def _holders_panel(rec, chain) -> str:
     sym = rec["symbol"]
     h = _load_holders_chain(sym, chain) if chain else _load_holders(sym)
     if not h or not h.get("available"):
-        nm = html.escape(CHAIN_NAMES.get(chain, chain) if chain else (rec.get("chain") or "this chain"))
-        return ('<div class="missing">Top-holder data unavailable on '
-                f'{nm} — no keyless on-chain holder source covers this chain.</div>')
+        eff_chain = chain or rec.get("chain")
+        nm = html.escape(CHAIN_NAMES.get(eff_chain, eff_chain) if eff_chain else "this chain")
+        contract = rec.get("contract") or (h or {}).get("contract")
+        # Three distinct reasons, so we never wrongly blame the chain:
+        #  - the chain HAS a keyless holder source (GoPlus EVM / Ethplorer) but
+        #    we just don't have the data yet → it fills on the next holder fetch;
+        #  - the token has no on-chain contract we can query at all;
+        #  - the chain genuinely has no keyless holder source we can use.
+        if eff_chain in HOLDER_SOURCE_CHAINS and contract:
+            msg = (f'Top-holder data for {nm} hasn’t been fetched yet '
+                   '— it fills in on the next holder refresh.')
+        elif not contract:
+            msg = ('No on-chain contract is recorded for this token, so '
+                   'top-holder data can’t be sourced.')
+        else:
+            msg = f'No keyless on-chain holder source covers {nm}.'
+        return f'<div class="missing">Top-holder data unavailable — {msg}</div>'
     tot = rec.get("total_supply") or rec.get("max_supply")
     px = rec.get("price")
     base = ADDR_EXPLORERS.get(chain or rec.get("chain") or "")
@@ -1365,6 +1386,9 @@ LIVE_JS = (
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
     'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
+    # re-apply the active sort so the row order always matches the live values
+    # we just swapped in (e.g. the top 24h mover stays on top in realtime).
+    'if(window.__resort)window.__resort();'
     'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
     'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
     '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'
@@ -1764,15 +1788,23 @@ let _v0='grid';try{_v0=localStorage.getItem(VIEW_KEY)||'grid';}catch(e){}
 setView(_v0=='list'?'list':'grid',false);
 const ltab=document.getElementById('ltab');
 if(ltab){const tb=ltab.querySelector('tbody');
- ltab.querySelectorAll('th').forEach((th,i)=>{let asc=false;
+ let sortCol=-1,sortDir=-1;             // dir: -1 desc, 1 asc
+ const ths=ltab.querySelectorAll('th');
+ function doSort(i,dir){
+  const rs=[...tb.rows];rs.sort((a,b)=>{const x=a.cells[i].dataset.s??a.cells[i].textContent,y=b.cells[i].dataset.s??b.cells[i].textContent;
+   const nx=parseFloat(x),ny=parseFloat(y);const c=(!isNaN(nx)&&!isNaN(ny))?nx-ny:(''+x).localeCompare(y);return dir>0?c:-c;});
+  ths.forEach(h=>h.classList.remove('sorted','asc','desc'));ths[i].classList.add('sorted',dir>0?'asc':'desc');
+  rs.forEach(r=>tb.appendChild(r));sortCol=i;sortDir=dir;}
+ // re-apply the active sort after the live feed changes values, so the order
+ // always matches what's shown (e.g. the top 24h mover stays on top in realtime).
+ window.__resort=function(){if(sortCol>=0)doSort(sortCol,sortDir);};
+ ths.forEach((th,i)=>{
   th.tabIndex=0;th.setAttribute('role','button');th.setAttribute('aria-label','Sort by '+th.textContent);
   th.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();th.click();}});
-  th.addEventListener('click',()=>{
-  const rs=[...tb.rows];rs.sort((a,b)=>{const x=a.cells[i].dataset.s??a.cells[i].textContent,y=b.cells[i].dataset.s??b.cells[i].textContent;
-  const nx=parseFloat(x),ny=parseFloat(y);const c=(!isNaN(nx)&&!isNaN(ny))?nx-ny:(''+x).localeCompare(y);return asc?c:-c;});
-  const applied=asc?'asc':'desc';asc=!asc;
-  ltab.querySelectorAll('th').forEach(h=>h.classList.remove('sorted','asc','desc'));th.classList.add('sorted',applied);
-  rs.forEach(r=>tb.appendChild(r));});});}
+  th.addEventListener('click',()=>{doSort(i,sortCol===i?-sortDir:-1);});});
+ // default order = 24h column, biggest movers first (client-side, using LIVE values)
+ let d=-1;ths.forEach((th,i)=>{if(/24h|price/i.test(th.textContent))d=i;});
+ if(d>=0)doSort(d,-1);}
 apply();
 </script>"""
 

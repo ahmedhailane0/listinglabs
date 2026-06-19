@@ -31,11 +31,48 @@ _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetc
 from fetch.fetch_scam_data import _get, CG, PACE, OUT, PRICES
 from fetch import fetch_oi_cmc as oimod
 
+# Trusted Binance-sourced price reference: the box's hourly screener spark (1H
+# closes straight off Binance) catches CoinGecko aggregator spikes — a glitched
+# aggregator print disagrees with the real venue, while a genuine pump shows up
+# on BOTH and they agree, so cross-checking can't eat real moves. Reject a
+# CoinGecko price/series tail that diverges from this reference by > this factor.
+SCREENER = OUT.parent / "screener" / "screener.json"
+GUARD_FACTOR = 1.5
+_SCREENER_SPARK: dict | None = None
+
+
+def _binance_ref(sym: str):
+    """Most recent Binance-sourced price for `sym` from the box screener spark,
+    or None when the token isn't screened / there's no data to cross-check."""
+    global _SCREENER_SPARK
+    if _SCREENER_SPARK is None:
+        try:
+            toks = json.loads(SCREENER.read_text(encoding="utf-8")).get("tokens") or {}
+        except Exception:
+            toks = {}
+        _SCREENER_SPARK = {}
+        for s, t in toks.items():
+            for _ts, v in reversed((t or {}).get("spark") or []):
+                if v:
+                    _SCREENER_SPARK[s.upper()] = v
+                    break
+    return _SCREENER_SPARK.get(sym.upper())
+
+
+def _diverges(a, b) -> bool:
+    """True when a and b disagree by more than GUARD_FACTOR (either direction)."""
+    if not a or not b:
+        return False
+    return a / b > GUARD_FACTOR or b / a > GUARD_FACTOR
+
 
 def refresh_one(rec: dict) -> dict:
     """Re-pull volatile market data for one record (mutated copy returned)."""
     rec = dict(rec)
     sym = rec["symbol"].upper()
+    # trusted fallbacks if CoinGecko prints a spike (restored by the guard below)
+    prev_px, prev_fdv, prev_mcap = rec.get("price"), rec.get("fdv"), rec.get("mcap")
+    ref = _binance_ref(sym)             # Binance ground-truth price, when screened
     cid = rec.get("cg_id")
     if cid:
         d = _get(f"{CG}/coins/{cid}?localization=false&tickers=false&market_data=true"
@@ -54,10 +91,33 @@ def refresh_one(rec: dict) -> dict:
                 "ath_price": (md.get("ath") or {}).get("usd") or rec.get("ath_price"),
             })
             rec["supply_source"] = "coingecko"
+            # Reject a CoinGecko spot price that disagrees with the live Binance
+            # price by >GUARD_FACTOR (an aggregator glitch, e.g. SIREN 2026-06-19):
+            # keep the prior trusted price so a bad print can't reorder the table
+            # or fake a +100% move. Derived FDV/MC fall out of the supply math below.
+            if ref and _diverges(rec.get("price"), ref):
+                print(f"{sym:9} CG price {rec.get('price')} diverges from Binance "
+                      f"{ref} (>{GUARD_FACTOR}x) — keeping prior {prev_px}", flush=True)
+                # restore the prior trusted price + the FDV/MC it implied; the CG
+                # values just written were computed at the spiked price.
+                rec["price"], rec["fdv"], rec["mcap"] = prev_px, prev_fdv, prev_mcap
+                rec["price_guarded"] = True
         # daily price series for the chart/sparkline (don't clobber good with empty)
         mc = _get(f"{CG}/coins/{cid}/market_chart?vs_currency=usd&days=180&interval=daily")
         time.sleep(PACE)
         prices = (mc or {}).get("prices") or []
+        # Trim contaminated trailing samples: CoinGecko tacks a near-real-time point
+        # onto the daily series, and that's where the aggregator spike lands. Drop
+        # trailing points that diverge from the Binance reference; never touch
+        # historical daily closes (only the tail, only when we have a reference).
+        if ref:
+            dropped = 0
+            while len(prices) >= 2 and _diverges(prices[-1][1], ref):
+                prices.pop()
+                dropped += 1
+            if dropped:
+                print(f"{sym:9} trimmed {dropped} contaminated trailing price "
+                      f"point(s) vs Binance ref {ref}", flush=True)
         if prices or not (PRICES / f"{sym}.json").exists():
             (PRICES / f"{sym}.json").write_text(json.dumps(prices), encoding="utf-8")
             rec["n_prices"] = len(prices)
