@@ -1426,5 +1426,15 @@
     "has_perp": true,
     "cmc_slug": "playsout",
     "perp_sym": "PLAY"
+  },
+  "BASED": {
+    "sections": [
+      "full_list"
+    ],
+    "sources": [
+      "watchlist"
+    ],
+    "has_perp": true,
+    "cmc_slug": "basedone"
   }
 }
