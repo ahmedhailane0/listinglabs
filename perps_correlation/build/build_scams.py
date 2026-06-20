@@ -1867,7 +1867,8 @@ search.addEventListener('input',apply);
 cbs.forEach(c=>c.addEventListener('change',apply));
 pres.forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('active');apply();}));
 document.getElementById('fp-clear').addEventListener('click',()=>{
-  cbs.forEach(c=>c.checked=false);pres.forEach(b=>b.classList.remove('active'));apply();});
+  cbs.forEach(c=>c.checked=false);pres.forEach(b=>b.classList.remove('active'));
+  search.value='';apply();});   // "Clear all" resets the search box too
 const bG=document.getElementById('view-grid'),bL=document.getElementById('view-list');
 const views=document.getElementById('views');
 const VIEW_KEY='ll-view-scams';
