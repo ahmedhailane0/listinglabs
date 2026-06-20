@@ -84,6 +84,20 @@ def _sig(sym) -> dict:
     return SCREENER.get((sym or "").upper()) or {}
 
 
+def _has_perp(sym) -> bool:
+    """True if the coin has a WORKING perpetual: live perp OI, or at least one
+    Buy signal with enough perp history to evaluate (not `insufficient`). Coins
+    with neither (e.g. a watchlist entry whose perp never listed or got pulled)
+    are dropped from the Manipulated list — it's a perp screener. Reversible: if
+    a perp later appears in the screener feed, the coin returns automatically."""
+    r = _sig(sym)
+    if r.get("oi_bn") is not None or r.get("oi_combined") is not None:
+        return True
+    sigs = r.get("signals") or {}
+    return any(not (sigs.get(k) or {}).get("insufficient", True)
+               for k in STRATS) if sigs else False
+
+
 def _ago(t, as_of=None) -> str:
     as_of = as_of or SCREENER_META.get("as_of_hour")
     if not t or not as_of:
@@ -1890,6 +1904,14 @@ def main():
 
     for r in recs:
         _enrich_from_screener(r)
+
+    # Perp-only: this tab is a perpetuals screener, so drop any coin without a
+    # working perp (no live OI and no evaluable signal). Reversible — a coin
+    # returns the moment its perp shows up in the screener feed.
+    dropped = sorted(r["symbol"].upper() for r in recs if not _has_perp(r["symbol"]))
+    recs = [r for r in recs if _has_perp(r["symbol"])]
+    if dropped:
+        print(f"perp-only filter: dropped {len(dropped)} non-perp coin(s): {dropped}")
 
     # Default order = trending: biggest 24h price movers first. Tokens with no
     # 24h change sink to the bottom (ordered by OI as a tiebreaker). The list

@@ -45,3 +45,7 @@ perps_correlation/**/*.log
 perps_correlation/*.ipynb
 perps_correlation/*.docx
 cache/audit_run.log
+# Full-depth local signal extraction (tools/extract_signal_data.py) — heavy
+# hourly OI/kline series, regenerable on demand; kept local, never committed.
+cache/screener/raw/
+cache/screener/extract_report.json
