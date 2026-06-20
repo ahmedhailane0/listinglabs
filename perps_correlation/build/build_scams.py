@@ -400,18 +400,6 @@ def _cond_str(sym) -> str:
     return "|" + "|".join(passed) + "|" if passed else "||"
 
 
-def _fired_str(sym) -> str:
-    """Pipe-delimited list of strategies currently FIRING for this coin (e.g.
-    `|v1|v4|`). This — not the per-condition `data-cond` — is what the Buy v1–v4
-    preset buttons filter on, so a preset matches exactly the coins the signal
-    engine reports as fired. The live feed (`live.json` `sig`) carries the same
-    fired flags, so LIVE_JS can rewrite this attribute every ~60s and keep the
-    filtered list in lock-step with the live header counts."""
-    sigs = (_sig(sym) or {}).get("signals") or {}
-    fired = [k for k in STRATS if (sigs.get(k) or {}).get("fired")]
-    return "|" + "|".join(fired) + "|" if fired else "||"
-
-
 def _filter_attrs(rec) -> str:
     """The data-* attributes the index filter JS reads. Shared by the tile and
     the list row so both filter identically."""
@@ -431,7 +419,7 @@ def _filter_attrs(rec) -> str:
             f'data-fundingnum="{fnd if fnd is not None else 999:.8f}" '
             f'data-oi="{oi or 0:.0f}" data-oimc="{oimc:.6f}" '
             f'data-oifdv="{oifdv:.6f}" data-oivol="{oivol:.4f}" '
-            f'data-cond="{_cond_str(sym)}" data-fired="{_fired_str(sym)}"')
+            f'data-cond="{_cond_str(sym)}"')
 
 
 def _tile(rec) -> str:
@@ -1435,9 +1423,13 @@ LIVE_JS = (
     'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
     'function buyBadges(sig){var o="";["v1","v2","v3","v4"].forEach(function(k){'
     'if(sig&&sig[k])o+="<span class=\\"buy "+k+" mini\\" title=\\""+k+" fired\\">Buy "+k+"</span>";});return o;}'
-    # pipe-delimited fired strategies (e.g. "|v1|v4|"), matching the build-time
-    # data-fired format so the Buy v1-v4 preset filters track the live verdicts.
-    'function firedStr(sig){var s="";["v1","v2","v3","v4"].forEach(function(k){if(sig&&sig[k])s+="|"+k;});return s?s+"|":"||";}'
+    # Rebuild the pipe-delimited data-cond string from the live fired flags, so
+    # the (checkbox-driven) Buy v1-v4 preset filters track the live verdicts:
+    # a strategy fires iff ALL its conditions are true, so the union of fired
+    # strategies' condition keys is exactly what their checkboxes test for.
+    'function condFromSig(sig){var P=window.__PRESETS;if(!P)return null;var seen={},o="|";'
+    '["v1","v2","v3","v4"].forEach(function(k){if(sig&&sig[k])(P[k]||[]).forEach(function(c){'
+    'if(!seen[c]){seen[c]=1;o+=c+"|";}});});return o==="|"?"||":o;}'
     'function setCount(id,val){var el=document.getElementById(id);'
     'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
     'function pctTxt(n,d){if(!n||!d||d<=0)return "\\u2014";return (n/d*100).toFixed(1)+"%";}'
@@ -1459,10 +1451,10 @@ LIVE_JS = (
     'var badge=document.getElementById("live-badge");'
     'function apply(d){var tk=(d&&d.tokens)||{};'
     'for(var sym in tk){var v=tk[sym],row=rb[sym];'
-    # live-rewrite the fired flag (drives the Buy v1-v4 preset filter) on both
-    # the row and the tile, so a filtered list stays in lock-step with the
-    # header counts without waiting for a site rebuild.
-    'if(v.sig){var fsf=firedStr(v.sig);if(row)row.setAttribute("data-fired",fsf);var tlf=tb[sym];if(tlf)tlf.setAttribute("data-fired",fsf);}'
+    # live-rewrite data-cond (drives the Buy v1-v4 preset filter) on both the
+    # row and the tile, so a filtered list stays in lock-step with the header
+    # counts without waiting for a site rebuild.
+    'if(v.sig){var cs=condFromSig(v.sig);if(cs!=null){if(row)row.setAttribute("data-cond",cs);var tlf=tb[sym];if(tlf)tlf.setAttribute("data-cond",cs);}}'
     'if(row){if(ci.px24!=null&&(v.price!=null||v.p24!=null))setCell(row.cells[ci.px24],p24cell(v.price,v.p24),v.p24!=null?(+v.p24).toFixed(4):null);'
     'if(ci.oibn!=null&&v.oi_bn!=null)setCell(row.cells[ci.oibn],fmtUsd(v.oi_bn),(+v.oi_bn).toFixed(0));'
     'if(ci.oicomb!=null&&v.oi_combined!=null)setCell(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
@@ -1475,7 +1467,7 @@ LIVE_JS = (
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
     'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
-    # re-run the filter (data-fired just changed) so a Buy v1-v4 preset shows
+    # re-run the filter (data-cond just changed) so a Buy v1-v4 preset shows
     # exactly the coins now firing, then re-apply the active sort so the row
     # order matches the live values (e.g. the top 24h mover stays on top).
     'if(window.__refilter)window.__refilter();'
@@ -1824,12 +1816,17 @@ const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows
 const search=document.getElementById('search'),count=document.getElementById('count');
 const panel=document.getElementById('fpanel'),btnF=document.getElementById('btn-filter');
 const cbs=[...panel.querySelectorAll('input[data-k]')];
-// Buy v1-v4 presets filter on the LIVE fired flag (data-fired), not the
-// per-condition checkboxes, so a preset matches exactly the coins the engine
-// reports as fired AND tracks the live header counts (LIVE_JS rewrites
-// data-fired every poll). The condition checkboxes below remain granular knobs.
+// Buy v1-v4 presets TICK their condition checkboxes (so you see what each setup
+// means) and filter through them. data-cond is kept live by LIVE_JS — rewritten
+// from the box's fired flags each poll — so a preset still matches the live
+// header counts even though it filters on the per-condition checkboxes.
+const PRESETS={
+  v1:['oi3up','oi3h8','px3h8','brk6h','fund01','oipx15'],
+  v2:['oi3up','oi3h5','emacross','ema20','oipx10','fund01'],
+  v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash'],
+  v4:['oibld48','pxflat48','coil30','oilead2','fundsqz']};
+window.__PRESETS=PRESETS;   // shared with LIVE_JS for the live data-cond rewrite
 const pres=[...document.querySelectorAll('.fp-pre')];
-function activePres(){return pres.filter(b=>b.classList.contains('active')).map(b=>b.dataset.pre);}
 const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oifdv15','oimc25','oimc50','oivol3','fundneg','fundn01','fundn03']);
 btnF.addEventListener('click',()=>{const open=panel.style.display==='none';
   panel.style.display=open?'':'none';btnF.classList.toggle('open',open);});
@@ -1851,24 +1848,28 @@ function numOk(el,k){
 function ok(el){
   const q=search.value.trim().toLowerCase();
   if(q&&!el.dataset.search.includes(q))return false;
-  const ap=activePres();                               // Buy v1-v4 presets (OR)
-  if(ap.length){const fired=el.dataset.fired||'||';
-    if(!ap.some(p=>fired.includes('|'+p+'|')))return false;}
-  const ck=checked();                                  // granular conditions (AND)
-  if(ck.length){const cond=el.dataset.cond||'||';
-    for(const k of ck){
-      if(NUM_KEYS.has(k)){if(!numOk(el,k))return false;}
-      else{if(!cond.includes('|'+k+'|'))return false;}}}
+  const ck=checked();if(!ck.length)return true;
+  const cond=el.dataset.cond||'||';
+  for(const k of ck){
+    if(NUM_KEYS.has(k)){if(!numOk(el,k))return false;}
+    else{if(!cond.includes('|'+k+'|'))return false;}}
   return true;}
 function apply(){for(const el of items)el.style.display=ok(el)?'':'none';
   count.textContent=tiles.filter(ok).length+' / '+tiles.length+' coins';}
-window.__refilter=apply;   // LIVE_JS re-runs the filter after it rewrites data-fired
+window.__refilter=apply;   // LIVE_JS re-runs the filter after it rewrites data-cond
+// a preset is "active" when all its condition checkboxes are ticked
+function syncPresets(){const ck=new Set(checked());
+  pres.forEach(b=>{const keys=PRESETS[b.dataset.pre]||[];
+    b.classList.toggle('active',keys.length>0&&keys.every(k=>ck.has(k)));});}
 search.addEventListener('input',apply);
-cbs.forEach(c=>c.addEventListener('change',apply));
-pres.forEach(b=>b.addEventListener('click',()=>{b.classList.toggle('active');apply();}));
+cbs.forEach(c=>c.addEventListener('change',()=>{syncPresets();apply();}));
+// clicking a preset ticks/unticks its condition checkboxes, then filters
+pres.forEach(b=>b.addEventListener('click',()=>{
+  const keys=PRESETS[b.dataset.pre]||[];const isOn=b.classList.contains('active');
+  cbs.forEach(c=>{if(keys.includes(c.dataset.k))c.checked=!isOn;});
+  syncPresets();apply();}));
 document.getElementById('fp-clear').addEventListener('click',()=>{
-  cbs.forEach(c=>c.checked=false);pres.forEach(b=>b.classList.remove('active'));
-  search.value='';apply();});   // "Clear all" resets the search box too
+  cbs.forEach(c=>c.checked=false);search.value='';syncPresets();apply();});  // Clear all resets search too
 const bG=document.getElementById('view-grid'),bL=document.getElementById('view-list');
 const views=document.getElementById('views');
 const VIEW_KEY='ll-view-scams';
