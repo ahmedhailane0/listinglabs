@@ -424,12 +424,14 @@ def _filter_attrs(rec) -> str:
     oimc = (oi / mc) if (oi and mc) else -1
     oifdv = (oi / fdv) if (oi and fdv) else -1
     fnd = r.get("funding")
+    ov = _oi_spotvol(rec)
+    oivol = ov["ratio"] if ov else -1
     return (f'data-search="{search}" data-fdvnum="{fdv if fdv else -1:.0f}" '
             f'data-mcnum="{mc if mc else -1:.0f}" '
             f'data-fundingnum="{fnd if fnd is not None else 999:.8f}" '
             f'data-oi="{oi or 0:.0f}" data-oimc="{oimc:.6f}" '
-            f'data-oifdv="{oifdv:.6f}" data-cond="{_cond_str(sym)}" '
-            f'data-fired="{_fired_str(sym)}"')
+            f'data-oifdv="{oifdv:.6f}" data-oivol="{oivol:.4f}" '
+            f'data-cond="{_cond_str(sym)}" data-fired="{_fired_str(sym)}"')
 
 
 def _tile(rec) -> str:
@@ -446,6 +448,10 @@ def _tile(rec) -> str:
     metas.append(f'<span><b>FDV</b> {_usd(fdv)}</span>')
     if r.get("oi_fdv_pct") is not None:
         metas.append(f'<span><b>OI/FDV</b> {r["oi_fdv_pct"]:.0f}%</span>')
+    ov = _oi_spotvol(rec)
+    if ov:
+        sfx = "" if ov["src"] == "spot" else "<i> (perp vol)</i>"
+        metas.append(f'<span><b>OI/Vol</b> {ov["ratio"]:.1f}×{sfx}</span>')
     return f"""
     <a class="tile" data-sym="{html.escape(sym)}" href="{sym.lower()}.html" {_filter_attrs(rec)}>
       {_sparkline(sym)}
@@ -625,6 +631,47 @@ def _load_perp(sym):
 # hold a position/the price. Either is the watchlist's manipulation tell.
 FLAG_OI_VOL = 0.5
 FLAG_FUNDING_ANN = 1.0
+# Report (妖币猎场) Dimension 4 / Rule 2: combined perp OI ≥ 3× the 24h SPOT
+# volume = price is set by the perp book, not real spot trading (a naked
+# short-squeeze trap). Distinct from FLAG_OI_VOL above, which is tracked-venue
+# OI / *perp* volume. This one is OI(BN+BYB) / *spot* (market) volume.
+FLAG_OI_SPOTVOL = 3.0
+
+
+def _oi_spotvol(rec) -> dict | None:
+    """The report's OI/24h-spot-volume ratio. Numerator = combined perp OI
+    (BN+BYB, the headline OI). Denominator = the token's 24h SPOT volume (CMC
+    market volume — perp volume can be wash-inflated, so spot is the faithful
+    figure). Falls back to tracked-venue perp volume (tagged src='perp') only
+    when spot volume is missing. Returns {ratio, vol, src} or None."""
+    oi = _sig(rec["symbol"]).get("oi_combined")
+    if not oi:
+        return None
+    vol = rec.get("vol") or rec.get("csv_vol") or (_sig(rec["symbol"]).get("market") or {}).get("vol24h")
+    src = "spot"
+    if not vol:                                  # labeled fallback: perp turnover
+        venues = [v for v in ((_load_perp(rec["symbol"]) or {}).get("venues") or [])
+                  if not v.get("is_others")]
+        vol = sum(v["vol24h_usd"] for v in venues if v.get("vol24h_usd")) or None
+        src = "perp"
+    if not vol or vol <= 0:
+        return None
+    return {"ratio": oi / vol, "vol": vol, "src": src}
+
+
+def _oi_spotvol_stat(rec) -> str:
+    """Detail-page OI/Vol stat span (empty when no ratio). Bolds the ≥3 case as a
+    flag — the report's 'perp-priced' threshold."""
+    ov = _oi_spotvol(rec)
+    if not ov:
+        return ""
+    vlbl = "spot" if ov["src"] == "spot" else "perp"
+    cls = " hot" if ov["ratio"] >= FLAG_OI_SPOTVOL else ""
+    tip = (f"combined OI ÷ 24h {vlbl} volume. ≥3 = price set by the perp book, "
+           f"not real spot trading (report Dimension 4)")
+    sfx = "" if ov["src"] == "spot" else " (perp vol)"
+    return (f'<span class="ovstat{cls}" title="{html.escape(tip)}">'
+            f'<b>OI/Vol</b> {ov["ratio"]:.1f}×{sfx}</span>')
 
 
 def _screen(rec) -> dict:
@@ -651,9 +698,16 @@ def _screen(rec) -> dict:
 
 
 def _flag_chips(rec) -> str:
+    flags = list(_screen(rec)["flags"])
+    ov = _oi_spotvol(rec)
+    if ov and ov["ratio"] >= FLAG_OI_SPOTVOL:
+        vlbl = "spot" if ov["src"] == "spot" else "perp"
+        flags.append(("perp-priced",
+                      f"OI is {ov['ratio']:.1f}× the 24h {vlbl} volume — price set by "
+                      f"the perp book, not real spot trading (squeeze trap; report Dim 4)"))
     chips = "".join(
         f'<span class="flag" title="{html.escape(tip)}">⚠ {html.escape(label)}</span>'
-        for label, tip in _screen(rec)["flags"])
+        for label, tip in flags)
     return f'<span class="flags">{chips}</span>' if chips else ""
 
 
@@ -1172,7 +1226,7 @@ def _binance_btn(sym) -> str:
             f'target="_blank" rel="noopener">Trade {html.escape(sym)} on Binance Futures ↗</a>')
 
 
-def _signals_section(sym) -> str:
+def _signals_section(sym, rec=None) -> str:
     """Buy v1/v2/v3 cards + combined OI / FDV / funding + a Binance link, from
     cache/screener (hourly box). Empty for coins with no Binance perp."""
     r = _sig(sym)
@@ -1192,6 +1246,7 @@ def _signals_section(sym) -> str:
             f'<span><b>OI/FDV</b> {(format(r["oi_fdv_pct"], ".1f") + "%") if r.get("oi_fdv_pct") is not None else "—"}</span>'
             f'<span><b>Funding</b> {(format(r["funding"] * 100, ".3f") + "%") if r.get("funding") is not None else "—"}</span>'
             f'<span><b>Binance 24h vol</b> {_usd(r.get("vol24"))}</span>'
+            f'{_oi_spotvol_stat(rec if rec is not None else {"symbol": sym})}'
             f'</div>')
     cards = []
     for k in STRATS:
@@ -1281,7 +1336,7 @@ def _detail(rec, platforms) -> str:
   {_perp_table(perp)}
   {_perp_extras(rec, perp, sym)}
 </section>
-{_signals_section(sym)}
+{_signals_section(sym, rec)}
 {_supply_valuation_block(rec)}
 <section class="card span">
   <h3>Top holders <span class="asof">on-chain distribution</span></h3>
@@ -1345,7 +1400,7 @@ def _filter_bar() -> str:
       """ + _cb("fundneg", "Funding &lt;0 (squeeze)") + _cb("fundn01", "Funding ≤ −0.1%") + _cb("fundn03", "Funding ≤ −0.3%") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Thresholds</legend>
-      """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oifdv15", "OI/FDV ≥ 15%") + _cb("oimc25", "OI/MC ≥ 25%") + _cb("oimc50", "OI/MC &gt; 50%") + """
+      """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oifdv15", "OI/FDV ≥ 15%") + _cb("oimc25", "OI/MC ≥ 25%") + _cb("oimc50", "OI/MC &gt; 50%") + _cb("oivol3", "OI/Vol ≥ 3× (perp-priced)") + """
     </fieldset>
   </div>
 </div>"""
@@ -1596,6 +1651,7 @@ EXTRA_CSS = """
 .flag{background:var(--flag-bg);color:var(--neg);border-radius:9px;font-size:10.5px;
   font-weight:700;padding:1px 8px;white-space:nowrap;cursor:help}
 .tile-head .flags{margin-left:auto}
+.ovstat.hot{color:var(--neg);font-weight:700}
 .flagrow{margin:0 0 10px}
 #ltab td{overflow:hidden}
 #ltab td.rank{text-align:center}
@@ -1774,7 +1830,7 @@ const cbs=[...panel.querySelectorAll('input[data-k]')];
 // data-fired every poll). The condition checkboxes below remain granular knobs.
 const pres=[...document.querySelectorAll('.fp-pre')];
 function activePres(){return pres.filter(b=>b.classList.contains('active')).map(b=>b.dataset.pre);}
-const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oifdv15','oimc25','oimc50','fundneg','fundn01','fundn03']);
+const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oifdv15','oimc25','oimc50','oivol3','fundneg','fundn01','fundn03']);
 btnF.addEventListener('click',()=>{const open=panel.style.display==='none';
   panel.style.display=open?'':'none';btnF.classList.toggle('open',open);});
 function checked(){return cbs.filter(c=>c.checked).map(c=>c.dataset.k);}
@@ -1787,6 +1843,7 @@ function numOk(el,k){
   if(k==='oifdv15')return parseFloat(el.dataset.oifdv||'-1')>=0.15;
   if(k==='oimc25')return parseFloat(el.dataset.oimc||'-1')>=0.25;
   if(k==='oimc50')return parseFloat(el.dataset.oimc||'-1')>=0.5;
+  if(k==='oivol3')return parseFloat(el.dataset.oivol||'-1')>=3;
   if(k==='fundneg')return parseFloat(el.dataset.fundingnum||'999')<0;
   if(k==='fundn01')return parseFloat(el.dataset.fundingnum||'999')<=-0.001;
   if(k==='fundn03')return parseFloat(el.dataset.fundingnum||'999')<=-0.003;
