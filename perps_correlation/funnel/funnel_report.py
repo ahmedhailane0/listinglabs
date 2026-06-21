@@ -248,7 +248,7 @@ section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;te
 .lagsum{flex:0 0 auto;font-size:12px;color:var(--text-3);white-space:nowrap}
 @media(max-width:700px){.lagrow{flex-wrap:wrap}.laglbl{flex-basis:100%}.lagsum{order:3}}
 table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--bg-card)}
-th{position:sticky;top:0;background:var(--bg-thead);text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap}
+th{position:sticky;top:0;z-index:2;background:var(--bg-thead);text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap}
 td{padding:5px 8px;border-bottom:1px solid var(--border-2)}td.n{text-align:right;font-variant-numeric:tabular-nums}
 tr:hover td{background:var(--bg-hover)}
 /* FDV-bucket badges: colored text + currentColor outline (theme-safe, no pastel bg) */
@@ -264,7 +264,9 @@ h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;color:var(--text-3)
 .lag .k{display:block;font-size:10.5px;color:var(--text-4)}.lag .v{font-weight:700}
 /* responsive */
 img,svg{max-width:100%;height:auto}
-.tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* no overflow here: an overflow box would capture the sticky <thead> and make
+   the table scroll inside its own window instead of pinning to the page. */
+.tablewrap{}
 .detail{min-width:0}
 @media(max-width:1024px){header,section,.detail{padding-left:18px;padding-right:18px}}
 @media(max-width:640px){

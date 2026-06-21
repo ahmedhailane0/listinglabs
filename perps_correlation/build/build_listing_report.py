@@ -1076,10 +1076,16 @@ a { color: inherit; text-decoration: none; }
 .view-grid .listwrap { display: none; }
 .view-list .grid { display: none; }
 
-/* list view table */
-.listwrap { padding: 16px 32px 28px; overflow-x: auto; }
+/* list view table.
+   NOTE: do NOT put overflow (x or y) on .listwrap or table.list. Any overflow
+   value other than visible turns the element into a scroll container, which
+   captures the sticky <thead> so the header pins to the box instead of the
+   page (the "table scrolling by itself" bug). The page is the scroll container;
+   the header sticks to the viewport. Wide tables overflow the body on narrow
+   screens — that's the intended trade for a page-pinned header. */
+.listwrap { padding: 16px 32px 28px; }
 table.list { width: 100%; border-collapse: collapse; background: var(--bg-card); font-size: 13px;
-             border: 1px solid var(--border); border-radius: 10px; overflow: hidden; table-layout: fixed; }
+             border: 1px solid var(--border); border-radius: 10px; table-layout: fixed; }
 /* deterministic column widths so the # column can't balloon (auto-layout dumps
    slack into the first columns). 12 cols: #, Token, TGE, Since, 24h, 7d, 30d,
    90d, FDV, MC, OI%, Funding. */
@@ -1092,9 +1098,10 @@ table.list th:nth-child(9), table.list th:nth-child(10) { width: 9%; }
 table.list th:nth-child(11) { width: 7%; }
 table.list th:nth-child(12) { width: 13%; }
 table.list td { overflow: hidden; }
-table.list th { position: sticky; top: 0; background: var(--bg-thead); text-align: right; padding: 8px 10px;
+table.list th { position: sticky; top: 0; z-index: 2; background: var(--bg-thead); text-align: right; padding: 8px 10px;
                 border-bottom: 2px solid var(--border); cursor: pointer; white-space: nowrap; font-size: 12px; color: var(--text-2); }
-table.list th:first-child { text-align: left; }
+table.list th:first-child { text-align: left; border-top-left-radius: 10px; }
+table.list th:last-child { border-top-right-radius: 10px; }
 table.list th.sorted { color: var(--primary); background: var(--bg-chip); }
 table.list th.sorted.desc::after { content: " ▼"; font-size: 9px; }
 table.list th.sorted.asc::after  { content: " ▲"; font-size: 9px; }

@@ -1634,9 +1634,10 @@ EXTRA_CSS = """
 #ltab th:nth-child(11){width:7%}                   /* FDV */
 #ltab th:nth-child(12){width:7%}                   /* MC */
 #ltab th:nth-child(13){width:9%;text-align:left}   /* Memo */
-/* sticky header: the list scrolls inside a tall box so the column titles stay
-   pinned on scroll (scams page only — overrides the shared .listwrap). */
-.listwrap{max-height:78vh;overflow:auto}
+/* sticky header: the column titles pin to the top of the viewport as the WHOLE
+   PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
+   max-height/overflow) — an overflow box would capture the sticky thead and make
+   the table scroll inside its own window instead of with the page. */
 #ltab thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead)}
 /* ⚠ screening chips (parked OI / extreme funding) on tiles + detail header */
 .flags{display:inline-flex;gap:5px;flex-wrap:wrap}
