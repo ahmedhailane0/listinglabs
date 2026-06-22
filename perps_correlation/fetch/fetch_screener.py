@@ -60,6 +60,14 @@ CMC_UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 CMC_MAP_FILE = HERE.parent / "cmc_map.json"   # may not exist on the box (gitignored)
 PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
 
+# ── Forward fire-log (out-of-sample ledger) ─────────────────────────────────
+# Append-only record of every NEW (sym, setup, fire-hour) the screener reports,
+# with the entry reference price + stop, so tools/grade_fires.py can score the
+# outcome once the future arrives. This is the clean out-of-sample evidence the
+# tuner (tools/optimize_signals.py) validates against — it accrues forever.
+FIRES_LOG = OUTDIR / "fires_log.json"
+FIRES_LOG_MAX = 8000
+
 # ── Holders (best-effort, EVM only) ─────────────────────────────────────────
 HOLDERS_DIR = CACHE / "scam_holders"
 HOLDER_MAX_PER_RUN = 30
@@ -286,6 +294,51 @@ MARKET_KEYS = ("slug", "name", "price", "fdv", "mcap", "vol24h",
                "chain", "contract", "tge")
 
 
+def _log_fires(recs: dict) -> int:
+    """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
+    sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
+    Records the entry reference (Binance mark price), the setup's stop/size, and
+    the OI/funding/FDV context at fire time; `outcome` is filled in later by the
+    grader. Never raises — logging must not break the hourly fetch."""
+    try:
+        log = json.loads(FIRES_LOG.read_text(encoding="utf-8")) if FIRES_LOG.exists() else []
+        if not isinstance(log, list):
+            log = []
+    except Exception:
+        log = []
+    seen = {f"{e.get('sym')}|{e.get('strat')}|{e.get('t')}" for e in log}
+    now = _now()
+    added = 0
+    for sym, r in recs.items():
+        sig = r.get("signals") or {}
+        for strat in ("v1", "v2", "v3", "v4"):
+            d = sig.get(strat) or {}
+            if not d.get("fired"):
+                continue
+            key = f"{sym}|{strat}|{d.get('t')}"
+            if key in seen:
+                continue
+            seen.add(key)
+            log.append({
+                "sym": sym, "strat": strat, "t": d.get("t"),
+                "logged_utc": now,
+                "entry_price": r.get("mark_price"),
+                "stop": d.get("stop"), "position": d.get("position"),
+                "oi_combined": r.get("oi_combined"), "oi_bn": r.get("oi_bn"),
+                "funding": r.get("funding"), "fdv": r.get("fdv"),
+                "outcome": None,            # graded later by tools/grade_fires.py
+            })
+            added += 1
+    try:
+        FIRES_LOG.write_text(
+            json.dumps(log[-FIRES_LOG_MAX:], ensure_ascii=False, separators=(",", ":")),
+            encoding="utf-8")
+        print(f"  fires_log: +{added} new (total {min(len(log), FIRES_LOG_MAX)})")
+    except Exception as e:
+        print(f"  fires_log: write failed ({e})")
+    return added
+
+
 def _fetch_token(sym: str, intervals: dict) -> dict:
     """Per-coin Binance pull + signal compute + spark series."""
     oi = _oi_hist(sym)
@@ -444,6 +497,9 @@ def main(argv: list[str]) -> int:
     # ── Persist market cache ─────────────────────────────────────────────────
     MARKET_CACHE_FILE.write_text(
         json.dumps(market_cache, separators=(",", ":")), encoding="utf-8")
+
+    # ── Forward fire-log (before mark_price is stripped — it's the entry ref) ─
+    _log_fires(recs)
 
     # ── Strip internal fields from output ────────────────────────────────────
     for rec in recs.values():
