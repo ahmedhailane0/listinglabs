@@ -501,6 +501,31 @@ def _pct_cell(num, den) -> str:
     return f'<td class="n" data-s="{r:.4f}">{r:.1f}%</td>'
 
 
+def _num_chg_cell(v, chg, tip="") -> str:
+    """Compact-USD value cell with an optional colored 24h % change subtitle (the
+    OI and Vol columns). data-s stays the raw value so the column still sorts by
+    magnitude; the `.vmain` span lets the live poller swap the value in place
+    without wiping the (build-time) change subtitle."""
+    if v is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    ti = f' title="{html.escape(tip)}"' if tip else ""
+    main = f'<span class="vmain">{fmt_usd_compact(v)}</span>'
+    if chg is None:
+        return f'<td class="n" data-s="{v:.4f}"{ti}>{main}</td>'
+    cls = "pos" if chg >= 0 else "neg"
+    return (f'<td class="n" data-s="{v:.4f}"{ti}>{main}'
+            f'<span class="vchg {cls}">{chg:+.1f}%</span></td>')
+
+
+def _chg_span(p) -> str:
+    """Inline colored 24h % change badge for the detail-page stat spans. Empty
+    when unknown. Placed AFTER the value (the live poller updates the value text
+    node via b.nextSibling, so a trailing badge survives the refresh)."""
+    if p is None:
+        return ""
+    return f'<span class="vchg {"pos" if p >= 0 else "neg"}">{p:+.1f}%</span>'
+
+
 def _list_row(rec) -> str:
     sym = rec["symbol"]
     r = _sig(sym)
@@ -510,6 +535,7 @@ def _list_row(rec) -> str:
     oi_bn = r.get("oi_bn")
     oi = r.get("oi_combined")
     vol = rec.get("vol") or rec.get("csv_vol") or (r.get("market") or {}).get("vol24h")
+    chg = _oi_vol_chg(sym)
     tok =(f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
            f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
@@ -519,12 +545,12 @@ def _list_row(rec) -> str:
         f'<td class="rank"></td>{tok}'
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
-        f'{_num_cell(oi, pct=False, color=False)}'       # OI (BN+BYB)
+        f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
         f'{_pct_cell(oi, fdv)}'                          # OI/FDV (BN+BYB)
         f'{_pct_cell(oi_bn, fdv)}'                       # OI/FDV (BN)
         f'{_pct_cell(oi, mcap)}'                         # OI/MC
         f'{_fundcell(r)}'                                # Funding
-        f'{_num_cell(vol, pct=False, color=False)}'      # Vol
+        f'{_num_chg_cell(vol, chg["vol"], "24h change in tracked-venue perp 24h volume")}'  # Vol
         f'{_num_cell(fdv, pct=False, color=False)}'      # FDV
         f'{_num_cell(mcap, pct=False, color=False)}'     # MC
         f'<td class="memo"><span>{memo or "—"}</span></td></tr>')
@@ -611,6 +637,42 @@ def _load_perp(sym):
     perp = json.loads(p.read_text(encoding="utf-8")) if p.exists() else None
     _PERP_CACHE[sym] = _allowed_perp(perp)
     return _PERP_CACHE[sym]
+
+
+_OIVOL_CHG_CACHE: dict = {}
+
+
+def _oi_vol_chg(sym) -> dict:
+    """24h % change in tracked-venue perp OI and 24h volume, from the logged
+    cache/perp_history snapshots. Compares the latest snapshot to the one closest
+    to 24h earlier (must be within 12h of the mark, so a logging gap can't fake a
+    baseline). Returns {"oi": pct|None, "vol": pct|None}; both None when history
+    is too short. NB: basis is the tracked-venue perp series (total_oi_usd /
+    vol24h_usd) — the same series the detail-page OI/volume charts plot."""
+    sym = sym.upper()
+    if sym in _OIVOL_CHG_CACHE:
+        return _OIVOL_CHG_CACHE[sym]
+    out = {"oi": None, "vol": None}
+    p = PERP_HIST / f"{sym}.json"
+    if p.exists():
+        try:
+            series = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            series = []
+        if isinstance(series, list) and len(series) >= 2:
+            series = sorted(series, key=lambda pt: pt.get("t", 0))
+            last = series[-1]
+            target = last.get("t", 0) - 86400
+            base = min(series[:-1], key=lambda pt: abs(pt.get("t", 0) - target))
+            if abs(base.get("t", 0) - target) <= 43200:   # within 12h of the 24h mark
+
+                def _d(key):
+                    a, b = last.get(key), base.get(key)
+                    return (a / b - 1) * 100 if (a is not None and b) else None
+
+                out = {"oi": _d("total_oi_usd"), "vol": _d("vol24h_usd")}
+    _OIVOL_CHG_CACHE[sym] = out
+    return out
 
 
 # Screening thresholds (documented in docs/OI_VOLUME_METHODOLOGY.md): OI/vol
@@ -1226,14 +1288,15 @@ def _signals_section(sym, rec=None) -> str:
     # matched by their <b> label — OI (BN+BYB) / Binance OI / Funding / Binance
     # 24h vol come straight from the box screener, so they stay live without a
     # rebuild. FDV / OI/FDV / Bybit OI move slowly (hourly).
+    chg = _oi_vol_chg(sym)
     meta = (f'<div class="sigmeta">'
-            f'<span><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}</span>'
+            f'<span title="24h change in tracked-venue perp OI"><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}{_chg_span(chg["oi"])}</span>'
             f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
             f'<span><b>Bybit OI</b> {_usd(r.get("oi_byb"))}</span>'
             f'<span><b>FDV</b> {_usd(r.get("fdv"))}</span>'
             f'<span><b>OI/FDV</b> {(format(r["oi_fdv_pct"], ".1f") + "%") if r.get("oi_fdv_pct") is not None else "—"}</span>'
             f'<span><b>Funding</b> {(format(r["funding"] * 100, ".3f") + "%") if r.get("funding") is not None else "—"}</span>'
-            f'<span><b>Binance 24h vol</b> {_usd(r.get("vol24"))}</span>'
+            f'<span title="24h change in tracked-venue perp 24h volume"><b>Binance 24h vol</b> {_usd(r.get("vol24"))}{_chg_span(chg["vol"])}</span>'
             f'{_oi_spotvol_stat(rec if rec is not None else {"symbol": sym})}'
             f'</div>')
     cards = []
@@ -1414,6 +1477,8 @@ LIVE_JS = (
     'return "$0.0"+sb+dg;}'
     'function flash(el){if(!el)return;el.classList.remove("liveflash");void el.offsetWidth;el.classList.add("liveflash");}'
     'function setCell(td,h,sv){if(!td)return;if(sv!=null)td.setAttribute("data-s",sv);if(td.innerHTML!==h){td.innerHTML=h;flash(td);}}'
+    # OI/Vol cells carry a build-time 24h change badge (.vchg); update only the .vmain value so the badge survives the live refresh.
+    'function setVmain(td,txt,sv){if(!td)return;if(sv!=null)td.setAttribute("data-s",sv);var m=td.querySelector(".vmain");if(!m){setCell(td,txt,sv);return;}if(m.textContent!==txt){m.textContent=txt;flash(td);}}'
     'function p24cell(price,p24){var pxt=fmtPrice(price);'
     'if(p24==null)return "<span class=\\"pxmain\\">"+pxt+"</span>";'
     'var cls=p24>=0?"pos":"neg",sg=p24>=0?"+":"";'
@@ -1457,9 +1522,9 @@ LIVE_JS = (
     'if(v.sig){var cs=condFromSig(v.sig);if(cs!=null){if(row)row.setAttribute("data-cond",cs);var tlf=tb[sym];if(tlf)tlf.setAttribute("data-cond",cs);}}'
     'if(row){if(ci.px24!=null&&(v.price!=null||v.p24!=null))setCell(row.cells[ci.px24],p24cell(v.price,v.p24),v.p24!=null?(+v.p24).toFixed(4):null);'
     'if(ci.oibn!=null&&v.oi_bn!=null)setCell(row.cells[ci.oibn],fmtUsd(v.oi_bn),(+v.oi_bn).toFixed(0));'
-    'if(ci.oicomb!=null&&v.oi_combined!=null)setCell(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
+    'if(ci.oicomb!=null&&v.oi_combined!=null)setVmain(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));'
-    'if(ci.vol!=null&&v.vol24!=null)setCell(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));'
+    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));'
     'var fdvn=+row.getAttribute("data-fdvnum"),mcn=+row.getAttribute("data-mcnum");'
     'if(ci.oifdvc!=null&&v.oi_combined!=null)setCell(row.cells[ci.oifdvc],pctTxt(v.oi_combined,fdvn),pctSort(v.oi_combined,fdvn));'
     'if(ci.oifdvb!=null&&v.oi_bn!=null)setCell(row.cells[ci.oifdvb],pctTxt(v.oi_bn,fdvn),pctSort(v.oi_bn,fdvn));'
@@ -1501,7 +1566,8 @@ LIVE_DETAIL_JS = (
     'var sym=sec.getAttribute("data-livesym"),badge=document.getElementById("live-badge");'
     'function metaSet(label,txt){var sp=sec.querySelectorAll(".sigmeta span");'
     'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
-    'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
+    # value is the text node right after the <b> label; a trailing change badge (.vchg) may follow it, so target b.nextSibling not lastChild.
+    'var n=b.nextSibling;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
     'function priceSet(txt){var dt=document.querySelectorAll("dl dt");'
     'for(var i=0;i<dt.length;i++){if(dt[i].textContent.trim()==="Price"){var dd=dt[i].nextElementSibling;'
     'if(dd&&dd.textContent!==txt){dd.textContent=txt;flash(dd);}return;}}}'
@@ -1653,6 +1719,14 @@ EXTRA_CSS = """
 #ltab td .p24{display:block;font-size:11px;font-weight:600}
 #ltab td .p24.pos{color:var(--pos)}
 #ltab td .p24.neg{color:var(--neg)}
+/* OI / Vol columns: value on top, 24h % change as a colored subtitle */
+#ltab td .vchg{display:block;font-size:11px;font-weight:600}
+#ltab td .vchg.pos{color:var(--pos)}
+#ltab td .vchg.neg{color:var(--neg)}
+/* detail-page stat badge: 24h change shown inline after the value */
+.sigmeta .vchg{margin-left:5px;font-size:11px;font-weight:600}
+.sigmeta .vchg.pos{color:var(--pos)}
+.sigmeta .vchg.neg{color:var(--neg)}
 /* live badge + cell flash (LIVE_JS polls the box every ~60s) */
 #live-badge{font-size:11px;font-weight:600;padding:1px 7px;border-radius:10px;white-space:nowrap;
   margin-left:6px;border:1px solid var(--border)}
