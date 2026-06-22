@@ -454,13 +454,12 @@ def _tile(rec) -> str:
 
 # Screener-focused list: Binance + combined OI, the OI/FDV and OI/MC ratios, and
 # funding drive the scan; price 24h + memo carry context. Full rich data
-# (chart/holders/funding rounds) stays on each coin's detail page. 13 cols — keep
+# (chart/holders/funding rounds) stays on each coin's detail page. 10 cols — keep
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
 LIST_COLS = ["#", "Token", "Price / 24h", "BN OI", "OI (BN+BYB)",
-             "OI/FDV (BN+BYB)", "OI/FDV (BN)", "OI/MC", "Funding",
-             "Vol", "FDV", "MC", "Memo"]
+             "Funding", "Vol", "FDV", "MC", "Memo"]
 
 
 def _price24_cell(rec) -> str:
@@ -489,16 +488,6 @@ def _fundcell(r) -> str:
     if f is None:
         return f'<td class="n" data-s="{_NEG_INF}">—</td>'
     return f'<td class="n" data-s="{f:.8f}">{f * 100:.3f}%</td>'
-
-
-def _pct_cell(num, den) -> str:
-    """A ratio cell shown as a percent (OI/FDV, OI/MC), sortable by the raw
-    ratio. LIVE_JS recomputes these from live OI + the row's data-fdvnum/
-    data-mcnum so they stay consistent with the live OI cell."""
-    if not num or not den or den <= 0:
-        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
-    r = num / den * 100
-    return f'<td class="n" data-s="{r:.4f}">{r:.1f}%</td>'
 
 
 def _num_chg_cell(v, chg, tip="") -> str:
@@ -546,9 +535,6 @@ def _list_row(rec) -> str:
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
-        f'{_pct_cell(oi, fdv)}'                          # OI/FDV (BN+BYB)
-        f'{_pct_cell(oi_bn, fdv)}'                       # OI/FDV (BN)
-        f'{_pct_cell(oi, mcap)}'                         # OI/MC
         f'{_fundcell(r)}'                                # Funding
         f'{_num_chg_cell(vol, chg["vol"], "24h change in tracked-venue perp 24h volume")}'  # Vol
         f'{_num_cell(fdv, pct=False, color=False)}'      # FDV
@@ -1497,15 +1483,10 @@ LIVE_JS = (
     'if(!seen[c]){seen[c]=1;o+=c+"|";}});});return o==="|"?"||":o;}'
     'function setCount(id,val){var el=document.getElementById(id);'
     'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
-    'function pctTxt(n,d){if(!n||!d||d<=0)return "\\u2014";return (n/d*100).toFixed(1)+"%";}'
-    'function pctSort(n,d){if(!n||!d||d<=0)return null;return (n/d*100).toFixed(4);}'
     'var tab=document.getElementById("ltab");if(!tab)return;'
     'var ths=tab.tHead.rows[0].cells,ci={};'
     'for(var i=0;i<ths.length;i++){var t=ths[i].textContent.trim().toLowerCase();'
     'if(t.indexOf("24h")>-1||t.indexOf("price")>-1)ci.px24=i;'
-    'else if(t.indexOf("oi/fdv")>-1&&t.indexOf("byb")>-1)ci.oifdvc=i;'
-    'else if(t.indexOf("oi/fdv")>-1)ci.oifdvb=i;'
-    'else if(t.indexOf("oi/mc")>-1)ci.oimc=i;'
     'else if(t==="bn oi")ci.oibn=i;'
     'else if(t.indexOf("oi (bn+byb)")>-1)ci.oicomb=i;'
     'else if(t.indexOf("funding")>-1)ci.fund=i;'
@@ -1524,11 +1505,7 @@ LIVE_JS = (
     'if(ci.oibn!=null&&v.oi_bn!=null)setCell(row.cells[ci.oibn],fmtUsd(v.oi_bn),(+v.oi_bn).toFixed(0));'
     'if(ci.oicomb!=null&&v.oi_combined!=null)setVmain(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));'
-    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));'
-    'var fdvn=+row.getAttribute("data-fdvnum"),mcn=+row.getAttribute("data-mcnum");'
-    'if(ci.oifdvc!=null&&v.oi_combined!=null)setCell(row.cells[ci.oifdvc],pctTxt(v.oi_combined,fdvn),pctSort(v.oi_combined,fdvn));'
-    'if(ci.oifdvb!=null&&v.oi_bn!=null)setCell(row.cells[ci.oifdvb],pctTxt(v.oi_bn,fdvn),pctSort(v.oi_bn,fdvn));'
-    'if(ci.oimc!=null&&v.oi_combined!=null)setCell(row.cells[ci.oimc],pctTxt(v.oi_combined,mcn),pctSort(v.oi_combined,mcn));}'
+    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
     'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
@@ -1683,23 +1660,20 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
-/* deterministic column widths (13 cols: #, Token, Price/24h, BN OI, OI (BN+BYB),
-   OI/FDV (BN+BYB), OI/FDV (BN), OI/MC, Funding, Vol, FDV, MC, Memo). */
-#ltab{table-layout:fixed;min-width:1180px}
+/* deterministic column widths (10 cols: #, Token, Price/24h, BN OI, OI (BN+BYB),
+   Funding, Vol, FDV, MC, Memo). */
+#ltab{table-layout:fixed;min-width:980px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:15%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:8.5%}                  /* Price / 24h */
-#ltab th:nth-child(4){width:7.5%}                  /* BN OI */
-#ltab th:nth-child(5){width:7.5%}                  /* OI (BN+BYB) */
-#ltab th:nth-child(6){width:8%}                    /* OI/FDV (BN+BYB) */
-#ltab th:nth-child(7){width:7%}                    /* OI/FDV (BN) */
-#ltab th:nth-child(8){width:6.5%}                  /* OI/MC */
-#ltab th:nth-child(9){width:7%}                    /* Funding */
-#ltab th:nth-child(10){width:7.5%}                 /* Vol */
-#ltab th:nth-child(11){width:7%}                   /* FDV */
-#ltab th:nth-child(12){width:7%}                   /* MC */
-#ltab th:nth-child(13){width:9%;text-align:left}   /* Memo */
+#ltab th:nth-child(2){width:19%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:10%}                   /* Price / 24h */
+#ltab th:nth-child(4){width:9%}                    /* BN OI */
+#ltab th:nth-child(5){width:9%}                    /* OI (BN+BYB) */
+#ltab th:nth-child(6){width:8%}                    /* Funding */
+#ltab th:nth-child(7){width:9%}                    /* Vol */
+#ltab th:nth-child(8){width:8%}                    /* FDV */
+#ltab th:nth-child(9){width:8%}                    /* MC */
+#ltab th:nth-child(10){width:13%;text-align:left}  /* Memo */
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
