@@ -328,7 +328,10 @@ def _log_fires(recs: dict) -> int:
     added = 0
     for sym, r in recs.items():
         sig = r.get("signals") or {}
-        for strat in ("v1", "v2", "v3", "v4"):
+        # v2 is coincident (backtest lift <1, ~0.88x) — it dragged the forward
+        # ledger down without predicting, so it is no longer logged. v3 never
+        # fires. Only the setups with edge (v1, v4) go into the fire-log.
+        for strat in ("v1", "v4"):
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
