@@ -77,6 +77,12 @@ except Exception:
     _pump_score = None
     _PUMP_MODEL = None
 
+# Optional Telegram alerts (reads token from env; no-ops when unconfigured).
+try:
+    from fetch import notify_telegram as _tg
+except Exception:
+    _tg = None
+
 # ── Hourly training series (append-only, month-sharded) ─────────────────────
 # One line per coin per hourly run: OI / volume / funding / price / FDV. This is
 # the PERMANENT training set the model learns on — it survives Binance's ~30-day
@@ -311,12 +317,62 @@ MARKET_KEYS = ("slug", "name", "price", "fdv", "mcap", "vol24h",
                "chain", "contract", "tge")
 
 
+def _fmt_px(x) -> str:
+    if x is None:
+        return "?"
+    return f"{x:,.4f}".rstrip("0").rstrip(".") if x >= 1 else f"{x:.6g}"
+
+
+def _esc(s) -> str:
+    return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def _alert_buy(e: dict, r: dict) -> bool:
+    """Send a Telegram BUY alert for a brand-new v1/v4 fire (tiered exit:
+    TP1 +25% sell half, TP2 +50% sell rest, the setup's own stop, 72h time-stop).
+    Returns True iff a message was actually sent. No-ops when Telegram is
+    unconfigured — a missing token never blocks logging. Never raises."""
+    try:
+        if not _tg or not _tg.enabled():
+            return False
+        px, stop = e.get("entry_price"), e.get("stop")
+        if not px:
+            return False
+        name = (r.get("market") or {}).get("name") or e["sym"]
+        oifdv, score, fund = r.get("oi_fdv_pct"), e.get("pump_score"), e.get("funding")
+        stop_line = (f"Stop   ${_fmt_px(stop)}  ({(stop/px-1)*100:+.0f}%) — exit if wrong"
+                     if stop else "Stop   n/a")
+        ctx = f"Size {e.get('position') or '?'}"
+        if score is not None:
+            ctx += f" · confidence {score:.0f}/100"
+        if oifdv is not None:
+            ctx += f" · OI/FDV {oifdv:.0f}%"
+        if fund is not None:
+            ctx += f" · funding {fund*100:+.4f}%"
+        msg = "\n".join([
+            f"\U0001F7E2 <b>BUY — {_esc(e['sym'])}</b> ({_esc(name)})  [{e['strat']}]",
+            f"Entry  ~ ${_fmt_px(px)}",
+            stop_line,
+            f"TP1    +25% → ${_fmt_px(e.get('tp1'))}  (sell half)",
+            f"TP2    +50% → ${_fmt_px(e.get('tp2'))}  (sell rest)",
+            "Time-stop: 72h",
+            ctx,
+            "⚠ experimental signal — not financial advice",
+        ])
+        return _tg.send(msg)
+    except Exception as ex:
+        print(f"  telegram buy-alert failed: {ex}")
+        return False
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
-    Records the entry reference (Binance mark price), the setup's stop/size, and
-    the OI/funding/FDV context at fire time; `outcome` is filled in later by the
-    grader. Never raises — logging must not break the hourly fetch."""
+    Records the entry reference (Binance mark price), the setup's stop/size, the
+    tiered take-profit targets (entry +25% / +50%), and the OI/funding/FDV
+    context at fire time; `outcome` is filled in later by the grader. Each new
+    v1/v4 fire also pushes a Telegram BUY alert (no-op without a token). Never
+    raises — logging/alerting must not break the hourly fetch."""
     try:
         log = json.loads(FIRES_LOG.read_text(encoding="utf-8")) if FIRES_LOG.exists() else []
         if not isinstance(log, list):
@@ -339,15 +395,25 @@ def _log_fires(recs: dict) -> int:
             if key in seen:
                 continue
             seen.add(key)
-            log.append({
+            px = r.get("mark_price")
+            entry = {
                 "sym": sym, "strat": strat, "t": d.get("t"),
                 "logged_utc": now,
-                "entry_price": r.get("mark_price"),
+                "entry_price": px,
                 "stop": d.get("stop"), "position": d.get("position"),
+                "tp1": (px * 1.25 if px else None),   # +25% — sell half
+                "tp2": (px * 1.50 if px else None),   # +50% — sell rest
+                "time_stop_h": 72,
                 "oi_combined": r.get("oi_combined"), "oi_bn": r.get("oi_bn"),
                 "funding": r.get("funding"), "fdv": r.get("fdv"),
+                "pump_score": r.get("pump_score"),
+                "alerted": False,
                 "outcome": None,            # graded later by tools/grade_fires.py
-            })
+            }
+            if _alert_buy(entry, r):
+                entry["alerted"] = True
+                entry["alerted_utc"] = now
+            log.append(entry)
             added += 1
     try:
         FIRES_LOG.write_text(
