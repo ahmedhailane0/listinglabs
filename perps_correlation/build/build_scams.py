@@ -430,6 +430,10 @@ def _tile(rec) -> str:
     px = rec.get("price") or rec.get("csv_price")
     buys = _buy_badges(sym, mini=True)
     metas = []
+    if r.get("pump_score") is not None:
+        ps = r["pump_score"]
+        pc = "pump-hi" if ps >= 15 else ("pump-mid" if ps >= 8 else "pump-lo")
+        metas.append(f'<span class="{pc}"><b>Pump</b> {ps:.0f}</span>')
     if px:
         metas.append(f'<span><b>Price</b> {fmt_subscript_price(px)}</span>')
     metas.append(f'<span><b>OI</b> {_usd(oi)}</span>')
@@ -454,12 +458,24 @@ def _tile(rec) -> str:
 
 # Screener-focused list: Binance + combined OI, the OI/FDV and OI/MC ratios, and
 # funding drive the scan; price 24h + memo carry context. Full rich data
-# (chart/holders/funding rounds) stays on each coin's detail page. 10 cols — keep
+# (chart/holders/funding rounds) stays on each coin's detail page. 11 cols — keep
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-LIST_COLS = ["#", "Token", "Price / 24h", "BN OI", "OI (BN+BYB)",
+LIST_COLS = ["#", "Token", "Pump", "Price / 24h", "BN OI", "OI (BN+BYB)",
              "Funding", "Vol", "FDV", "MC", "Memo"]
+
+
+def _pump_cell(r) -> str:
+    """Pump-probability score (0-100): the model's calibrated chance the token
+    reaches +50% within 72h (base rate ~5%, so 15+ is strong). Sorts by the raw
+    score. Computed by the box (tools/pump_score) into cache/screener/screener.json."""
+    s = r.get("pump_score")
+    if s is None:
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
+    return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
+            f'title="≈{s:.0f}% modelled chance of +50% within 72h (base ~5%)">{s:.0f}</td>')
 
 
 def _price24_cell(rec) -> str:
@@ -532,6 +548,7 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
+        f'{_pump_cell(r)}'                               # Pump score
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
@@ -1275,7 +1292,10 @@ def _signals_section(sym, rec=None) -> str:
     # 24h vol come straight from the box screener, so they stay live without a
     # rebuild. FDV / OI/FDV / Bybit OI move slowly (hourly).
     chg = _oi_vol_chg(sym)
+    _ps = r.get("pump_score")
+    _pstxt = (f'{_ps:.0f} / 100' if _ps is not None else "—")
     meta = (f'<div class="sigmeta">'
+            f'<span title="modelled chance of +50% within 72h (base rate ~5%; 15+ is strong)"><b>Pump score</b> {_pstxt}</span>'
             f'<span title="24h change in tracked-venue perp OI"><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}{_chg_span(chg["oi"])}</span>'
             f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
             f'<span><b>Bybit OI</b> {_usd(r.get("oi_byb"))}</span>'
@@ -1660,20 +1680,26 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
-/* deterministic column widths (10 cols: #, Token, Price/24h, BN OI, OI (BN+BYB),
-   Funding, Vol, FDV, MC, Memo). */
-#ltab{table-layout:fixed;min-width:980px}
+/* deterministic column widths (11 cols: #, Token, Pump, Price/24h, BN OI,
+   OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
+#ltab{table-layout:fixed;min-width:1020px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:19%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:10%}                   /* Price / 24h */
-#ltab th:nth-child(4){width:9%}                    /* BN OI */
-#ltab th:nth-child(5){width:9%}                    /* OI (BN+BYB) */
-#ltab th:nth-child(6){width:8%}                    /* Funding */
-#ltab th:nth-child(7){width:9%}                    /* Vol */
-#ltab th:nth-child(8){width:8%}                    /* FDV */
-#ltab th:nth-child(9){width:8%}                    /* MC */
-#ltab th:nth-child(10){width:13%;text-align:left}  /* Memo */
+#ltab th:nth-child(2){width:17%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:6%}                    /* Pump */
+#ltab th:nth-child(4){width:9.5%}                  /* Price / 24h */
+#ltab th:nth-child(5){width:8.5%}                  /* BN OI */
+#ltab th:nth-child(6){width:8.5%}                  /* OI (BN+BYB) */
+#ltab th:nth-child(7){width:7.5%}                  /* Funding */
+#ltab th:nth-child(8){width:8.5%}                  /* Vol */
+#ltab th:nth-child(9){width:7.5%}                  /* FDV */
+#ltab th:nth-child(10){width:7.5%}                 /* MC */
+#ltab th:nth-child(11){width:12%;text-align:left}  /* Memo */
+/* pump-probability cell/badge: bold in the list, color-graded by strength */
+#ltab td.pump{font-weight:700}
+.pump-hi{color:var(--pos)}
+.pump-mid{color:var(--text-1)}
+.pump-lo{color:var(--text-3)}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make

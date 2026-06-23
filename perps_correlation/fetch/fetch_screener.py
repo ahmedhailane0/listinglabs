@@ -68,6 +68,15 @@ PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
 FIRES_LOG = OUTDIR / "fires_log.json"
 FIRES_LOG_MAX = 8000
 
+# Optional pump-probability scorer (LOCAL/BOX-only module + model; absent in CI,
+# so this no-ops there). When present, writes a 0-100 `pump_score` per coin.
+try:
+    from tools.pump_score import load_model as _load_pump_model, score_series as _pump_score
+    _PUMP_MODEL = _load_pump_model()
+except Exception:
+    _pump_score = None
+    _PUMP_MODEL = None
+
 # ── Hourly training series (append-only, month-sharded) ─────────────────────
 # One line per coin per hourly run: OI / volume / funding / price / FDV. This is
 # the PERMANENT training set the model learns on — it survives Binance's ~30-day
@@ -395,9 +404,11 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
     mark_price = kl[-1][4] if kl else None
     spark = _spark_series(kl)
     ok = bool(oi and kl)
+    pump = (_pump_score(oi, kl, fund, _PUMP_MODEL)
+            if (_pump_score and _PUMP_MODEL) else None)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
             "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
-            "mark_price": mark_price, "spark": spark,
+            "mark_price": mark_price, "spark": spark, "pump_score": pump,
             # last-hour snapshot for the append-only training series (_log_hourly)
             "snap_t": int(oi[-1][0]) if oi else None,
             "vol1h": float(kl[-1][5]) if kl and len(kl[-1]) > 5 else None}
