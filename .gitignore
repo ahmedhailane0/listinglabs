@@ -49,3 +49,17 @@ cache/audit_run.log
 # hourly OI/kline series, regenerable on demand; kept local, never committed.
 cache/screener/raw/
 cache/screener/extract_report.json
+
+# 6) LOCAL-ONLY signal-research / edge tools. The tuned thresholds + pump model
+#    ARE the edge — keep them OFF the public repo. These run on the PC (and on the
+#    box via scp), never from git, so ignoring them breaks nothing. Defense in
+#    depth: they are also never `git add`ed by hand. (extract_signal_data.py stays
+#    tracked — it is pure data plumbing with no edge, and the box pulls it.)
+perps_correlation/tools/backtest_signals.py
+perps_correlation/tools/optimize_signals.py
+perps_correlation/tools/grade_fires.py
+perps_correlation/tools/signal_loop.py
+perps_correlation/tools/pump_score.py
+# PC-side private backup/recovery of the hourly training series (local automation)
+perps_correlation/tools/backup_hourly_series.py
+perps_correlation/tools/backfill_hourly_series.py
