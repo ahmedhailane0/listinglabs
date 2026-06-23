@@ -26,6 +26,7 @@ fi
 # 3) Commit the compact outputs + the forward fire-log + any new holder files.
 git -C "$REPO" add cache/screener/screener.json cache/screener/market.json
 git -C "$REPO" add cache/screener/fires_log.json 2>/dev/null || true
+git -C "$REPO" add cache/screener/hourly/ 2>/dev/null || true
 git -C "$REPO" add cache/scam_holders/ 2>/dev/null || true
 if git -C "$REPO" diff --cached --quiet; then
   echo "no change to commit"; exit 0

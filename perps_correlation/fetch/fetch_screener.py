@@ -68,6 +68,14 @@ PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
 FIRES_LOG = OUTDIR / "fires_log.json"
 FIRES_LOG_MAX = 8000
 
+# ── Hourly training series (append-only, month-sharded) ─────────────────────
+# One line per coin per hourly run: OI / volume / funding / price / FDV. This is
+# the PERMANENT training set the model learns on — it survives Binance's ~30-day
+# OI retention wall because we keep our own copy forever. Month-sharded JSONL so
+# old months stay static (clean git diffs = pure appends). Loaders dedup by
+# (sym, t) keeping the last. See tools/CLAUDE.md (signal loop).
+HOURLY_DIR = OUTDIR / "hourly"
+
 # ── Holders (best-effort, EVM only) ─────────────────────────────────────────
 HOLDERS_DIR = CACHE / "scam_holders"
 HOLDER_MAX_PER_RUN = 30
@@ -339,6 +347,41 @@ def _log_fires(recs: dict) -> int:
     return added
 
 
+def _log_hourly(recs: dict) -> int:
+    """Append one compact record per coin per hourly run to the month-sharded
+    training series (cache/screener/hourly/<YYYY-MM>.jsonl). Captures OI / volume
+    / funding / price / FDV so the model has a PERMANENT history beyond Binance's
+    ~30d OI wall. Never raises — recording must not break the fetch."""
+    import datetime as _dt
+    try:
+        HOURLY_DIR.mkdir(parents=True, exist_ok=True)
+        month = _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m")
+        path = HOURLY_DIR / f"{month}.jsonl"
+        lines, n = [], 0
+        for sym, r in recs.items():
+            if r.get("data") in ("no_perp", "error"):
+                continue
+            t = r.get("snap_t") or r.get("as_of")
+            if not t:
+                continue
+            mkt = r.get("market") or {}
+            rec = {"t": t, "sym": sym,
+                   "oi_bn": r.get("oi_bn"), "oi_comb": r.get("oi_combined"),
+                   "oi_byb": r.get("oi_byb"), "funding": r.get("funding"),
+                   "fund_int_h": r.get("funding_interval_h"),
+                   "price": r.get("mark_price"), "vol1h": r.get("vol1h"),
+                   "vol24": mkt.get("vol24h"), "fdv": r.get("fdv"), "mcap": r.get("mcap")}
+            lines.append(json.dumps(rec, separators=(",", ":")))
+            n += 1
+        with open(path, "a", encoding="utf-8") as f:
+            f.write("\n".join(lines) + ("\n" if lines else ""))
+        print(f"  hourly_history: +{n} rows -> {path.name}")
+        return n
+    except Exception as e:
+        print(f"  hourly_history: write failed ({e})")
+        return 0
+
+
 def _fetch_token(sym: str, intervals: dict) -> dict:
     """Per-coin Binance pull + signal compute + spark series."""
     oi = _oi_hist(sym)
@@ -354,7 +397,10 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
     ok = bool(oi and kl)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
             "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
-            "mark_price": mark_price, "spark": spark}
+            "mark_price": mark_price, "spark": spark,
+            # last-hour snapshot for the append-only training series (_log_hourly)
+            "snap_t": int(oi[-1][0]) if oi else None,
+            "vol1h": float(kl[-1][5]) if kl and len(kl[-1]) > 5 else None}
 
 
 # ── main ─────────────────────────────────────────────────────────────────────
@@ -498,8 +544,9 @@ def main(argv: list[str]) -> int:
     MARKET_CACHE_FILE.write_text(
         json.dumps(market_cache, separators=(",", ":")), encoding="utf-8")
 
-    # ── Forward fire-log (before mark_price is stripped — it's the entry ref) ─
+    # ── Forward fire-log + hourly training series (before mark_price stripped) ─
     _log_fires(recs)
+    _log_hourly(recs)
 
     # ── Strip internal fields from output ────────────────────────────────────
     for rec in recs.values():
