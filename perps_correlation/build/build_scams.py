@@ -1957,34 +1957,50 @@ def _journal_page(recs) -> str:
     # Closed-trades table (newest first).
     if closed:
         crows = []
-        _exit_lbl = {"tp2": "TP2 +50%", "tp1+timeout": "TP1 + 72h",
-                     "tp1+stop": "TP1 + stop", "stopped": "stopped",
-                     "timeout": "72h close"}
+        # plan-vs-outcome: each row lays out the intended plan (entry, stop, TP1,
+        # TP2) and what actually closed the trade, with ✓/✗ on each target so you
+        # can see at a glance whether it respected the plan or stopped out.
+        _exit = {"tp2": ("TP2 hit ✓", "jhit"), "tp1+timeout": ("TP1 ✓ · 72h", "jhit"),
+                 "tp1+stop": ("TP1 ✓ · stop", "jhit"), "stopped": ("Stopped ✗", "jstop"),
+                 "timeout": ("72h close", "jmiss")}
+
+        def _px(v):
+            return fmt_subscript_price(v) if v else "—"
+
         for e in closed:
             o = e["outcome"] or {}
             ep = e.get("entry_price") or o.get("entry")
-            entry = fmt_subscript_price(ep) if ep else "—"
-            xr = o.get("exit_reason")
-            xlbl = _exit_lbl.get(xr, xr or "—")
+            tp1 = e.get("tp1") or (ep * 1.25 if ep else None)
+            tp2 = e.get("tp2") or (ep * 1.50 if ep else None)
             stop = e.get("stop")
-            tip = (f"entry {ep:.6g} · stop {stop:.6g} · size {e.get('position') or '—'}"
-                   if (ep and stop) else "")
+            mfe = o.get("mfe") or 0
+            xr = o.get("exit_reason")
+            xlbl, xcls = _exit.get(xr, (xr or "—", "jmiss"))
+            hit1, hit2 = mfe >= 0.25, mfe >= 0.50
+            stopped = xr in ("stopped", "tp1+stop")
+            tp1c = f'<td class="jnum {"jhit" if hit1 else "jmiss"}">{_px(tp1)}{" ✓" if hit1 else ""}</td>'
+            tp2c = f'<td class="jnum {"jhit" if hit2 else "jmiss"}">{_px(tp2)}{" ✓" if hit2 else ""}</td>'
+            stopc = f'<td class="jnum {"jstop" if stopped else "jmiss"}">{_px(stop)}{" ✗" if stopped else ""}</td>'
             crows.append(
-                f'<tr title="{html.escape(tip)}"><td>{_dt_day(_key(e))}</td>'
-                f'<td class="jt">{_tok(e.get("sym"))}</td>'
-                f'<td>{_setup_chip(e.get("strat"))}</td>'
-                f'<td class="jnum">{entry}</td>'
-                f'<td class="jnum">{_jpct(o.get("mfe"))}</td>'
-                f'<td class="jnum">{_jpct(_real_pnl(e))}</td>'
-                f'<td class="jnum">{_jpct(o.get("bh_coin"))}</td>'
-                f'<td class="jx">{html.escape(xlbl)}</td></tr>')
+                f'<tr><td>{_dt_day(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))} {_setup_chip(e.get("strat"))}</td>'
+                f'<td class="jnum">{_px(ep)}</td>'
+                f'{stopc}{tp1c}{tp2c}'
+                f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
+                f'<td class="jnum">{_jpct(_real_pnl(e))}</td></tr>')
         closed_tbl = (
-            '<table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
-            '<th>Setup</th><th>Entry</th><th>Best move</th>'
-            '<th title="realistic tiered exit, net of fees+slippage">Result</th>'
-            '<th title="buy &amp; hold the same coin over the same 72h">vs Hold</th>'
-            '<th>Exit</th></tr></thead><tbody>'
-            + "".join(crows) + '</tbody></table>')
+            '<table class="jtable"><thead><tr>'
+            '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
+            '<th title="the intended stop — where it bails if wrong">Stop</th>'
+            '<th title="intended take-profit 1: +25% (sell half)">TP1 +25%</th>'
+            '<th title="intended take-profit 2: +50% (sell rest)">TP2 +50%</th>'
+            '<th title="what actually closed the trade">Exit</th>'
+            '<th title="realistic P&amp;L, net of fees + slippage">Result</th>'
+            '</tr></thead><tbody>'
+            + "".join(crows) + '</tbody></table>'
+            + '<p class="jnote">Each row is the plan as logged at entry — stop, TP1 '
+            '(+25%, sell half), TP2 (+50%, sell rest) — with ✓/✗ showing which targets '
+            'price reached, then how the trade actually closed.</p>')
     else:
         closed_tbl = ('<p class="jnote">No v1/v4 trades have matured yet — each is '
                       'graded 72h after it fires. Check back as the ledger fills.</p>')
@@ -2123,7 +2139,12 @@ EXTRA_CSS = """
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
 .jpending{color:var(--text-4);font-size:12px}
 .jnote{color:var(--text-4);font-style:italic;margin:8px 0}
-.jtable .jx{color:var(--text-3,var(--text-2));font-size:12px;white-space:nowrap}
+.jtable .jx{font-size:12px;white-space:nowrap;color:var(--text-3,var(--text-2))}
+.jtable .jhit{color:#1a8a4f}
+.jtable .jstop{color:#c0392b}
+.jtable .jmiss{color:var(--text-4)}
+.jtable .jx.jhit{font-weight:600}
+.jtable .jx.jstop{font-weight:600}
 /* edge check (#3 benchmark) */
 .jbench .jb-row{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 2px}
 .jb-item{flex:1 1 150px;background:var(--bg-2);border:1px solid var(--border);
