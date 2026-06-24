@@ -51,6 +51,13 @@ FUND_LIMIT = 20
 GATE = 0.08
 WORKERS = 6
 SPARK_POINTS = 120
+# Telegram quality gate: only PING for a v1/v4 fire whose pump-score (model
+# confidence, 0-100) clears this. Scores run low (rare-event model), so this is
+# selective by design — it mutes the 0-7 weak-confidence fires the user doesn't
+# want, while still LOGGING every fire to the ledger (only the SEND is gated).
+# A fire with no score (model unavailable) still sends — fail-open, never mute a
+# real fire just because the score is missing. Tune in one place here.
+ALERT_MIN_PUMP = 8.0
 
 # Smooth intraday close candles per perp, for the Manipulated detail-page price
 # chart (CMC-style 24h/1W). 5m (last ~24h) + 1h (last ~12d); the daily history
@@ -371,8 +378,14 @@ def _alert_buy(e: dict, r: dict) -> bool:
         px, stop = e.get("entry_price"), e.get("stop")
         if not px:
             return False
+        # Quality gate: skip the ping for weak-confidence fires (the fire is still
+        # logged + graded by the caller — only the Telegram SEND is suppressed).
+        score = e.get("pump_score")
+        if score is not None and score < ALERT_MIN_PUMP:
+            print(f"  telegram: skip {e['sym']} {e['strat']} — pump {score:.0f} < {ALERT_MIN_PUMP:.0f}")
+            return False
         name = (r.get("market") or {}).get("name") or e["sym"]
-        oifdv, score, fund = r.get("oi_fdv_pct"), e.get("pump_score"), e.get("funding")
+        oifdv, fund = r.get("oi_fdv_pct"), e.get("funding")
         stop_line = (f"Stop   ${_fmt_px(stop)}  ({(stop/px-1)*100:+.0f}%) — exit if wrong"
                      if stop else "Stop   n/a")
         ctx = f"Size {e.get('position') or '?'}"
