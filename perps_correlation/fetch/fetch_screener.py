@@ -412,6 +412,81 @@ def _alert_buy(e: dict, r: dict) -> bool:
         return False
 
 
+def _alert_result(e: dict) -> bool:
+    """Send a Telegram RESULT follow-up for a fire that has now been graded — the
+    close of the loop on the BUY alert, so the bot is a self-scoring journal. The
+    tier reached is inferred from the max favourable excursion vs the +25%/+50%
+    take-profits; P&L is the grader's realised return. No-ops when Telegram is
+    unconfigured. Never raises."""
+    try:
+        if not _tg or not _tg.enabled():
+            return False
+        o = e.get("outcome") or {}
+        pnl, mfe = o.get("pnl_ownstop"), o.get("mfe")
+        if pnl is None:
+            return False
+        win = pnl > 0
+        tp1 = mfe is not None and mfe >= 0.25
+        tp2 = bool(o.get("pump")) or (mfe is not None and mfe >= 0.50)
+        head = "✅" if win else "\U0001F534"          # ✅ / 🔴
+        tier = ("TP2 +50% ✓ (sold rest)" if tp2 else
+                "TP1 +25% ✓ (sold half)" if tp1 else
+                "no TP — stop / 72h time-stop")
+        name = (e.get("name") or e.get("sym"))
+        lines = [
+            f"{head} <b>RESULT — {_esc(e.get('sym'))}</b> ({_esc(name)})  "
+            f"[{e.get('strat')}]  {'WIN' if win else 'LOSS'}",
+            f"Entry  ~ ${_fmt_px(e.get('entry_price'))}",
+            (f"Best   {mfe*100:+.0f}%" if mfe is not None else "Best   n/a"),
+            tier,
+            f"P&L    {pnl*100:+.1f}%   (own-stop · 72h)",
+        ]
+        sc = e.get("pump_score")
+        if sc is not None:
+            lines.append(f"confidence was {sc:.0f}/100")
+        return _tg.send("\n".join(lines))
+    except Exception as ex:
+        print(f"  telegram result-alert failed: {ex}")
+        return False
+
+
+def _send_results() -> int:
+    """Sweep the fire-log for graded fires that were BUY-alerted but not yet
+    result-alerted, and send a RESULT follow-up for each (closing the loop one
+    hourly run after the nightly grader fills an outcome). Mirrors the BUY gate:
+    only fires that cleared ALERT_MIN_PUMP get a result, so weak fires stay quiet
+    on both ends. Marks `result_alerted` to send exactly once. Never raises."""
+    if not _tg or not _tg.enabled():
+        return 0
+    try:
+        log = json.loads(FIRES_LOG.read_text(encoding="utf-8")) if FIRES_LOG.exists() else []
+        if not isinstance(log, list):
+            return 0
+    except Exception:
+        return 0
+    sent, changed = 0, False
+    for e in log:
+        sc = e.get("pump_score")
+        if (e.get("alerted") and e.get("outcome") and not e.get("result_alerted")
+                and (sc is None or sc >= ALERT_MIN_PUMP)):
+            if _alert_result(e):
+                e["result_alerted"] = True
+                e["result_alerted_utc"] = _now()
+                sent += 1
+                changed = True
+                time.sleep(0.5)               # pace a backlog clearing at once
+    if changed:
+        try:
+            FIRES_LOG.write_text(
+                json.dumps(log[-FIRES_LOG_MAX:], ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8")
+        except Exception as ex:
+            print(f"  fires_log: result-flag write failed ({ex})")
+    if sent:
+        print(f"  telegram: sent {sent} result follow-up(s)")
+    return sent
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
@@ -682,6 +757,9 @@ def main(argv: list[str]) -> int:
     # ── Forward fire-log + hourly training series (before mark_price stripped) ─
     _log_fires(recs)
     _log_hourly(recs)
+    # Close the loop: RESULT follow-ups for any BUY-alerted fire the nightly grader
+    # has since scored (reads the fires_log _log_fires just wrote, with outcomes).
+    _send_results()
 
     # ── Per-token intraday candle files (smooth detail-page price chart) ──────
     PRICE_CANDLES_DIR.mkdir(parents=True, exist_ok=True)
