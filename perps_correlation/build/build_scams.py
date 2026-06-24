@@ -1722,42 +1722,77 @@ var card=document.getElementById('pnlcard'),valEl=document.getElementById('pnl-v
     subEl=document.getElementById('pnl-sub'),svg=document.getElementById('pnl-chart');
 var SUBS={'1':'Past day','7':'Past week','30':'Past month','365':'Past year',
           'ytd':'Year to date','all':'All time'};
+var W=320,H=80,pad=6,STATE=null;
 function money(v){var s=v>0?'+':(v<0?'−':'');
   return s+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fdate(ts){return new Date(ts*1000).toLocaleString('en-US',
+  {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
 function windowPts(tf){
   if(!PTS.length) return {pts:[],open:0};
-  if(tf==='all') return {pts:PTS.slice(),open:0};
+  var first=PTS[0][0];
+  if(tf==='all') return {pts:PTS.slice(),open:PTS[0][1]};
   var now=Date.now()/1000,start;
   if(tf==='ytd'){var d=new Date();start=Date.UTC(d.getUTCFullYear(),0,1)/1000;}
   else start=now-parseInt(tf,10)*86400;
-  var open=0,win=[];
-  for(var i=0;i<PTS.length;i++){ if(PTS[i][0]<=start) open=PTS[i][1]; else win.push(PTS[i]); }
-  win.unshift([start,open]);
+  start=Math.max(start,first);          // never draw empty space before the data
+  var open=PTS[0][1],win=[];
+  for(var i=0;i<PTS.length;i++){ if(PTS[i][0]<start) open=PTS[i][1]; else win.push(PTS[i]); }
+  if(!win.length || win[0][0]>start) win.unshift([start,open]);
   return {pts:win,open:open};
 }
-function draw(tf){
-  var w=windowPts(tf),pts=w.pts,last=pts.length?pts[pts.length-1][1]:0,pnl=last-w.open;
-  valEl.textContent=money(pnl);
-  subEl.textContent=SUBS[tf]+' · hypothetical $'+STAKE+'/trade';
-  card.classList.remove('pos','neg'); card.classList.add(pnl>=0?'pos':'neg');
-  var W=320,H=70,pad=5;
-  if(pts.length<2){ svg.innerHTML=''; return; }
-  var xs=pts.map(function(p){return p[0];}),ys=pts.map(function(p){return p[1];});
-  var x0=xs[0],x1=xs[xs.length-1],lo=Math.min.apply(null,ys.concat(0)),hi=Math.max.apply(null,ys.concat(0));
-  var sx=function(x){return x1===x0?W/2:pad+(x-x0)/(x1-x0)*(W-2*pad);};
-  var sy=function(y){return hi===lo?H/2:pad+(hi-y)/(hi-lo)*(H-2*pad);};
-  // stepped line: hold each value until the next realize time, then jump.
-  var d='M'+sx(xs[0]).toFixed(1)+','+sy(ys[0]).toFixed(1);
-  for(var i=1;i<pts.length;i++){
-    d+='L'+sx(xs[i]).toFixed(1)+','+sy(ys[i-1]).toFixed(1)
-      +'L'+sx(xs[i]).toFixed(1)+','+sy(ys[i]).toFixed(1);
-  }
-  var area=d+'L'+sx(x1).toFixed(1)+','+H+'L'+sx(x0).toFixed(1)+','+H+'Z';
-  var col=pnl>=0?'#2fd480':'#ff6b5e';
-  svg.innerHTML='<path d="'+area+'" fill="'+col+'" opacity="0.13"/>'+
-                '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" '+
-                'stroke-linejoin="round" stroke-linecap="round"/>';
+function summary(){
+  if(!STATE) return;
+  var p=STATE.pts,last=p.length?p[p.length-1][1]:STATE.open;
+  valEl.textContent=money(last-STATE.open);
+  subEl.textContent=SUBS[STATE.tf]+' · hypothetical $'+STAKE+'/trade';
 }
+function cross(cx,cy,show){
+  var ln=svg.querySelector('.pnl-cross'),dt=svg.querySelector('.pnl-cur');
+  if(!ln) return;
+  ln.style.display=dt.style.display=show?'':'none';
+  if(show){ln.setAttribute('x1',cx);ln.setAttribute('x2',cx);
+    dt.setAttribute('cx',cx);dt.setAttribute('cy',cy);}
+}
+function draw(tf){
+  var w=windowPts(tf),pts=w.pts;
+  card.classList.remove('pos','neg');
+  var net=(pts.length?pts[pts.length-1][1]:0)-w.open;
+  card.classList.add(net>=0?'pos':'neg');
+  if(pts.length<2){ svg.innerHTML=''; STATE={pts:pts,open:w.open,tf:tf}; summary(); return; }
+  var xs=pts.map(function(p){return p[0];}),ys=pts.map(function(p){return p[1];});
+  var x0=xs[0],x1=xs[xs.length-1],lo=Math.min.apply(null,ys),hi=Math.max.apply(null,ys);
+  if(hi-lo<1e-9){hi+=1;lo-=1;}
+  var sx=function(x){return x1===x0?W/2:pad+(x-x0)/(x1-x0)*(W-2*pad);};
+  var sy=function(y){return pad+(hi-y)/(hi-lo)*(H-2*pad);};
+  var d='M'+sx(xs[0]).toFixed(1)+','+sy(ys[0]).toFixed(1);
+  for(var i=1;i<pts.length;i++) d+='L'+sx(xs[i]).toFixed(1)+','+sy(ys[i]).toFixed(1);
+  var area=d+'L'+sx(x1).toFixed(1)+','+H+'L'+sx(x0).toFixed(1)+','+H+'Z';
+  var col=net>=0?'#2fd480':'#ff6b5e';
+  svg.innerHTML='<path d="'+area+'" fill="'+col+'" opacity="0.12"/>'+
+    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" '+
+    'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>'+
+    '<line class="pnl-cross" y1="0" y2="'+H+'" stroke="#cfd8e0" stroke-width="1" '+
+    'vector-effect="non-scaling-stroke" style="display:none"/>'+
+    '<circle class="pnl-cur" r="3.2" fill="'+col+'" stroke="#0f1620" stroke-width="1.5" '+
+    'style="display:none"/>';
+  STATE={pts:pts,open:w.open,tf:tf,sx:sx,sy:sy,x0:x0,x1:x1};
+  summary();
+}
+function hover(clientX){
+  var s=STATE; if(!s||!s.sx||s.pts.length<2) return;
+  var r=svg.getBoundingClientRect(),frac=(clientX-r.left)/r.width;
+  frac=Math.max(0,Math.min(1,frac));
+  var t=s.x0+frac*(s.x1-s.x0),best=0,bd=Infinity;
+  for(var i=0;i<s.pts.length;i++){var dd=Math.abs(s.pts[i][0]-t);if(dd<bd){bd=dd;best=i;}}
+  var pt=s.pts[best];
+  cross(s.sx(pt[0]),s.sy(pt[1]),true);
+  valEl.textContent=money(pt[1]-s.open);
+  subEl.textContent=fdate(pt[0]);
+}
+svg.addEventListener('mousemove',function(e){hover(e.clientX);});
+svg.addEventListener('mouseleave',function(){cross(0,0,false);summary();});
+svg.addEventListener('touchmove',function(e){if(e.touches[0])hover(e.touches[0].clientX);},{passive:true});
+svg.addEventListener('touchend',function(){cross(0,0,false);summary();});
 (card.querySelectorAll('.pnl-tf')||[]).forEach(function(b){
   b.addEventListener('click',function(){
     card.querySelectorAll('.pnl-tf').forEach(function(x){x.classList.remove('active');});
@@ -1780,6 +1815,12 @@ def _pnl_card(closed) -> str:
         cum += PNL_STAKE * o["pnl_ownstop"]
         rt = o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
         pts.append([int(rt), round(cum, 2)])
+    # Anchor the curve at $0 at the earliest entry (fire) time, so it climbs from
+    # zero rather than starting mid-air — and so the line spans the real data window
+    # edge-to-edge instead of leaving a long empty flat before the first trade.
+    if pts:
+        t0 = min([e.get("t") or pts[0][0] for e in graded] + [pts[0][0] - 3600])
+        pts = [[int(t0), 0.0]] + pts
     total = pts[-1][1] if pts else 0.0
     cls = "pos" if total >= 0 else "neg"
     sg = "+" if total > 0 else ("−" if total < 0 else "")
@@ -1793,7 +1834,7 @@ def _pnl_card(closed) -> str:
             f'<div class="pnl-tfs">{btns}</div></div>'
             f'<div class="pnl-val" id="pnl-val">{val}</div>'
             f'<div class="pnl-sub" id="pnl-sub">All time · hypothetical ${PNL_STAKE}/trade</div>'
-            f'<svg class="pnl-chart" id="pnl-chart" viewBox="0 0 320 70" preserveAspectRatio="none"></svg>'
+            f'<svg class="pnl-chart" id="pnl-chart" viewBox="0 0 320 80" preserveAspectRatio="none"></svg>'
             f'<script>(function(){{var PTS={data_js},STAKE={PNL_STAKE};{_PNL_JS}}})();</script>'
             f'</aside>')
 
@@ -2052,7 +2093,8 @@ EXTRA_CSS = """
 .pnl-card.pos .pnl-val{color:#2fd480}
 .pnl-card.neg .pnl-val{color:#ff6b5e}
 .pnl-sub{font-size:12px;color:#7f8c9a;margin-top:3px}
-.pnl-chart{width:100%;height:70px;margin-top:8px;display:block}
+.pnl-chart{width:100%;height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
+.pnl-val{transition:color .08s}
 @media(max-width:640px){.pnl-card{flex:1 1 100%}}
 /* deterministic column widths (11 cols: #, Token, Pump, Price/24h, BN OI,
    OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
