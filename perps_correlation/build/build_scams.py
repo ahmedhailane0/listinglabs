@@ -59,6 +59,14 @@ SCREENER_FILE = HERE.parent / "cache" / "screener" / "screener.json"
 SCREENER: dict[str, dict] = {}     # SYM(upper) -> screener token record
 SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 
+# The AI's forward "trade journal": every live Buy-setup fire the box logged, with
+# the outcome it scored 72h later (grade_fires). Public-safe — it exposes the calls
+# and results, NOT the tuned thresholds (the edge). Rendered into journal.html.
+FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
+# Only the setups the trained model currently trades — v2/v3 were dropped (no edge),
+# so featuring them would misrepresent "what the AI thinks is a good trade".
+JOURNAL_SETUPS = ("v1", "v4")
+
 # The always-on box also serves a tiny live.json (price/24h/OI/funding, refreshed
 # ~60s) over HTTPS via Caddy on an sslip.io host. LIVE_JS polls it client-side and
 # updates the matching cells in place, so the Manipulated tab is live without a
@@ -1679,6 +1687,185 @@ SETUP_PANEL = """
 })();</script>"""
 
 
+def _load_fires() -> list:
+    try:
+        l = json.loads(FIRES_LOG.read_text(encoding="utf-8"))
+        return l if isinstance(l, list) else []
+    except Exception:
+        return []
+
+
+def _dt_day(ts) -> str:
+    import datetime as _dt
+    return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%Y-%m-%d %H:%M")
+
+
+def _jpct(v, signed=True) -> str:
+    """Colored percent span (fraction in -> %), green/red. '—' when missing."""
+    if v is None:
+        return '<span class="jp">—</span>'
+    pct = v * 100
+    cls = "pos" if pct >= 0 else "neg"
+    sg = "+" if (signed and pct >= 0) else ""
+    return f'<span class="jp {cls}">{sg}{pct:.1f}%</span>'
+
+
+def _journal_page(recs) -> str:
+    """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
+    (entry + stop, logged by the box), graded 72h later on real price. A scorecard
+    (win rate / +50% hit rate / avg P&L) plus closed + open trades. These are
+    RESEARCH PAPER signals scored on real prices — not executed trades, not advice."""
+    built = {r["symbol"].upper() for r in recs}
+    fires = [e for e in _load_fires() if e.get("strat") in JOURNAL_SETUPS]
+    closed = [e for e in fires if e.get("outcome")]
+    open_ = [e for e in fires if not e.get("outcome")]
+    # `t` is the actual signal/fire time (the entry); logged_utc is just when the
+    # box first recorded it (often a batch). The 72h grade runs from the fire time.
+    _key = lambda e: e.get("t") or e.get("logged_utc") or 0
+    closed.sort(key=_key, reverse=True)
+    open_.sort(key=_key, reverse=True)
+
+    def _pnl(e):
+        return (e.get("outcome") or {}).get("pnl_ownstop")
+
+    n = len(closed)
+    pnls = [_pnl(e) for e in closed if _pnl(e) is not None]
+    mfes = [(e["outcome"] or {}).get("mfe") for e in closed
+            if (e["outcome"] or {}).get("mfe") is not None]
+    wins = sum(1 for e in closed if (_pnl(e) or 0) > 0)
+    hits = sum(1 for e in closed if (e["outcome"] or {}).get("pump"))
+    win_rate = wins / n * 100 if n else None
+    hit_rate = hits / n * 100 if n else None
+    avg_pnl = sum(pnls) / len(pnls) if pnls else None
+    avg_mfe = sum(mfes) / len(mfes) if mfes else None
+
+    def _stat(label, val, cls=""):
+        return (f'<div class="jstat {cls}"><span class="jstat-v">{val}</span>'
+                f'<span class="jstat-l">{label}</span></div>')
+
+    def _pct0(v):
+        return f"{v:.0f}%" if v is not None else "—"
+
+    def _signed(v):
+        return (f"{v*100:+.1f}%") if v is not None else "—"
+
+    pnl_cls = "good" if (avg_pnl or 0) > 0 else ("bad" if avg_pnl is not None else "")
+    scorecard = (
+        '<div class="jcards">'
+        + _stat("closed paper trades", n)
+        + _stat("hit +50% / 72h", f"{hits}/{n}" if n else "—",
+                "good" if hits else "")
+        + _stat("win rate (P&amp;L &gt; 0)", _pct0(win_rate))
+        + _stat("avg result / trade", _signed(avg_pnl), pnl_cls)
+        + _stat("avg best move", _signed(avg_mfe))
+        + '</div>')
+
+    # Per-setup mini-breakdown.
+    by = []
+    for k in JOURNAL_SETUPS:
+        cs = [e for e in closed if e.get("strat") == k]
+        if not cs:
+            continue
+        h = sum(1 for e in cs if (e["outcome"] or {}).get("pump"))
+        w = sum(1 for e in cs if (_pnl(e) or 0) > 0)
+        ap = [(_pnl(e)) for e in cs if _pnl(e) is not None]
+        avg = sum(ap) / len(ap) if ap else None
+        by.append(f'<li><b>{STRAT_NAME[k]}</b> <span>{STRAT_TITLE[k]}</span> — '
+                  f'{len(cs)} closed · {h} hit +50% · {w} green · avg {_signed(avg)}</li>')
+    by_html = f'<ul class="jby">{"".join(by)}</ul>' if by else ""
+
+    def _tok(sym):
+        s = (sym or "").upper()
+        return (f'<a href="{s.lower()}.html">{html.escape(s)}</a>'
+                if s in built else html.escape(s))
+
+    def _setup_chip(k):
+        return (f'<span class="jset {k}" title="{html.escape(STRAT_TITLE.get(k, ""))}">'
+                f'{STRAT_NAME.get(k, k)}</span>')
+
+    # Closed-trades table (newest first).
+    if closed:
+        crows = []
+        for e in closed:
+            o = e["outcome"] or {}
+            ep = e.get("entry_price") or o.get("entry")
+            entry = fmt_subscript_price(ep) if ep else "—"
+            res = "✓ pump" if o.get("pump") else "—"
+            res_cls = "pos" if o.get("pump") else ""
+            stop = e.get("stop")
+            tip = (f"entry {ep:.6g} · stop {stop:.6g} · size {e.get('position') or '—'}"
+                   if (ep and stop) else "")
+            crows.append(
+                f'<tr title="{html.escape(tip)}"><td>{_dt_day(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))}</td>'
+                f'<td>{_setup_chip(e.get("strat"))}</td>'
+                f'<td class="jnum">{entry}</td>'
+                f'<td class="jnum">{_jpct(o.get("mfe"))}</td>'
+                f'<td class="jnum">{_jpct(o.get("pnl_ownstop"))}</td>'
+                f'<td class="jnum {res_cls}">{res}</td></tr>')
+        closed_tbl = (
+            '<table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
+            '<th>Setup</th><th>Entry</th><th>Best move</th><th>Result</th>'
+            '<th>+50%?</th></tr></thead><tbody>'
+            + "".join(crows) + '</tbody></table>')
+    else:
+        closed_tbl = ('<p class="jnote">No v1/v4 trades have matured yet — each is '
+                      'graded 72h after it fires. Check back as the ledger fills.</p>')
+
+    # Open trades (fired, not yet matured).
+    if open_:
+        orows = []
+        for e in open_:
+            ep = e.get("entry_price")
+            entry = fmt_subscript_price(ep) if ep else "—"
+            matures = _dt_day(_key(e) + 72 * 3600)
+            orows.append(
+                f'<tr><td>{_dt_day(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))}</td>'
+                f'<td>{_setup_chip(e.get("strat"))}</td>'
+                f'<td class="jnum">{entry}</td>'
+                f'<td>{matures}</td>'
+                f'<td><span class="jpending">pending</span></td></tr>')
+        open_tbl = (
+            '<h3>Open trades <span class="asof">fired · awaiting 72h grade</span></h3>'
+            '<table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
+            '<th>Setup</th><th>Entry</th><th>Matures (UTC)</th><th>Status</th>'
+            '</tr></thead><tbody>' + "".join(orows) + '</tbody></table>')
+    else:
+        open_tbl = ""
+
+    body = f"""
+<header><h1>AI Track Record</h1>
+<nav class="topnav"><a href="index.html">← Watchlist</a>
+<a class="active" href="journal.html">AI Track Record</a>{theme_toggle_button()}</nav>
+<p class="sub">A journal of the <b>trained model's live Buy v1 &amp; v4 setups</b> — the
+patterns it reads as a coming pump. Each fire is logged with an entry price the moment
+it triggers, then <b>scored 72h later on the real price</b> (target: +50%). These are
+<b>research paper signals scored on real prices — not executed trades and not financial
+advice</b>; nothing here places an order or risks capital. The sample is small and grows
+over time, so read the rates as early evidence, not a settled edge.</p></header>
+<main><section class="card span">
+  <h3>Scorecard <span class="asof">v1 &amp; v4 · closed (graded) paper trades</span></h3>
+  {scorecard}
+  {by_html}
+</section>
+<section class="card span">
+  <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
+  {closed_tbl}
+</section>
+{f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
+</main>
+{THEME_JS}"""
+    desc = ("The trained model's live track record on the Manipulated tab — every Buy "
+            "v1/v4 setup it fired, graded 72h later on real price: win rate, +50% hit "
+            "rate and average result. Research paper signals, not executed trades.")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta("AI Track Record — Manipulated — ListingLabs", desc)}'
+            f'<title>AI Track Record — Manipulated</title>'
+            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
+
+
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
@@ -1698,7 +1885,8 @@ def _index(recs) -> str:
 <header><h1>Manipulated</h1>
 <nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
 <a href="../funnel/report/index.html">{fun_lbl}</a>
-<a class="active" href="index.html">Manipulated ({len(recs)})</a>{theme_toggle_button()}</nav>
+<a class="active" href="index.html">Manipulated ({len(recs)})</a>
+<a class="jlink" href="journal.html" title="The trained model's live Buy v1/v4 track record — paper trades graded on real price">★ AI Track Record</a>{theme_toggle_button()}</nav>
 <p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1–v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1–v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {SETUP_PANEL}
@@ -1724,6 +1912,35 @@ def _index(recs) -> str:
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
+/* ── AI Track Record (journal.html) ── */
+.topnav a.jlink{color:#9c6ade;font-weight:600}
+.jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
+.jstat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
+  padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.jstat-v{font-size:26px;font-weight:700;line-height:1.1}
+.jstat-l{font-size:12px;color:var(--text-4)}
+.jstat.good .jstat-v{color:#1a8a4f}
+.jstat.bad .jstat-v{color:#c0392b}
+.jby{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:6px}
+.jby li{font-size:13px;color:var(--text-2)}
+.jby li b{color:var(--text-1)}
+.jby li span{color:var(--text-4)}
+.jtable{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+.jtable th{text-align:left;color:var(--text-4);font-weight:600;font-size:12px;
+  padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
+.jtable td{padding:9px 10px;border-bottom:1px solid var(--border-2,var(--border))}
+.jtable tr:hover td{background:var(--bg-2)}
+.jtable .jnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jtable .jt a{font-weight:600;color:var(--link,#2e6da4);text-decoration:none}
+.jtable .jt a:hover{text-decoration:underline}
+.jp.pos,.jnum.pos{color:#1a8a4f}
+.jp.neg{color:#c0392b}
+.jset{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:600;
+  border:1px solid var(--border)}
+.jset.v1{background:rgba(46,109,164,.14);color:#2e6da4}
+.jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
+.jpending{color:var(--text-4);font-size:12px}
+.jnote{color:var(--text-4);font-style:italic;margin:8px 0}
 /* deterministic column widths (11 cols: #, Token, Pump, Price/24h, BN OI,
    OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
 #ltab{table-layout:fixed;min-width:1020px}
@@ -2103,6 +2320,7 @@ def main():
     SITE.mkdir(parents=True, exist_ok=True)
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
+    (SITE / "journal.html").write_text(_journal_page(recs), encoding="utf-8")
     for r in recs:
         page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
