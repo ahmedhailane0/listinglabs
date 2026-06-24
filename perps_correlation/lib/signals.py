@@ -42,6 +42,17 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     3 48h high/low range <= 30%    4 oi%48h / price%48h >= 2  (OI leads price)
     5 funding <= 0 (SQUEEZE)  OR  funding <= 0.05% with EMA20>EMA60 (TREND)
     -> size 5-10%, stop = the 48h coil low.
+
+  probe — probe day (#7, LONG confirmation; the pre-vertical test, after v4's coil)
+    1 last-12h volume >= 3x the trailing 48h baseline   2 close breaks the coil high
+    3 that prior 48h range was tight (<= 40%)
+    -> size 5-10%, stop = the coil low. Backtest ~2.5x lift to a +50%/72h pump.
+
+  dump — distribution (#6, SHORT; after a markup, longs crowd in and roll over)
+    1 ran up >= +40% over 48h      2 stalled (last 12h <= +5%)
+    3 funding hot (>= 0.05%)        4 OI still elevated vs 48h ago
+    -> short 5-10%, invalidated above the markup peak. Backtest ~6.2x lift to a
+       -20%/72h drop. Validated against price DOWN, not the pump label.
 """
 from __future__ import annotations
 
@@ -86,6 +97,22 @@ V4_PRICE_FLAT = 0.15     # |net price move over 48h| <= 15% (price still flat)
 V4_RANGE_MAX = 0.30      # 48h high/low range <= 30% (coiling, not trending hard)
 V4_RATIO = 2.0           # oi%48h / price%48h >= 2 (OI leads price = quiet loading)
 V4_FUNDING_TREND = 0.0005  # trend variant: calm/slightly+ funding cap (<= 0.05%)
+# Probe day (#7) — the pre-vertical "test": a volume-driven range break OUT of a
+# tight coil. It comes AFTER accumulation (v4) and immediately BEFORE the vertical;
+# v4's quiet-coil test by design can't fire on the breakout hour itself. Confirmation
+# of imminence, not accumulation. Validated against the same +50%/72h pump label.
+PROBE_SPIKE_H = 12        # the "probe" window (recent volume burst)
+PROBE_BASE_H = 48         # trailing baseline for "normal" volume
+PROBE_VOL_X = 3.0         # probe-window volume >= 3x the comparable baseline block
+PROBE_COIL_MAX = 0.40    # the pre-probe range was a tight coil (<= 40%)
+# Distribution / dump (#6) — the SHORT side: after a markup, longs crowd in (hot
+# funding) and price rolls over while OI is still elevated → the operator distributes
+# into euphoria. Validated against price DOWN (not the +50% pump label).
+DUMP_RUNUP_H = 48        # the markup window
+DUMP_RUNUP = 0.40        # ran >= +40% (a markup happened)
+DUMP_STALL_H = 12        # then stalled/rolled over in the last N hours
+DUMP_STALL_MAX = 0.05    # last-Nh change <= +5% (momentum gone)
+DUMP_FUNDING = 0.0005    # funding hot (>= 0.05%/interval = crowded longs)
 
 
 def _dominance_ratio(oi_pct: float, price_pct: float) -> float:
@@ -276,6 +303,60 @@ def _eval_v4(oi_m, c_m, h_m, l_m, t, funding):
                         "variant": "squeeze" if squeeze else ("trend" if trend else None)}}
 
 
+def _eval_probe(c_m, h_m, l_m, v_m, t):
+    """Probe day (#7): a volume burst that breaks the top of a tight coil — the
+    pre-vertical test. Recent PROBE_SPIKE_H volume >= PROBE_VOL_X the trailing
+    baseline, the close breaks the prior coil high, and that prior range was tight.
+    Pure volume/price (no OI/funding) so it can confirm right at the breakout."""
+    S, B = PROBE_SPIKE_H, PROBE_BASE_H
+    c0 = c_m.get(t)
+    spike = [v_m.get(t - k * HOUR) for k in range(S)]
+    base = [v_m.get(t - k * HOUR) for k in range(S, S + B)]
+    p_highs = [h_m.get(t - k * HOUR) for k in range(S, S + B)]   # pre-spike coil
+    p_lows = [l_m.get(t - k * HOUR) for k in range(S, S + B)]
+    if (c0 is None or any(x is None for x in spike + base + p_highs + p_lows)):
+        return {"insufficient": True}
+    recent = sum(spike)
+    base_block = (sum(base) / len(base)) * S          # comparable S-hour block
+    volspk = (recent / base_block) if base_block else 0.0
+    coil_hi, coil_lo = max(p_highs), min(p_lows)
+    coil_rng = (coil_hi - coil_lo) / coil_lo if coil_lo else float("inf")
+    cond = {
+        "vol_spike>=3x": volspk >= PROBE_VOL_X,
+        "breaks_coil_high": c0 > coil_hi,
+        "from_tight_coil<=40%": coil_rng <= PROBE_COIL_MAX,
+    }
+    return {"fired": all(cond.values()), "conditions": cond,
+            "stop": coil_lo, "position": "5-10%",
+            "metrics": {"vol_spike": volspk, "coil_range": coil_rng, "break_level": coil_hi}}
+
+
+def _eval_dump(oi_m, c_m, h_m, t, funding):
+    """Distribution / dump (#6, SHORT): after a markup (>= +40%/48h), price stalls
+    or rolls over (last 12h <= +5%) while funding is hot (crowded longs) and OI is
+    still elevated (positions not yet unwound) — the operator distributing into
+    euphoria. A bearish setup; validated against price DOWN, not the pump label."""
+    Rh, Sh = DUMP_RUNUP_H, DUMP_STALL_H
+    c0, cR, cS = c_m.get(t), c_m.get(t - Rh * HOUR), c_m.get(t - Sh * HOUR)
+    oi0, oiR = oi_m.get(t), oi_m.get(t - Rh * HOUR)
+    highs = [h_m.get(t - k * HOUR) for k in range(Rh + 1)]
+    if (c0 is None or not cR or not cS or oi0 is None or not oiR
+            or funding is None or any(h is None for h in highs)):
+        return {"insufficient": True}
+    peak = max(highs)
+    runup = (peak - cR) / cR                          # how big the markup was
+    stall = (c0 - cS) / cS                            # recent momentum (rolling over?)
+    cond = {
+        "ran_up>=40%": runup >= DUMP_RUNUP,
+        "stalled<=5%": stall <= DUMP_STALL_MAX,
+        "funding_hot>=0.05%": funding >= DUMP_FUNDING,
+        "oi_still_elevated": oi0 >= oiR,
+    }
+    return {"fired": all(cond.values()), "conditions": cond,
+            "stop": peak, "position": "short 5-10%",   # invalidated above the peak
+            "metrics": {"runup_48h": runup, "stall_12h": stall, "funding": funding}}
+
+
 def evaluate(oi, klines, funding=None, current_funding=None,
              funding_interval_h=8.0, lookback_h=72):
     """Run v1/v2/v3 over the trailing `lookback_h` hours; return, per strategy, the
@@ -288,7 +369,8 @@ def evaluate(oi, klines, funding=None, current_funding=None,
     oi_m, c_m, h_m, l_m, v_m = _maps(oi, klines)
     if not oi_m or not c_m:
         return {"as_of": None, "v1": _empty(True), "v2": _empty(True),
-                "v3": _empty(True), "v4": _empty(True)}
+                "v3": _empty(True), "v4": _empty(True),
+                "probe": _empty(True), "dump": _empty(True)}
     t0 = min(max(oi_m), max(c_m))                 # latest hour present in BOTH series
     t0 = (t0 // HOUR) * HOUR
 
@@ -298,6 +380,8 @@ def evaluate(oi, klines, funding=None, current_funding=None,
         "v2": lambda tt, f: _eval_v2(oi_m, c_m, v_m, tt, f),
         "v3": lambda tt, f: _eval_v3(oi_m, c_m, h_m, l_m, tt, f, funding_interval_h),
         "v4": lambda tt, f: _eval_v4(oi_m, c_m, h_m, l_m, tt, f),
+        "probe": lambda tt, f: _eval_probe(c_m, h_m, l_m, v_m, tt),   # #7
+        "dump": lambda tt, f: _eval_dump(oi_m, c_m, h_m, tt, f),      # #6 (short)
     }
     for name, run in runners.items():
         latest = None                              # latest-hour result, for display when no fire

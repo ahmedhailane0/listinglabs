@@ -165,6 +165,60 @@ def test_empty_series():
     assert out["v1"]["insufficient"] is True
 
 
+# ── Probe day (#7) ────────────────────────────────────────────────────────────
+def test_probe_fires():
+    n = 61
+    oi = [100.0] * n
+    closes = [10.0] * (n - 1) + [11.0]               # last hour breaks the coil top
+    highs = [10.01] * (n - 1) + [11.01]
+    lows = [9.99] * (n - 1) + [10.5]
+    vols = [1.0] * (n - 12) + [10.0] * 12            # 12h volume burst (>=3x)
+    o, kl, ts = build(oi, closes, highs, lows, vols)
+    out = evaluate(o, kl, current_funding=0.0)
+    assert out["probe"]["fired"] is True, out["probe"]["conditions"]
+    assert out["probe"]["t"] == ts[-1]
+
+
+def test_probe_blocked_without_volume():
+    n = 61
+    oi = [100.0] * n
+    closes = [10.0] * (n - 1) + [11.0]
+    highs = [10.01] * (n - 1) + [11.01]
+    lows = [9.99] * n
+    o, kl, _ = build(oi, closes, highs, lows, vols=[1.0] * n)   # no spike
+    out = evaluate(o, kl, current_funding=0.0)
+    assert out["probe"]["fired"] is False
+    assert out["probe"]["conditions"]["vol_spike>=3x"] is False
+
+
+def test_probe_insufficient_short():
+    o, kl, _ = build([100.0] * 10, [10.0] * 10)
+    out = evaluate(o, kl, current_funding=0.0)
+    assert out["probe"]["insufficient"] is True
+
+
+# ── Distribution / dump (#6, short) ───────────────────────────────────────────
+def _dump_series():
+    n = 49
+    closes = [10.0 + min(i, 20) * 0.25 for i in range(n)]   # ramp 10->15, then flat 15
+    oi = [100.0 + i for i in range(n)]                      # OI rising (still elevated)
+    return build(oi, closes)
+
+
+def test_dump_fires():
+    oi, kl, ts = _dump_series()
+    out = evaluate(oi, kl, current_funding=0.0006)          # hot funding (crowded longs)
+    assert out["dump"]["fired"] is True, out["dump"]["conditions"]
+    assert out["dump"]["t"] == ts[-1]
+
+
+def test_dump_blocked_by_cold_funding():
+    oi, kl, _ = _dump_series()
+    out = evaluate(oi, kl, current_funding=0.0)              # funding not hot
+    assert out["dump"]["fired"] is False
+    assert out["dump"]["conditions"]["funding_hot>=0.05%"] is False
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     passed = 0

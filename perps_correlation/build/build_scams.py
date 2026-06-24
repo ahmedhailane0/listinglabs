@@ -1380,13 +1380,45 @@ def _signals_section(sym, rec=None) -> str:
         cards.append(f'<div class="buycard{" fired" if fired else ""}">'
                      f'<div class="bc-head">{STRAT_NAME[k]} <span>{STRAT_TITLE[k]}</span>{state}</div>'
                      f'{extra}<ul class="conds">{conds}</ul></div>')
+    # #7 probe + #6 dump — extra validated detectors, shown alongside the Buy setups.
+    # probe = a long CONFIRMATION (the pre-vertical volume break); dump = a SHORT
+    # (distribution). Rendered only when there's enough data to have a verdict.
+    EXTRA = {
+        "probe": ("⚡ Probe day", "volume break out of the coil — the pre-vertical test",
+                  "probe", "2.5× lift to a +50% pump"),
+        "dump": ("🔻 Distribution — short", "crowded longs rolling over after a markup",
+                 "dump", "6.2× lift to a −20% drop"),
+    }
+    for k, (nm, ttl, css, cred) in EXTRA.items():
+        d = s.get(k) or {}
+        if not d or d.get("insufficient"):
+            continue
+        fired = d.get("fired")
+        state = (f'<span class="buy {css}">fired {_ago(d.get("t"))}</span>' if fired
+                 else '<span class="bc-no">no setup now</span>')
+        extra = ""
+        if fired:
+            stop = d.get("stop")
+            slbl = "invalidated above" if k == "dump" else "stop"
+            extra = (f'<div class="bc-rec">Suggested size <b>{d.get("position") or "—"}</b>'
+                     + (f' · {slbl} <b>{stop:.6g}</b>' if stop else "") + '</div>')
+        conds = "".join(
+            f'<li class="{"ok" if ok else "x"}">{"✓" if ok else "✗"} {html.escape(c)}</li>'
+            for c, ok in (d.get("conditions") or {}).items())
+        cards.append(f'<div class="buycard xcard {css}{" fired" if fired else ""}">'
+                     f'<div class="bc-head">{nm} <span>{ttl}</span>{state}</div>'
+                     f'<div class="bc-cred" title="historical backtest, 207k coin-hours">'
+                     f'⌁ {cred} <i>(backtest)</i></div>'
+                     f'{extra}<ul class="conds">{conds}</ul></div>')
     return (f'<section class="card span" data-livesym="{html.escape(sym)}"><h3>Perp signals '
             f'<span class="asof">hourly Binance OI · Buy setups · as of '
             f'{_dt_hour(as_of) if as_of else "—"} UTC</span>'
             f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
-            f'<p class="note">Buy v1–v4 are mechanical setups on open interest, price and '
-            f'funding — research signals, not financial advice.</p></section>')
+            f'<p class="note">Buy v1–v4 are mechanical long setups on open interest, price '
+            f'and funding. <b>Probe</b> (long confirmation) and <b>Distribution</b> (a short) '
+            f'are newer, backtest-validated detectors — experimental, not yet alert-wired. '
+            f'Research signals, not financial advice.</p></section>')
 
 
 def _detail(rec, platforms) -> str:
@@ -2369,6 +2401,13 @@ td.sig .buy{margin:1px 3px 1px 0}
 .buycards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
 .buycard{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg-subtle)}
 .buycard.fired{border-color:var(--pos);background:var(--fired-bg)}
+.buy.probe{background:#7d4ec9}.buy.dump{background:#c0392b}
+.xcard{border-style:dashed}
+.xcard.dump{border-color:#c0392b55}
+.xcard.dump.fired{border-color:#c0392b;background:rgba(192,57,43,.06)}
+.bc-cred{font-size:11px;color:#9c6ade;margin:-2px 0 8px}
+.xcard.dump .bc-cred{color:#c0392b}
+.bc-cred i{color:var(--text-4);font-style:italic}
 .bc-head{font-weight:700;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .bc-head span{font-weight:400;font-size:11.5px;color:var(--text-4)}
 .bc-head .buy{margin:0}
