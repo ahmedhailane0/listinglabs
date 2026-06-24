@@ -52,12 +52,13 @@ GATE = 0.08
 WORKERS = 6
 SPARK_POINTS = 120
 # Telegram quality gate: only PING for a v1/v4 fire whose pump-score (model
-# confidence, 0-100) clears this. Scores run low (rare-event model), so this is
-# selective by design — it mutes the 0-7 weak-confidence fires the user doesn't
-# want, while still LOGGING every fire to the ledger (only the SEND is gated).
-# A fire with no score (model unavailable) still sends — fail-open, never mute a
-# real fire just because the score is missing. Tune in one place here.
-ALERT_MIN_PUMP = 8.0
+# confidence, 0-100) clears this — standouts only. Scores run low (rare-event
+# model) so this is strict by design. It gates ONLY the Telegram send: every fire
+# is still logged + graded, and every token still shows on the Manipulated list —
+# nothing is removed from the page. A fire with no score (model unavailable) still
+# sends — fail-open, never mute a real fire just because the score is missing.
+# Tune in one place here.
+ALERT_MIN_PUMP = 7.0
 
 # Smooth intraday close candles per perp, for the Manipulated detail-page price
 # chart (CMC-style 24h/1W). 5m (last ~24h) + 1h (last ~12d); the daily history
