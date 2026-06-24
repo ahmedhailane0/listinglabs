@@ -53,6 +53,21 @@ jobs:
         # imports plotly. matplotlib stays: lib/listing_chart imports it at load.
         run: python -m pip install --quiet requests==2.34.2 matplotlib==3.11.0
 
+      - name: Box-down watchdog (Telegram heartbeat)
+        # Independent of the box (a dead box can't alert about itself): if the
+        # always-on screener box stops updating screener.json, ping Telegram once —
+        # and again on recovery. Keyless-SAFE: no-ops without the secrets, so it can
+        # never break the build. The bot token is the ONE intentional CI secret,
+        # supplied only via encrypted Actions secrets (never in the repo); everything
+        # else stays keyless. State persists in cache/box_health.json (committed below).
+        run: python fetch/check_box_health.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          BOX_STALE_HOURS: "3"
+        continue-on-error: true     # the watchdog must never block the deploy
+        timeout-minutes: 2
+
       - name: Refresh price candles (charts stay current)
         # GeckoTerminal rate-limits GitHub's shared IP hard, so each run refreshes only
         # a capped set (incremental: ~1 page each). WEIGHTED priority: the newest
