@@ -1803,16 +1803,25 @@ draw('all');
 """
 
 
+def _real_pnl(e):
+    """Realized P&L per trade — the realistic tiered exit net of fees+slippage
+    (pnl_real, grade_fires #5), falling back to the idealized own-stop number for
+    trades graded before that field existed."""
+    o = e.get("outcome") or {}
+    return o.get("pnl_real") if o.get("pnl_real") is not None else o.get("pnl_ownstop")
+
+
 def _pnl_card(closed) -> str:
     """Polymarket-style PnL card: cumulative equity of the model's closed v1/v4
     paper trades on a hypothetical PNL_STAKE/trade, with a timeframe toggle and a
-    stepped equity-curve chart. Equity is booked at each trade's grade (close) time."""
-    graded = [e for e in closed if (e.get("outcome") or {}).get("pnl_ownstop") is not None]
+    stepped equity-curve chart. Equity uses the realistic net-of-cost P&L and is
+    booked at each trade's grade (close) time."""
+    graded = [e for e in closed if _real_pnl(e) is not None]
     graded.sort(key=lambda e: (e["outcome"].get("graded_utc") or (e.get("t") or 0) + 72 * 3600))
     pts, cum = [], 0.0
     for e in graded:
         o = e["outcome"]
-        cum += PNL_STAKE * o["pnl_ownstop"]
+        cum += PNL_STAKE * _real_pnl(e)
         rt = o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
         pts.append([int(rt), round(cum, 2)])
     # Anchor the curve at $0 at the earliest entry (fire) time, so it climbs from
@@ -1854,19 +1863,25 @@ def _journal_page(recs) -> str:
     closed.sort(key=_key, reverse=True)
     open_.sort(key=_key, reverse=True)
 
-    def _pnl(e):
-        return (e.get("outcome") or {}).get("pnl_ownstop")
+    def _o(e, k):
+        return (e.get("outcome") or {}).get(k)
+
+    _pnl = _real_pnl                       # realistic net-of-cost P&L per trade
 
     n = len(closed)
     pnls = [_pnl(e) for e in closed if _pnl(e) is not None]
-    mfes = [(e["outcome"] or {}).get("mfe") for e in closed
-            if (e["outcome"] or {}).get("mfe") is not None]
+    mfes = [_o(e, "mfe") for e in closed if _o(e, "mfe") is not None]
     wins = sum(1 for e in closed if (_pnl(e) or 0) > 0)
-    hits = sum(1 for e in closed if (e["outcome"] or {}).get("pump"))
+    hits = sum(1 for e in closed if _o(e, "pump"))
     win_rate = wins / n * 100 if n else None
     hit_rate = hits / n * 100 if n else None
     avg_pnl = sum(pnls) / len(pnls) if pnls else None
     avg_mfe = sum(mfes) / len(mfes) if mfes else None
+    # #3 benchmarks: same-window buy-&-hold the same coins, and BTC.
+    bh = [_o(e, "bh_coin") for e in closed if _o(e, "bh_coin") is not None]
+    bt = [_o(e, "bh_btc") for e in closed if _o(e, "bh_btc") is not None]
+    avg_bh = sum(bh) / len(bh) if bh else None
+    avg_bt = sum(bt) / len(bt) if bt else None
 
     def _stat(label, val, cls=""):
         return (f'<div class="jstat {cls}"><span class="jstat-v">{val}</span>'
@@ -1885,7 +1900,7 @@ def _journal_page(recs) -> str:
         + _stat("hit +50% / 72h", f"{hits}/{n}" if n else "—",
                 "good" if hits else "")
         + _stat("win rate (P&amp;L &gt; 0)", _pct0(win_rate))
-        + _stat("avg result / trade", _signed(avg_pnl), pnl_cls)
+        + _stat("avg result / trade (net)", _signed(avg_pnl), pnl_cls)
         + _stat("avg best move", _signed(avg_mfe))
         + '</div>')
 
@@ -1903,6 +1918,33 @@ def _journal_page(recs) -> str:
                   f'{len(cs)} closed · {h} hit +50% · {w} green · avg {_signed(avg)}</li>')
     by_html = f'<ul class="jby">{"".join(by)}</ul>' if by else ""
 
+    # #3 edge check: strategy vs simply holding the same coins (and BTC) over the
+    # exact same windows. The strategy beating a flat hold is the proof of edge —
+    # an absolute +P&L could just be a rising market.
+    def _bcell(label, v, lead=False):
+        cls = "pos" if (v or 0) > 0 else ("neg" if v is not None else "")
+        return (f'<div class="jb-item{" lead" if lead else ""}">'
+                f'<span class="jb-v {cls}">{_signed(v)}</span>'
+                f'<span class="jb-l">{label}</span></div>')
+
+    edge = (avg_pnl - avg_bh) if (avg_pnl is not None and avg_bh is not None) else None
+    edge_txt = (f'<div class="jb-edge {"pos" if (edge or 0) >= 0 else "neg"}">'
+                f'Edge vs just holding: <b>{("+" if (edge or 0) >= 0 else "−")}'
+                f'{abs(edge)*100:.1f} pts</b></div>') if edge is not None else ""
+    bench = (
+        '<section class="card span jbench">'
+        '<h3>Edge check <span class="asof">avg result per closed trade · same window, '
+        'same cost</span></h3>'
+        '<div class="jb-row">'
+        + _bcell("AI strategy (net of fees)", avg_pnl, lead=True)
+        + _bcell("Buy &amp; hold same coins", avg_bh)
+        + _bcell("Hold BTC", avg_bt)
+        + '</div>' + edge_txt
+        + '<p class="jnote">The strategy beating a flat hold of the same coins is the '
+        'proof of edge — its timed exits bank pumps that holders give back, and its '
+        'stops cut the losers. Net of 0.05% fee + 0.10% slippage per fill.</p>'
+        '</section>') if (avg_pnl is not None) else ""
+
     def _tok(sym):
         s = (sym or "").upper()
         return (f'<a href="{s.lower()}.html">{html.escape(s)}</a>'
@@ -1915,12 +1957,15 @@ def _journal_page(recs) -> str:
     # Closed-trades table (newest first).
     if closed:
         crows = []
+        _exit_lbl = {"tp2": "TP2 +50%", "tp1+timeout": "TP1 + 72h",
+                     "tp1+stop": "TP1 + stop", "stopped": "stopped",
+                     "timeout": "72h close"}
         for e in closed:
             o = e["outcome"] or {}
             ep = e.get("entry_price") or o.get("entry")
             entry = fmt_subscript_price(ep) if ep else "—"
-            res = "✓ pump" if o.get("pump") else "—"
-            res_cls = "pos" if o.get("pump") else ""
+            xr = o.get("exit_reason")
+            xlbl = _exit_lbl.get(xr, xr or "—")
             stop = e.get("stop")
             tip = (f"entry {ep:.6g} · stop {stop:.6g} · size {e.get('position') or '—'}"
                    if (ep and stop) else "")
@@ -1930,12 +1975,15 @@ def _journal_page(recs) -> str:
                 f'<td>{_setup_chip(e.get("strat"))}</td>'
                 f'<td class="jnum">{entry}</td>'
                 f'<td class="jnum">{_jpct(o.get("mfe"))}</td>'
-                f'<td class="jnum">{_jpct(o.get("pnl_ownstop"))}</td>'
-                f'<td class="jnum {res_cls}">{res}</td></tr>')
+                f'<td class="jnum">{_jpct(_real_pnl(e))}</td>'
+                f'<td class="jnum">{_jpct(o.get("bh_coin"))}</td>'
+                f'<td class="jx">{html.escape(xlbl)}</td></tr>')
         closed_tbl = (
             '<table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
-            '<th>Setup</th><th>Entry</th><th>Best move</th><th>Result</th>'
-            '<th>+50%?</th></tr></thead><tbody>'
+            '<th>Setup</th><th>Entry</th><th>Best move</th>'
+            '<th title="realistic tiered exit, net of fees+slippage">Result</th>'
+            '<th title="buy &amp; hold the same coin over the same 72h">vs Hold</th>'
+            '<th>Exit</th></tr></thead><tbody>'
             + "".join(crows) + '</tbody></table>')
     else:
         closed_tbl = ('<p class="jnote">No v1/v4 trades have matured yet — each is '
@@ -1982,6 +2030,7 @@ over time, so read the rates as early evidence, not a settled edge.</p></header>
 </section>
 {_pnl_card(closed)}
 </div>
+{bench}
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
@@ -2074,6 +2123,18 @@ EXTRA_CSS = """
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
 .jpending{color:var(--text-4);font-size:12px}
 .jnote{color:var(--text-4);font-style:italic;margin:8px 0}
+.jtable .jx{color:var(--text-3,var(--text-2));font-size:12px;white-space:nowrap}
+/* edge check (#3 benchmark) */
+.jbench .jb-row{display:flex;gap:14px;flex-wrap:wrap;margin:4px 0 2px}
+.jb-item{flex:1 1 150px;background:var(--bg-2);border:1px solid var(--border);
+  border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.jb-item.lead{border-color:#9c6ade;box-shadow:inset 0 0 0 1px rgba(156,106,222,.35)}
+.jb-v{font-size:24px;font-weight:700;line-height:1.1}
+.jb-v.pos{color:#1a8a4f}.jb-v.neg{color:#c0392b}
+.jb-l{font-size:12px;color:var(--text-4)}
+.jb-edge{margin-top:10px;font-size:14px;color:var(--text-2)}
+.jb-edge b{font-size:15px}
+.jb-edge.pos b{color:#1a8a4f}.jb-edge.neg b{color:#c0392b}
 /* top row: scorecard left, PnL card top-right */
 .jtop{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;margin-bottom:18px}
 .jtop .jscore{flex:1 1 360px;margin:0}
