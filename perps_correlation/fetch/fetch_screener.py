@@ -46,10 +46,17 @@ OUT = OUTDIR / "screener.json"
 FAPI = "https://fapi.binance.com"
 OI_LIMIT = 300
 KLINE_LIMIT = 300
+KLINE_5M_LIMIT = 288          # ~24h of 5m closes for the detail-page 24h view
 FUND_LIMIT = 20
 GATE = 0.08
 WORKERS = 6
 SPARK_POINTS = 120
+
+# Smooth intraday close candles per perp, for the Manipulated detail-page price
+# chart (CMC-style 24h/1W). 5m (last ~24h) + 1h (last ~12d); the daily history
+# fills the longer ranges at build time. Written hourly by this box; committed
+# by deploy/screener_cron.sh. See build/build_scams.py (_price_chart stitch).
+PRICE_CANDLES_DIR = CACHE / "price_candles"
 
 # ── Market enrichment (CMC keyless detail endpoint) ──────────────────────────
 MARKET_CACHE_FILE = OUTDIR / "market.json"
@@ -178,6 +185,17 @@ def _klines_1h(sym: str) -> list[tuple]:
     return out
 
 
+def _klines_5m(sym: str) -> list[tuple]:
+    d = _get(f"{FAPI}/fapi/v1/klines?symbol={sym}USDT&interval=5m&limit={KLINE_5M_LIMIT}")
+    now_ms = _now() * 1000
+    out = []
+    for k in d or []:
+        if len(k) < 7 or k[6] >= now_ms:     # drop the still-forming last candle
+            continue
+        out.append((int(k[0]) // 1000, _f(k[4])))   # (t_sec, close)
+    return out
+
+
 def _funding(sym: str) -> list[tuple[int, float]]:
     d = _get(f"{FAPI}/fapi/v1/fundingRate?symbol={sym}USDT&limit={FUND_LIMIT}")
     out = []
@@ -200,6 +218,21 @@ def _spark_series(klines: list) -> list:
     if pts[-1][0] != klines[-1][0]:
         pts.append(klines[-1])
     return [[k[0], round(k[4], 8)] for k in pts]
+
+
+def _r8(v):
+    """Round to 8 significant figures — keeps sub-cent token prices precise while
+    shaving committed-cache bytes (data-correctness: significant figures, not a
+    fixed decimal count that would crush a $0.00004 price to 4 sig-figs)."""
+    if v is None or v == 0:
+        return v
+    from math import floor, log10
+    return round(v, 7 - floor(log10(abs(v))))
+
+
+def _candle_series(rows: list, close_idx: int) -> list:
+    """[[t_sec, close], ...] ascending from kline rows (close at close_idx)."""
+    return [[r[0], _r8(r[close_idx])] for r in rows if r[close_idx] is not None]
 
 
 # ── CMC market enrichment with price-checking ────────────────────────────────
@@ -472,12 +505,20 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
     oi_bn = oi[-1][1] if oi else None
     mark_price = kl[-1][4] if kl else None
     spark = _spark_series(kl)
+    # Smooth intraday close candles for the detail-page price chart: 5m (~24h,
+    # one extra call) + 1h (reuse `kl`, ~12d). Written to its own per-token file
+    # in main(); stripped from screener.json. Best-effort — never block a coin.
+    try:
+        m5 = _candle_series(_klines_5m(sym), 1)
+    except Exception:
+        m5 = []
+    candles = {"m5": m5, "h1": _candle_series(kl, 4)} if (m5 or kl) else None
     ok = bool(oi and kl)
     pump = (_pump_score(oi, kl, fund, _PUMP_MODEL)
             if (_pump_score and _PUMP_MODEL) else None)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
             "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
-            "mark_price": mark_price, "spark": spark, "pump_score": pump,
+            "mark_price": mark_price, "spark": spark, "pump_score": pump, "_candles": candles,
             # last-hour snapshot for the append-only training series (_log_hourly)
             "snap_t": int(oi[-1][0]) if oi else None,
             "vol1h": float(kl[-1][5]) if kl and len(kl[-1]) > 5 else None}
@@ -628,9 +669,25 @@ def main(argv: list[str]) -> int:
     _log_fires(recs)
     _log_hourly(recs)
 
+    # ── Per-token intraday candle files (smooth detail-page price chart) ──────
+    PRICE_CANDLES_DIR.mkdir(parents=True, exist_ok=True)
+    candle_writes = 0
+    for s in screenable:
+        cd = recs[s].get("_candles")
+        if not cd or not (cd.get("m5") or cd.get("h1")):
+            continue
+        try:
+            (PRICE_CANDLES_DIR / f"{s}.json").write_text(
+                json.dumps({"updated": _now(), "m5": cd["m5"], "h1": cd["h1"]},
+                           separators=(",", ":")), encoding="utf-8")
+            candle_writes += 1
+        except Exception as e:
+            print(f"  candles {s}: write failed ({e})")
+
     # ── Strip internal fields from output ────────────────────────────────────
     for rec in recs.values():
         rec.pop("mark_price", None)
+        rec.pop("_candles", None)
 
     # ── Write screener.json ──────────────────────────────────────────────────
     def _fired(strat):
@@ -658,7 +715,7 @@ def main(argv: list[str]) -> int:
     print(f"  screenable={c['screenable']}  gate-pass={c['passing_gate']}  "
           f"v1={c['v1']} v2={c['v2']} v3={c['v3']} v4={c['v4']}")
     print(f"  market={mkt_ok}  (CMC fetched {market_fetches})  "
-          f"holders={holder_fetches}")
+          f"holders={holder_fetches}  candles={candle_writes}")
     return 0
 
 

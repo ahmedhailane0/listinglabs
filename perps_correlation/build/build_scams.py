@@ -31,6 +31,11 @@ HERE = Path(__file__).resolve().parents[1]   # perps_correlation/ (project root,
 SITE = HERE / "Listinglabs" / "scams"
 DATA = HERE.parent / "cache" / "scam_data.json"
 PRICES = HERE.parent / "cache" / "scam_prices"
+# Rolling intraday close candles per perp (5m + 1h), written hourly by the box's
+# fetch_screener — gives the detail-page price chart smooth 24h/1W resolution that
+# the daily scam_prices series can't (CMC-style). Missing => chart falls back to
+# daily only. See fetch/fetch_screener.py (_klines_5m / price_candles write).
+PRICE_CANDLES = HERE.parent / "cache" / "price_candles"
 ROOTDATA = HERE.parent / "cache" / "rootdata.json"
 
 # symbol(upper) -> {"amount", "source", "investors": [...]}. Built in main() from
@@ -213,22 +218,58 @@ def _sparkline(sym: str) -> str:
 
 
 def _price_chart(sym: str, name: str) -> str:
+    """CMC-style price chart: 24h / 1W / 1M / 1Y / All.
+
+    Stitches three resolutions into ONE series, finest-wins where they overlap:
+    box-fetched 5m candles for the last ~24h, 1h candles for the last ~12d, and the
+    daily 180-day history older than that. With the box's intraday candles the 24h/1W
+    views are genuinely smooth and the page opens on 1W; without them it gracefully
+    falls back to the daily series (opens on All). The live poller (LIVE_DETAIL_JS)
+    appends a real-time point to the right edge every ~60s via `live_sym`."""
+    # Daily baseline (180d). scam_prices stores ms timestamps; the screener spark
+    # fallback is already in seconds.
     p = PRICES / f"{sym}.json"
     if p.exists():
-        series = json.loads(p.read_text(encoding="utf-8"))
+        daily = [[int(t // 1000), v] for t, v in json.loads(p.read_text(encoding="utf-8"))]
     else:
-        spark = (_sig(sym) or {}).get("spark") or []
-        series = [[t * 1000, v] for t, v in spark] if spark else []
-    if len(series) < 2:
+        daily = [[int(t), v] for t, v in ((_sig(sym) or {}).get("spark") or [])]
+
+    # Intraday from the box (seconds, ascending). Either tier may be absent.
+    m5, h1 = [], []
+    cp = PRICE_CANDLES / f"{sym}.json"
+    if cp.exists():
+        try:
+            cd = json.loads(cp.read_text(encoding="utf-8"))
+            m5 = [[int(t), v] for t, v in (cd.get("m5") or []) if v]
+            h1 = [[int(t), v] for t, v in (cd.get("h1") or []) if v]
+        except Exception:
+            m5, h1 = [], []
+
+    # Stitch finest-wins: daily older than h1's start, h1 older than m5's start, m5.
+    m5_lo = m5[0][0] if m5 else None
+    h1_lo = h1[0][0] if h1 else None
+    cut_daily = h1_lo if h1_lo is not None else m5_lo
+    pts = [pt for pt in daily if cut_daily is None or pt[0] < cut_daily]
+    pts += [pt for pt in h1 if m5_lo is None or pt[0] < m5_lo]
+    pts += m5
+    # Dedupe by timestamp, ascending (a finer tier's point wins on collision).
+    by_t = {}
+    for t, v in pts:
+        if v and v > 0:
+            by_t[int(t)] = v
+    points = [[t, by_t[t]] for t in sorted(by_t)]
+    if len(points) < 2:
         return '<div class="missing">no price data</div>'
-    ys = [v for _t, v in series]
-    ref = min([v for v in ys if v > 0] or [1])
+
+    ref = min(v for _t, v in points)
     dec = max(4, 2 - math.floor(math.log10(ref))) if ref > 0 else 4
-    points = [[int(t / 1000), v] for t, v in series]
+    # Open on 1W when we have smooth intraday data; else on the full daily history.
+    default_days = 7 if (m5 or h1) else None
     return timeseries_html(f"chart-{sym.lower()}", [{
         "data": points, "kind": "area", "color": "#1f4e79", "scale": "right",
         "name": "Price", "fmt": {"kind": "price", "dec": dec}, "fill": True,
-    }], height=520, ranges=[("1M", 30), ("3M", 90), ("6M", 180), ("All", None)])
+    }], height=520, ranges=[("24h", 1), ("1W", 7), ("1M", 30), ("1Y", 365), ("All", None)],
+       default_days=default_days, live_sym=sym)
 
 
 def _usd(v):
@@ -1574,6 +1615,9 @@ LIVE_DETAIL_JS = (
     'if(v.funding!=null)metaSet("Funding",(v.funding*100).toFixed(3)+"%");'
     'if(v.vol24!=null)metaSet("Binance 24h vol",fmtUsd(v.vol24));'
     'if(v.price!=null)priceSet(fmtPrice(v.price));'
+    # append the live price to the right edge of the price chart (registered by
+    # timeseries_html via live_sym) so the chart ticks in real time too.
+    'if(v.price!=null&&window.__llLive&&window.__llLive[sym]){window.__llLive[sym](+v.price);}'
     'if(badge){badge.textContent="\\u25cf LIVE \\u00b7 "+new Date().toLocaleTimeString();badge.className="live-on";}}'
     'function poll(){fetch(SRC,{cache:"no-store"}).then(function(r){return r.json();}).then(apply)'
     '.catch(function(){if(badge){badge.textContent="\\u25cf live paused";badge.className="live-off";}});}'

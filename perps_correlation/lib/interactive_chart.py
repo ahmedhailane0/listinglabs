@@ -377,7 +377,8 @@ function mount(id, cfg){
 
 def timeseries_html(div_id: str, series: list[dict], height: int = 520,
                     ranges: list[tuple] | None = None, sync: str | None = None,
-                    sync_main: int = 0) -> str:
+                    sync_main: int = 0, default_days: int | None = None,
+                    live_sym: str | None = None) -> str:
     """Generic Lightweight Charts time-series embed, reused by other reports for
     their price / value-over-time *trading* charts (e.g. the Scam Watchlist price
     chart and OI+funding history). Renders one or more line/area/histogram series,
@@ -386,8 +387,16 @@ def timeseries_html(div_id: str, series: list[dict], height: int = 520,
 
     `ranges`: optional [(label, days|None), …] -> a toolbar of range buttons (e.g.
     1M / 3M / All), giving the same kind of zoom controls the listing-reaction chart
-    has. (These series are daily, so a 5m/1h resolution switcher doesn't apply — a
-    range selector is the equivalent control.) None days = fit all.
+    has. None days = fit all.
+
+    `default_days`: which range opens by default (matches a `ranges` entry's days;
+    e.g. 7 opens on the "1W" view). None = open on the full-fit ("All") range, the
+    historical default. The matching toolbar button is highlighted.
+
+    `live_sym`: when set, the anchor series (sync_main, else the first) is registered
+    in `window.__llLive[live_sym]` as `fn(price)` so a page's live poller can append
+    a real-time point to the chart's right edge (used by the Manipulated detail page,
+    where LIVE_DETAIL_JS already polls the box's live.json every ~60s).
 
     `sync`: charts on the same page passing the same group name get a SHARED
     crosshair + visible range (hover one, the line appears on the other).
@@ -403,12 +412,17 @@ def timeseries_html(div_id: str, series: list[dict], height: int = 520,
        "fill": True}                         # area only
     """
     cfg_js = json.dumps({"height": height, "series": series, "ranges": ranges or [],
-                         "sync": sync, "sync_main": sync_main},
+                         "sync": sync, "sync_main": sync_main,
+                         "default_days": default_days, "live_sym": live_sym},
                         separators=(",", ":"))
     toolbar = ""
     if ranges:
+        # The active button = the one matching default_days (e.g. the "1W" view),
+        # or the full-fit ("All", days=None) button when no default is given.
+        def _active(d):
+            return (d == default_days) if default_days is not None else (d is None)
         btns = "".join(
-            f'<button class="tv-reset tv-range{" active" if d is None else ""}" '
+            f'<button class="tv-reset tv-range{" active" if _active(d) else ""}" '
             f'data-days="{"" if d is None else d}">{lbl}</button>'
             for lbl, d in ranges)
         toolbar = f'<div class="tv-toolbar">{btns}</div>'
@@ -587,6 +601,30 @@ function mountTS(id, cfg){
       chart.timeScale().setVisibleRange({ from: to - parseInt(days,10)*86400, to: to });
     });
   });
+
+  // Open on the requested default range (e.g. 1W) instead of the full fit, so a
+  // chart with smooth intraday data lands on the lively recent window. (fitContent
+  // already ran above; this just narrows the initial visible range.)
+  if(cfg.default_days){
+    var dto = lastT();
+    if(dto){ chart.timeScale().setVisibleRange({ from: dto - cfg.default_days*86400, to: dto }); }
+  }
+
+  // Live tick: expose the anchor series so the page's live poller can append a
+  // real-time point to the right edge (Manipulated detail page; ~60s cadence).
+  if(cfg.live_sym){
+    var lAnchor = built[cfg.sync_main||0] || built[0];
+    if(lAnchor){
+      (window.__llLive = window.__llLive || {})[cfg.live_sym] = function(price){
+        price = +price;
+        if(!isFinite(price) || price<=0) return;
+        var now = Math.floor(Date.now()/1000);
+        var d = lAnchor.def.data, last = (d && d.length) ? d[d.length-1][0] : 0;
+        if(now <= last) now = last + 1;     // strictly increasing time => append
+        try{ lAnchor.s.update({ time: now, value: price }); }catch(e){}
+      };
+    }
+  }
 
   // Crosshair tooltip: date + each series' formatted value.
   var tip = document.getElementById(id+'-tip');
