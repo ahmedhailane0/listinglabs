@@ -66,6 +66,10 @@ FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
 # Only the setups the trained model currently trades — v2/v3 were dropped (no edge),
 # so featuring them would misrepresent "what the AI thinks is a good trade".
 JOURNAL_SETUPS = ("v1", "v4")
+# Hypothetical equal stake per paper trade, so the PnL card can show a $ figure
+# (Polymarket-style) while staying honest — the model risks NO real capital. The
+# card labels this assumption; change it here and the whole card rescales.
+PNL_STAKE = 100
 
 # The always-on box also serves a tiny live.json (price/24h/OI/funding, refreshed
 # ~60s) over HTTPS via Caddy on an sslip.io host. LIVE_JS polls it client-side and
@@ -1710,6 +1714,90 @@ def _jpct(v, signed=True) -> str:
     return f'<span class="jp {cls}">{sg}{pct:.1f}%</span>'
 
 
+# Client JS for the PnL card: windows the cumulative-equity curve by timeframe,
+# updates the $ figure + subtitle, and redraws a stepped area chart (equity is flat
+# between trades, jumps when one closes). PTS = [[realize_t_sec, cum_usd], ...].
+_PNL_JS = r"""
+var card=document.getElementById('pnlcard'),valEl=document.getElementById('pnl-val'),
+    subEl=document.getElementById('pnl-sub'),svg=document.getElementById('pnl-chart');
+var SUBS={'1':'Past day','7':'Past week','30':'Past month','365':'Past year',
+          'ytd':'Year to date','all':'All time'};
+function money(v){var s=v>0?'+':(v<0?'−':'');
+  return s+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function windowPts(tf){
+  if(!PTS.length) return {pts:[],open:0};
+  if(tf==='all') return {pts:PTS.slice(),open:0};
+  var now=Date.now()/1000,start;
+  if(tf==='ytd'){var d=new Date();start=Date.UTC(d.getUTCFullYear(),0,1)/1000;}
+  else start=now-parseInt(tf,10)*86400;
+  var open=0,win=[];
+  for(var i=0;i<PTS.length;i++){ if(PTS[i][0]<=start) open=PTS[i][1]; else win.push(PTS[i]); }
+  win.unshift([start,open]);
+  return {pts:win,open:open};
+}
+function draw(tf){
+  var w=windowPts(tf),pts=w.pts,last=pts.length?pts[pts.length-1][1]:0,pnl=last-w.open;
+  valEl.textContent=money(pnl);
+  subEl.textContent=SUBS[tf]+' · hypothetical $'+STAKE+'/trade';
+  card.classList.remove('pos','neg'); card.classList.add(pnl>=0?'pos':'neg');
+  var W=320,H=70,pad=5;
+  if(pts.length<2){ svg.innerHTML=''; return; }
+  var xs=pts.map(function(p){return p[0];}),ys=pts.map(function(p){return p[1];});
+  var x0=xs[0],x1=xs[xs.length-1],lo=Math.min.apply(null,ys.concat(0)),hi=Math.max.apply(null,ys.concat(0));
+  var sx=function(x){return x1===x0?W/2:pad+(x-x0)/(x1-x0)*(W-2*pad);};
+  var sy=function(y){return hi===lo?H/2:pad+(hi-y)/(hi-lo)*(H-2*pad);};
+  // stepped line: hold each value until the next realize time, then jump.
+  var d='M'+sx(xs[0]).toFixed(1)+','+sy(ys[0]).toFixed(1);
+  for(var i=1;i<pts.length;i++){
+    d+='L'+sx(xs[i]).toFixed(1)+','+sy(ys[i-1]).toFixed(1)
+      +'L'+sx(xs[i]).toFixed(1)+','+sy(ys[i]).toFixed(1);
+  }
+  var area=d+'L'+sx(x1).toFixed(1)+','+H+'L'+sx(x0).toFixed(1)+','+H+'Z';
+  var col=pnl>=0?'#2fd480':'#ff6b5e';
+  svg.innerHTML='<path d="'+area+'" fill="'+col+'" opacity="0.13"/>'+
+                '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" '+
+                'stroke-linejoin="round" stroke-linecap="round"/>';
+}
+(card.querySelectorAll('.pnl-tf')||[]).forEach(function(b){
+  b.addEventListener('click',function(){
+    card.querySelectorAll('.pnl-tf').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active'); draw(b.dataset.tf);
+  });
+});
+draw('all');
+"""
+
+
+def _pnl_card(closed) -> str:
+    """Polymarket-style PnL card: cumulative equity of the model's closed v1/v4
+    paper trades on a hypothetical PNL_STAKE/trade, with a timeframe toggle and a
+    stepped equity-curve chart. Equity is booked at each trade's grade (close) time."""
+    graded = [e for e in closed if (e.get("outcome") or {}).get("pnl_ownstop") is not None]
+    graded.sort(key=lambda e: (e["outcome"].get("graded_utc") or (e.get("t") or 0) + 72 * 3600))
+    pts, cum = [], 0.0
+    for e in graded:
+        o = e["outcome"]
+        cum += PNL_STAKE * o["pnl_ownstop"]
+        rt = o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
+        pts.append([int(rt), round(cum, 2)])
+    total = pts[-1][1] if pts else 0.0
+    cls = "pos" if total >= 0 else "neg"
+    sg = "+" if total > 0 else ("−" if total < 0 else "")
+    val = f"{sg}${abs(total):,.2f}"
+    tfs = [("1D", "1"), ("1W", "7"), ("1M", "30"), ("1Y", "365"), ("YTD", "ytd"), ("ALL", "all")]
+    btns = "".join(f'<button class="pnl-tf{" active" if d == "all" else ""}" '
+                   f'data-tf="{d}">{l}</button>' for l, d in tfs)
+    data_js = json.dumps(pts, separators=(",", ":"))
+    return (f'<aside class="pnl-card {cls}" id="pnlcard">'
+            f'<div class="pnl-top"><span class="pnl-ttl"><i class="pnl-dot"></i>Profit / Loss</span>'
+            f'<div class="pnl-tfs">{btns}</div></div>'
+            f'<div class="pnl-val" id="pnl-val">{val}</div>'
+            f'<div class="pnl-sub" id="pnl-sub">All time · hypothetical ${PNL_STAKE}/trade</div>'
+            f'<svg class="pnl-chart" id="pnl-chart" viewBox="0 0 320 70" preserveAspectRatio="none"></svg>'
+            f'<script>(function(){{var PTS={data_js},STAKE={PNL_STAKE};{_PNL_JS}}})();</script>'
+            f'</aside>')
+
+
 def _journal_page(recs) -> str:
     """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
     (entry + stop, logged by the box), graded 72h later on real price. A scorecard
@@ -1844,11 +1932,15 @@ it triggers, then <b>scored 72h later on the real price</b> (target: +50%). Thes
 <b>research paper signals scored on real prices — not executed trades and not financial
 advice</b>; nothing here places an order or risks capital. The sample is small and grows
 over time, so read the rates as early evidence, not a settled edge.</p></header>
-<main><section class="card span">
+<main>
+<div class="jtop">
+<section class="card span jscore">
   <h3>Scorecard <span class="asof">v1 &amp; v4 · closed (graded) paper trades</span></h3>
   {scorecard}
   {by_html}
 </section>
+{_pnl_card(closed)}
+</div>
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
@@ -1941,6 +2033,27 @@ EXTRA_CSS = """
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
 .jpending{color:var(--text-4);font-size:12px}
 .jnote{color:var(--text-4);font-style:italic;margin:8px 0}
+/* top row: scorecard left, PnL card top-right */
+.jtop{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;margin-bottom:18px}
+.jtop .jscore{flex:1 1 360px;margin:0}
+.pnl-card{flex:0 0 340px;align-self:flex-start;background:#0f1620;border:1px solid #1e2a38;
+  border-radius:14px;padding:15px 18px 12px;color:#e6ebf1;box-shadow:0 3px 16px rgba(0,0,0,.20)}
+.pnl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+.pnl-ttl{display:flex;align-items:center;gap:7px;font-size:13px;color:#9aa7b4;font-weight:600;white-space:nowrap}
+.pnl-dot{width:8px;height:8px;border-radius:50%;background:#3a4654;flex:none}
+.pnl-card.pos .pnl-dot{background:#1fbf6b}
+.pnl-card.neg .pnl-dot{background:#e0564a}
+.pnl-tfs{display:flex;gap:1px}
+.pnl-tf{background:none;border:none;color:#7f8c9a;font-family:inherit;font-size:11px;
+  font-weight:600;padding:4px 6px;border-radius:6px;cursor:pointer}
+.pnl-tf:hover{color:#cfd8e0}
+.pnl-tf.active{background:#1d4e79;color:#fff}
+.pnl-val{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;color:#e6ebf1}
+.pnl-card.pos .pnl-val{color:#2fd480}
+.pnl-card.neg .pnl-val{color:#ff6b5e}
+.pnl-sub{font-size:12px;color:#7f8c9a;margin-top:3px}
+.pnl-chart{width:100%;height:70px;margin-top:8px;display:block}
+@media(max-width:640px){.pnl-card{flex:1 1 100%}}
 /* deterministic column widths (11 cols: #, Token, Pump, Price/24h, BN OI,
    OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
 #ltab{table-layout:fixed;min-width:1020px}
