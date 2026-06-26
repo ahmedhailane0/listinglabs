@@ -54,9 +54,9 @@ def test_v1_fires():
 
 def test_v1_blocked_by_high_funding():
     oi, kl, _ = _v1_series()
-    out = evaluate(oi, kl, current_funding=0.002)          # 0.2% > 0.1% cap
+    out = evaluate(oi, kl, current_funding=0.002)          # 0.2% > 0.05% cap
     assert out["v1"]["fired"] is False
-    assert out["v1"]["conditions"]["funding<0.1%"] is False
+    assert out["v1"]["conditions"]["funding<0.05%"] is False
 
 
 def test_v1_blocked_when_oi_not_3up():

@@ -72,9 +72,10 @@ def ema(values: list[float], n: int) -> list[float]:
     return out
 
 # ── thresholds (named so the page can quote them) ─────────────────────────────
-V1_OI_3H = 0.08          # >= +8% OI over 3h
+V1_OI_3H = 0.05          # >= +5% OI over 3h (tuned 2026-06-26: fires earlier)
 V1_PRICE_3H_MAX = 0.08   # <= +8% price over 3h
-V1_RATIO = 1.5           # oi%3h / price%3h
+V1_RATIO = 2.0           # oi%3h / price%3h (tuned 2026-06-26: OI must lead price 2x)
+V1_FUNDING_MAX = 0.0005  # v1 only: per-interval funding < 0.05% (tuned 2026-06-26)
 V2_OI_3H = 0.05          # >= +5% OI over 3h
 V2_EMA_FAST, V2_EMA_SLOW = 20, 60
 V2_CROSS_LOOKBACK = 10   # golden cross within last N candles
@@ -82,7 +83,7 @@ V2_NEAR_EMA = 0.05       # |C - EMA20| / EMA20 <= 5%
 V2_RATIO = 1.0
 V2_OI_BUMP = 0.10        # oi%3h >= 10% -> bigger size...
 V2_VOL_BUMP = 1.5        # ...if vol > 1.5x the trailing average
-FUNDING_MAX = 0.001      # v1/v2: per-interval funding < 0.1%
+FUNDING_MAX = 0.001      # v2: per-interval funding < 0.1% (v1 uses V1_FUNDING_MAX)
 V3_OI_DD = 0.15          # OI drawdown >= 15% in 4h
 V3_PRICE_DD_MAX = 0.10   # price drawdown <= 10% in 4h
 V3_DD_RATIO_MAX = 0.5    # price_dd / oi_dd <= 0.5
@@ -91,11 +92,11 @@ V3_REBUILD = 0.08        # OI back >= 8% off the low
 V3_WINDOW = 4            # hours
 V3_POST_HIGH = 3         # post-washout high window (hours)
 # Buy v4 — coiled accumulation (the pre-pump build, fires DAYS before the vertical)
-V4_WINDOW = 48           # hours (2-day accumulation window)
-V4_OI_BUILD = 0.40       # OI now >= +40% vs 48h ago
-V4_PRICE_FLAT = 0.15     # |net price move over 48h| <= 15% (price still flat)
-V4_RANGE_MAX = 0.30      # 48h high/low range <= 30% (coiling, not trending hard)
-V4_RATIO = 2.0           # oi%48h / price%48h >= 2 (OI leads price = quiet loading)
+V4_WINDOW = 72           # hours (3-day accumulation window; tuned 2026-06-26 from 48)
+V4_OI_BUILD = 0.40       # OI now >= +40% vs window start
+V4_PRICE_FLAT = 0.25     # |net price move over window| <= 25% (tuned 2026-06-26 from 15%)
+V4_RANGE_MAX = 0.45      # window high/low range <= 45% (tuned 2026-06-26 from 30%)
+V4_RATIO = 2.0           # oi%window / price%window >= 2 (OI leads price = quiet loading)
 V4_FUNDING_TREND = 0.0005  # trend variant: calm/slightly+ funding cap (<= 0.05%)
 # Probe day (#7) — the pre-vertical "test": a volume-driven range break OUT of a
 # tight coil. It comes AFTER accumulation (v4) and immediately BEFORE the vertical;
@@ -171,11 +172,11 @@ def _eval_v1(oi_m, c_m, h_m, t, funding):
     six_high = max(highs)
     cond = {
         "oi_3up": up,
-        "oi_3h>=8%": oi_pct >= V1_OI_3H,
+        "oi_3h>=5%": oi_pct >= V1_OI_3H,
         "price_3h<=8%": price_pct <= V1_PRICE_3H_MAX,
         "breaks_6h_high": c0 > six_high,
-        "funding<0.1%": funding < FUNDING_MAX,
-        "oi/price>=1.5": _dominance_ratio(oi_pct, price_pct) >= V1_RATIO,
+        "funding<0.05%": funding < V1_FUNDING_MAX,
+        "oi/price>=2.0": _dominance_ratio(oi_pct, price_pct) >= V1_RATIO,
     }
     return {"fired": all(cond.values()), "conditions": cond,
             "stop": six_high, "position": "5-10%",
@@ -290,15 +291,15 @@ def _eval_v4(oi_m, c_m, h_m, l_m, t, funding):
     squeeze = funding <= 0
     trend = (funding <= V4_FUNDING_TREND) and uptrend
     cond = {
-        "oi_build_48h>=40%": oi_pct >= V4_OI_BUILD,
-        "price_flat_48h<=15%": abs(price_pct) <= V4_PRICE_FLAT,
-        "coiling_range<=30%": rng <= V4_RANGE_MAX,
+        "oi_build_72h>=40%": oi_pct >= V4_OI_BUILD,
+        "price_flat_72h<=25%": abs(price_pct) <= V4_PRICE_FLAT,
+        "coiling_range<=45%": rng <= V4_RANGE_MAX,
         "oi_leads_price>=2x": _dominance_ratio(oi_pct, price_pct) >= V4_RATIO,
         "funding_squeeze_or_trend": squeeze or trend,
     }
     return {"fired": all(cond.values()), "conditions": cond,
             "stop": lo, "position": "5-10%",
-            "metrics": {"oi_pct_48h": oi_pct, "price_pct_48h": price_pct, "range": rng,
+            "metrics": {"oi_pct_window": oi_pct, "price_pct_window": price_pct, "range": rng,
                         "funding": funding,
                         "variant": "squeeze" if squeeze else ("trend" if trend else None)}}
 

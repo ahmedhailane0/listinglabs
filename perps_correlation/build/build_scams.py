@@ -429,14 +429,16 @@ COND_KEY_MAP = {
     "oi_3up": "oi3up", "oi_3h>=8%": "oi3h8", "oi_3h>=5%": "oi3h5",
     "price_3h<=8%": "px3h8", "breaks_6h_high": "brk6h",
     "near_ema20<=5%": "ema20", "ema20>ema60+cross": "emacross",
-    "oi/price>=1.5": "oipx15", "oi/price>=1.0": "oipx10",
-    "funding<0.1%": "fund01", "|funding_8h|<=0.02%": "fund002",
+    "oi/price>=1.5": "oipx15", "oi/price>=2.0": "oipx20", "oi/price>=1.0": "oipx10",
+    "funding<0.1%": "fund01", "funding<0.05%": "fund005", "|funding_8h|<=0.02%": "fund002",
     "oi_dd>=15%": "oidd15", "price_dd<=10%": "pxdd10",
     "price/oi_dd<=0.5": "pxoidd", "oi_rebuild>=8%": "oireb8",
     "breaks_postwashout_high": "brkwash",
     # v4 — coiled accumulation
     "oi_build_48h>=40%": "oibld48", "price_flat_48h<=15%": "pxflat48",
     "coiling_range<=30%": "coil30", "oi_leads_price>=2x": "oilead2",
+    "oi_build_72h>=40%": "oibld72", "price_flat_72h<=25%": "pxflat72",
+    "coiling_range<=45%": "coil45",
     "funding_squeeze_or_trend": "fundsqz",
 }
 
