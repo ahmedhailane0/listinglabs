@@ -60,6 +60,18 @@ SPARK_POINTS = 120
 # Tune in one place here.
 ALERT_MIN_PUMP = 7.0
 
+# Score-watch ping: a SECOND net, independent of any fired setup. When the model
+# flags a coin as a standout (pump_score >= this) we ping even if no v1/v4/probe
+# setup fired — the safety net for pumps whose pattern none of the discrete
+# setups capture. Deliberately a HIGH bar (standouts only; most coins clear 7,
+# so 7 here would spam) and clearly labelled a heads-up, NOT a setup entry — the
+# score is coincident, so this tends to flag a move in progress, not before it.
+# Per-coin cooldown so a coin parked above the line doesn't re-ping hourly.
+# Both thresholds are tuned in this one place.
+ALERT_SCORE_WATCH = 35.0
+SCORE_WATCH_COOLDOWN_S = 24 * 3600
+SCORE_WATCH_FILE = OUTDIR / "score_watch.json"
+
 # Smooth intraday close candles per perp, for the Manipulated detail-page price
 # chart (CMC-style 24h/1W). 5m (last ~24h) + 1h (last ~12d); the daily history
 # fills the longer ranges at build time. Written hourly by this box; committed
@@ -487,6 +499,77 @@ def _send_results() -> int:
     return sent
 
 
+def _alert_score_watch(recs: dict) -> int:
+    """Second alert net: ping when the model rates a coin a standout
+    (pump_score >= ALERT_SCORE_WATCH) even if NO discrete setup fired — the
+    safety net for pumps whose shape v1/v4/probe don't capture. Suppressed for a
+    coin that already got a BUY alert this cycle (any of v1/v4/probe fired AND
+    cleared the gate, so it was already sent). Per-coin cooldown
+    (SCORE_WATCH_COOLDOWN_S) via SCORE_WATCH_FILE so a coin parked above the line
+    doesn't re-ping every hour. No-ops without Telegram. Never raises."""
+    if not _tg or not _tg.enabled():
+        return 0
+    try:
+        state = json.loads(SCORE_WATCH_FILE.read_text(encoding="utf-8")) \
+            if SCORE_WATCH_FILE.exists() else {}
+        if not isinstance(state, dict):
+            state = {}
+    except Exception:
+        state = {}
+    now = _now()
+    sent, changed = 0, False
+    for sym, r in recs.items():
+        score = r.get("pump_score")
+        if score is None or score < ALERT_SCORE_WATCH:
+            continue
+        # Already BUY-alerted this coin (a gated setup fired)? Don't double-ping.
+        sig = r.get("signals") or {}
+        if any((sig.get(s) or {}).get("fired") for s in ("v1", "v4", "probe")) \
+                and score >= ALERT_MIN_PUMP:
+            continue
+        last = state.get(sym, {}).get("t", 0)
+        if now - last < SCORE_WATCH_COOLDOWN_S:
+            continue
+        try:
+            px = r.get("mark_price")
+            spark = r.get("spark") or []
+            chg = ((spark[-1] / spark[0] - 1) * 100
+                   if len(spark) >= 2 and spark[0] else None)
+            name = (r.get("market") or {}).get("name") or sym
+            oifdv, fund = r.get("oi_fdv_pct"), r.get("funding")
+            ctx = f"score {score:.0f}/100"
+            if chg is not None:
+                ctx += f" · ~24h {chg:+.0f}%"
+            if oifdv is not None:
+                ctx += f" · OI/FDV {oifdv:.0f}%"
+            if fund is not None:
+                ctx += f" · funding {fund*100:+.4f}%"
+            msg = "\n".join([
+                f"\U0001F440 <b>WATCH — {_esc(sym)}</b> ({_esc(name)})",
+                f"Model standout — no setup fired (heads-up, NOT an entry).",
+                (f"Price  ~ ${_fmt_px(px)}" if px else "Price  n/a"),
+                ctx,
+                "⚠ score is coincident — may already be moving. Not financial advice.",
+            ])
+            if _tg.send(msg):
+                state[sym] = {"t": now, "score": score}
+                sent += 1
+                changed = True
+                time.sleep(0.5)
+        except Exception as ex:
+            print(f"  score-watch {sym} failed: {ex}")
+    if changed:
+        try:
+            SCORE_WATCH_FILE.write_text(
+                json.dumps(state, ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8")
+        except Exception as ex:
+            print(f"  score_watch: state write failed ({ex})")
+    if sent:
+        print(f"  telegram: sent {sent} score-watch ping(s)")
+    return sent
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
@@ -508,8 +591,14 @@ def _log_fires(recs: dict) -> int:
         sig = r.get("signals") or {}
         # v2 is coincident (backtest lift <1, ~0.88x) — it dragged the forward
         # ledger down without predicting, so it is no longer logged. v3 never
-        # fires. Only the setups with edge (v1, v4) go into the fire-log.
-        for strat in ("v1", "v4"):
+        # fires. v1/v4 are the accumulation setups (quiet OI build under a flat
+        # price). `probe` is the complementary BREAKOUT setup — a volume-burst
+        # range break out of a tight coil — which catches pumps that skip the
+        # accumulation tell entirely (e.g. VELVET +122% on 2026-06-26, which v1/v4
+        # missed but probe fired on at the coil break). Only the setups with edge
+        # (v1, v4, probe ~2.5x) go into the fire-log + Telegram (all share the
+        # ALERT_MIN_PUMP gate in _alert_buy). `dump` is a SHORT — not alert-wired.
+        for strat in ("v1", "v4", "probe"):
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
@@ -760,6 +849,9 @@ def main(argv: list[str]) -> int:
     # Close the loop: RESULT follow-ups for any BUY-alerted fire the nightly grader
     # has since scored (reads the fires_log _log_fires just wrote, with outcomes).
     _send_results()
+    # Second net: ping standout pump-scores with no fired setup (runs before
+    # mark_price is stripped below, so the price is still available).
+    _alert_score_watch(recs)
 
     # ── Per-token intraday candle files (smooth detail-page price chart) ──────
     PRICE_CANDLES_DIR.mkdir(parents=True, exist_ok=True)
