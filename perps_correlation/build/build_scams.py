@@ -1522,7 +1522,6 @@ def _filter_bar() -> str:
     <button class="fp-pre" data-pre="v2">Buy v2</button>
     <button class="fp-pre" data-pre="v3">Buy v3</button>
     <button class="fp-pre" data-pre="v4">Buy v4</button>
-    <button class="fp-clear" id="fp-clear">Clear all</button>
   </div>
   <div class="fp-grid">
     <fieldset class="fp-group"><legend>OI momentum</legend>
@@ -1552,6 +1551,11 @@ def _filter_bar() -> str:
     <fieldset class="fp-group"><legend>Thresholds</legend>
       """ + _cb("oi5m", "OI &gt; $5M") + _cb("oi10m", "OI &gt; $10M") + _cb("fdvlt150", "FDV &lt; $150M") + _cb("fdvgte150", "FDV ≥ $150M") + _cb("oifdv8", "OI/FDV ≥ 8%") + _cb("oifdv15", "OI/FDV ≥ 15%") + _cb("oimc25", "OI/MC ≥ 25%") + _cb("oimc50", "OI/MC &gt; 50%") + _cb("oivol3", "OI/Vol ≥ 3× (perp-priced)") + """
     </fieldset>
+  </div>
+  <div class="fp-actions">
+    <button class="fp-apply" id="fp-apply" type="button">Apply</button>
+    <button class="fp-clear" id="fp-clear" type="button">Clear</button>
+    <span class="fp-hint" id="fp-hint"></span>
   </div>
 </div>"""
 
@@ -2459,8 +2463,13 @@ section.card.span p.note{font-size:12px;color:var(--text-4);margin:10px 0 0}
 .fp-presets{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
 .fp-pre{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--border-input);background:var(--bg-card);color:var(--text-2);padding:4px 10px;border-radius:7px;cursor:pointer}
 .fp-pre.active{background:var(--primary);color:#fff;border-color:var(--primary)}
-.fp-clear{font:inherit;font-size:11px;color:var(--text-4);background:none;border:none;cursor:pointer;margin-left:auto}
+.fp-actions{display:flex;align-items:center;gap:10px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+.fp-apply{font:inherit;font-size:13px;font-weight:700;background:var(--primary);color:#fff;border:none;border-radius:8px;padding:8px 22px;cursor:pointer}
+.fp-apply:hover{background:var(--primary-deep)}
+.fp-clear{font:inherit;font-size:13px;font-weight:600;background:var(--bg-card);color:var(--text-2);border:1px solid var(--border-input);border-radius:8px;padding:8px 16px;cursor:pointer}
 .fp-clear:hover{color:var(--neg)}
+.fp-hint{font-size:11.5px;color:var(--text-4);font-style:italic}
+@media(max-width:640px){.fp-apply,.fp-clear{flex:1;padding:10px 0;text-align:center}}
 .fp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px 18px}
 .fp-group{border:1px solid var(--border);border-radius:8px;padding:8px 10px;margin:0}
 .fp-group legend{font-size:11px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;padding:0 4px}
@@ -2559,10 +2568,11 @@ function numOk(el,k){
   if(k==='fundn01')return parseFloat(el.dataset.fundingnum||'999')<=-0.001;
   if(k==='fundn03')return parseFloat(el.dataset.fundingnum||'999')<=-0.003;
   return true;}
+let appliedCond=[];   // conditions snapshot — the list filters on THIS, set only by Apply
 function ok(el){
   const q=search.value.trim().toLowerCase();
   if(q&&!el.dataset.search.includes(q))return false;
-  const ck=checked();if(!ck.length)return true;
+  const ck=appliedCond;if(!ck.length)return true;
   const cond=el.dataset.cond||'||';
   for(const k of ck){
     if(NUM_KEYS.has(k)){if(!numOk(el,k))return false;}
@@ -2575,15 +2585,24 @@ window.__refilter=apply;   // LIVE_JS re-runs the filter after it rewrites data-
 function syncPresets(){const ck=new Set(checked());
   pres.forEach(b=>{const keys=PRESETS[b.dataset.pre]||[];
     b.classList.toggle('active',keys.length>0&&keys.every(k=>ck.has(k)));});}
-search.addEventListener('input',apply);
-cbs.forEach(c=>c.addEventListener('change',()=>{syncPresets();apply();}));
-// clicking a preset ticks/unticks its condition checkboxes, then filters
+// Conditions/presets are DEFERRED — they only change the list when Apply is
+// pressed (search stays live). A hint nudges you to Apply when the ticked boxes
+// differ from what's currently applied.
+const hint=document.getElementById('fp-hint');
+function markDirty(){const ck=checked();
+  const same=ck.length===appliedCond.length&&ck.every(k=>appliedCond.includes(k));
+  if(hint)hint.textContent=same?'':'unapplied changes';}
+search.addEventListener('input',apply);                       // search filters live
+cbs.forEach(c=>c.addEventListener('change',()=>{syncPresets();markDirty();}));
+// clicking a preset ticks/unticks its condition checkboxes (apply on Apply)
 pres.forEach(b=>b.addEventListener('click',()=>{
   const keys=PRESETS[b.dataset.pre]||[];const isOn=b.classList.contains('active');
   cbs.forEach(c=>{if(keys.includes(c.dataset.k))c.checked=!isOn;});
-  syncPresets();apply();}));
+  syncPresets();markDirty();}));
+document.getElementById('fp-apply').addEventListener('click',()=>{
+  appliedCond=checked();apply();markDirty();});               // commit the conditions
 document.getElementById('fp-clear').addEventListener('click',()=>{
-  cbs.forEach(c=>c.checked=false);search.value='';syncPresets();apply();});  // Clear all resets search too
+  cbs.forEach(c=>c.checked=false);search.value='';appliedCond=[];syncPresets();apply();markDirty();});
 const bG=document.getElementById('view-grid'),bL=document.getElementById('view-list');
 const views=document.getElementById('views');
 const VIEW_KEY='ll-view-scams';
