@@ -24,11 +24,14 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     4 C[0] > max(H[1..6])          5 funding < 0.1%          6 oi%3h / price%3h >= 1.5
     -> size 5-10%, stop = the 6h breakout level max(H[1..6]).
 
-  Buy v2 — OI + EMA golden cross
-    1 OI[0]>OI[1]>OI[2]>OI[3]      2 OI up >=5% over 3h
-    3 EMA20>EMA60 with a cross-up in the last 10 candles
-    4 |C[0]-EMA20|/EMA20 <= 5%     5 oi%3h / price%3h >= 1.0     6 funding < 0.1%
-    -> size 10% (15% if oi%3h>=10% and vol>1.5x avg); trend stop = EMA60.
+  Buy v2 — IGNITION (OI-confirmed coil-break; the catch-at-break for "cold" pumps)
+    1 the prior 48h base was a tight coil (range <= 45%)
+    2 this hour's volume >= 5x the coil's MEDIAN hourly volume
+    3 OI up >= +15% over the last 3h (leveraged money committing)
+    4 close breaks the coil high by >= +8%      5 funding still cold (<= 0.05%)
+    -> size 5-10%, stop = the coil high (a fall back below = failed break). Catches
+       pumps that SKIP v1/v4's quiet-accumulation tell (e.g. VELVET +122%, 2026-06-26:
+       OI flat through a 3-day coil, then price+OI+volume exploded together).
 
   Buy v3 — washout reversal (the owner's original idea)
     1 OI dropped >=15% within 4h   2 price dropped <=10% within 4h
@@ -76,14 +79,23 @@ V1_OI_3H = 0.05          # >= +5% OI over 3h (tuned 2026-06-26: fires earlier)
 V1_PRICE_3H_MAX = 0.08   # <= +8% price over 3h
 V1_RATIO = 2.0           # oi%3h / price%3h (tuned 2026-06-26: OI must lead price 2x)
 V1_FUNDING_MAX = 0.0005  # v1 only: per-interval funding < 0.05% (tuned 2026-06-26)
-V2_OI_3H = 0.05          # >= +5% OI over 3h
-V2_EMA_FAST, V2_EMA_SLOW = 20, 60
-V2_CROSS_LOOKBACK = 10   # golden cross within last N candles
-V2_NEAR_EMA = 0.05       # |C - EMA20| / EMA20 <= 5%
-V2_RATIO = 1.0
-V2_OI_BUMP = 0.10        # oi%3h >= 10% -> bigger size...
-V2_VOL_BUMP = 1.5        # ...if vol > 1.5x the trailing average
-FUNDING_MAX = 0.001      # v2: per-interval funding < 0.1% (v1 uses V1_FUNDING_MAX)
+# Buy v2 — IGNITION: an OI-confirmed coil-break. The catch-at-break setup for
+# pumps that SKIP the quiet-accumulation tell v1/v4 hunt for (VELVET +122% on
+# 2026-06-26: OI flat through a 3-day coil, then price + OI + volume exploded
+# together). Fires on the breakout HOUR — the earliest honest entry for a "cold"
+# pump — and self-limits to ~one fire (once the breakout bar enters the coil
+# window the range is no longer tight). Every knob is loop-tunable.
+V2_COIL_H = 48           # the pre-break base window (hours)
+V2_COIL_MAX = 0.45       # that base was a tight coil: (hi-lo)/lo <= 45% (intraday wicks)
+V2_BREAK_LAG = 3         # the break may be up to N bars old — OI confirmation lags the
+                         # break candle by ~1h, so we let it confirm before firing
+V2_VOL_MULT = 5.0        # ignition: peak recent vol >= 5x the coil's MEDIAN hourly vol
+V2_OI_SURGE = 0.15       # OI up >= +15% over V2_OI_SURGE_H (leveraged money committing)
+V2_OI_SURGE_H = 3        # ...measured over the last N hours
+V2_BREAK_MARGIN = 0.08   # the break closes above the coil high by >= +8%
+V2_FUND_MAX = 0.0005     # funding still cold (<= 0.05%/interval) = room, not a late chase
+EMA_FAST, EMA_SLOW = 20, 60   # shared EMA periods (v4's trend variant uses these)
+FUNDING_MAX = 0.001      # LEGACY: kept only for optimize_signals.py's v1 grid getattr
 V3_OI_DD = 0.15          # OI drawdown >= 15% in 4h
 V3_PRICE_DD_MAX = 0.10   # price drawdown <= 10% in 4h
 V3_DD_RATIO_MAX = 0.5    # price_dd / oi_dd <= 0.5
@@ -183,44 +195,43 @@ def _eval_v1(oi_m, c_m, h_m, t, funding):
             "metrics": {"oi_pct_3h": oi_pct, "price_pct_3h": price_pct, "funding": funding}}
 
 
-def _eval_v2(oi_m, c_m, v_m, t, funding):
-    up, oiv = _consec_oi_up(oi_m, t)
-    # contiguous closes ending at t, oldest..newest, for EMA20/60 + cross lookback.
-    need = V2_EMA_SLOW + V2_CROSS_LOOKBACK + 1
-    closes = []
-    for k in range(need - 1, -1, -1):
-        c = c_m.get(t - k * HOUR)
-        if c is None:
-            return {"insufficient": True}
-        closes.append(c)
-    c0, c3 = c_m.get(t), c_m.get(t - 3 * HOUR)
-    if up is None or c3 is None or funding is None:
+def _eval_v2(oi_m, c_m, h_m, l_m, v_m, t, funding):
+    """IGNITION: an OI-confirmed coil-break. A tight multi-day base, then within the
+    last few bars price broke above the coil top on a volume burst WHILE open
+    interest surged — and funding is still cold. The conjunction (OI surging WITH
+    the break) is the edge: it separates a leveraged-money ignition that follows
+    through from a spot-only fakeout. The break window lags by V2_BREAK_LAG bars so
+    OI (which confirms ~1h after the break candle) can register before we fire.
+    Stop = the coil high (a fall back below = a failed break)."""
+    W, L = V2_COIL_H, V2_BREAK_LAG
+    oi0, oiS = oi_m.get(t), oi_m.get(t - V2_OI_SURGE_H * HOUR)
+    # base coil = the W hours ENDING L bars ago (excludes the breakout window, so the
+    # base stays tight even once price has popped; this also self-limits the fire).
+    b_hi = [h_m.get(t - k * HOUR) for k in range(L + 1, L + 1 + W)]
+    b_lo = [l_m.get(t - k * HOUR) for k in range(L + 1, L + 1 + W)]
+    b_vol = [v_m.get(t - k * HOUR) for k in range(L + 1, L + 1 + W)]
+    # recent breakout window = the last L+1 bars (k=0..L)
+    r_close = [c_m.get(t - k * HOUR) for k in range(L + 1)]
+    r_vol = [v_m.get(t - k * HOUR) for k in range(L + 1)]
+    if (oi0 is None or not oiS or funding is None
+            or any(x is None for x in b_hi + b_lo + b_vol + r_close + r_vol)):
         return {"insufficient": True}
-    e20, e60 = ema(closes, V2_EMA_FAST), ema(closes, V2_EMA_SLOW)
-    cur20, cur60 = e20[-1], e60[-1]
-    # cross-up (EMA20 crosses above EMA60) within the last N candle transitions
-    crossed = any(e20[j - 1] <= e60[j - 1] and e20[j] > e60[j]
-                  for j in range(len(closes) - V2_CROSS_LOOKBACK, len(closes)))
-    oi_pct = (oiv[0] - oiv[3]) / oiv[3] if oiv[3] else 0.0
-    price_pct = (c0 - c3) / c3 if c3 else 0.0
+    coil_hi, coil_lo = max(b_hi), min(b_lo)
+    coil_rng = (coil_hi - coil_lo) / coil_lo if coil_lo else float("inf")
+    med_vol = sorted(b_vol)[len(b_vol) // 2]              # robust "normal" hourly vol
+    vol_x = (max(r_vol) / med_vol) if med_vol else float("inf")
+    oi_surge = (oi0 - oiS) / oiS
     cond = {
-        "oi_3up": up,
-        "oi_3h>=5%": oi_pct >= V2_OI_3H,
-        "ema20>ema60+cross": (cur20 > cur60) and crossed,
-        "near_ema20<=5%": abs(c0 - cur20) / cur20 <= V2_NEAR_EMA if cur20 else False,
-        "oi/price>=1.0": _dominance_ratio(oi_pct, price_pct) >= V2_RATIO,
-        "funding<0.1%": funding < FUNDING_MAX,
+        "tight_coil<=45%": coil_rng <= V2_COIL_MAX,
+        "vol_ignition>=5x": vol_x >= V2_VOL_MULT,
+        "oi_surge>=15%": oi_surge >= V2_OI_SURGE,
+        "breaks_coil_high": max(r_close) > coil_hi * (1 + V2_BREAK_MARGIN),
+        "funding_cold": funding <= V2_FUND_MAX,
     }
-    # position bump if OI surged on heavy volume
-    vols = [v_m.get(t - k * HOUR) for k in range(1, 21)]
-    vols = [x for x in vols if x is not None]
-    v0 = v_m.get(t)
-    big = (oi_pct >= V2_OI_BUMP and v0 is not None and vols
-           and v0 > V2_VOL_BUMP * (sum(vols) / len(vols)))
     return {"fired": all(cond.values()), "conditions": cond,
-            "stop": cur60, "position": "15%" if big else "10%",
-            "metrics": {"oi_pct_3h": oi_pct, "price_pct_3h": price_pct,
-                        "ema20": cur20, "ema60": cur60, "funding": funding}}
+            "stop": coil_hi, "position": "5-10%",
+            "metrics": {"coil_range": coil_rng, "vol_x": vol_x, "oi_surge": oi_surge,
+                        "break_level": coil_hi, "funding": funding}}
 
 
 def _eval_v3(oi_m, c_m, h_m, l_m, t, funding, interval_h):
@@ -281,13 +292,13 @@ def _eval_v4(oi_m, c_m, h_m, l_m, t, funding):
     # trend variant wants an EMA20>EMA60 uptrend (needs contiguous closes); the
     # squeeze variant doesn't, so a missing EMA only suppresses trend, not v4.
     closes, ok = [], True
-    for k in range(V2_EMA_SLOW, -1, -1):
+    for k in range(EMA_SLOW, -1, -1):
         cc = c_m.get(t - k * HOUR)
         if cc is None:
             ok = False
             break
         closes.append(cc)
-    uptrend = ok and ema(closes, V2_EMA_FAST)[-1] > ema(closes, V2_EMA_SLOW)[-1]
+    uptrend = ok and ema(closes, EMA_FAST)[-1] > ema(closes, EMA_SLOW)[-1]
     squeeze = funding <= 0
     trend = (funding <= V4_FUNDING_TREND) and uptrend
     cond = {
@@ -378,7 +389,7 @@ def evaluate(oi, klines, funding=None, current_funding=None,
     out = {"as_of": t0}
     runners = {
         "v1": lambda tt, f: _eval_v1(oi_m, c_m, h_m, tt, f),
-        "v2": lambda tt, f: _eval_v2(oi_m, c_m, v_m, tt, f),
+        "v2": lambda tt, f: _eval_v2(oi_m, c_m, h_m, l_m, v_m, tt, f),
         "v3": lambda tt, f: _eval_v3(oi_m, c_m, h_m, l_m, tt, f, funding_interval_h),
         "v4": lambda tt, f: _eval_v4(oi_m, c_m, h_m, l_m, tt, f),
         "probe": lambda tt, f: _eval_probe(c_m, h_m, l_m, v_m, tt),   # #7

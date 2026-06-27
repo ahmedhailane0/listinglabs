@@ -94,6 +94,9 @@ PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
 # tuner (tools/optimize_signals.py) validates against — it accrues forever.
 FIRES_LOG = OUTDIR / "fires_log.json"
 FIRES_LOG_MAX = 8000
+FIRE_REFRACTORY_H = 72        # one fire per (sym, setup) per 72h — collapses a setup
+                              # that fires on several consecutive bars for one event
+                              # into a single trade/alert (matches the 72h time-stop).
 
 # Optional pump-probability scorer (LOCAL/BOX-only module + model; absent in CI,
 # so this no-ops there). When present, writes a 0-100 `pump_score` per coin.
@@ -585,27 +588,42 @@ def _log_fires(recs: dict) -> int:
     except Exception:
         log = []
     seen = {f"{e.get('sym')}|{e.get('strat')}|{e.get('t')}" for e in log}
+    # Per-(sym,strat) last fire time, for the refractory below. A breakout setup can
+    # fire on several consecutive hourly bars for ONE event (e.g. v2 ignition fires
+    # ~3 bars while OI confirms) — without this, that's 3 duplicate alerts/log rows
+    # for the same trade. One fire per setup per FIRE_REFRACTORY_H matches the
+    # backtest's one-trade-per-horizon counting and the 72h time-stop (you're
+    # already in the trade; don't re-enter it).
+    last_fire: dict[tuple, int] = {}
+    for e in log:
+        k = (e.get("sym"), e.get("strat"))
+        ft = e.get("t") or 0
+        if ft > last_fire.get(k, 0):
+            last_fire[k] = ft
     now = _now()
     added = 0
     for sym, r in recs.items():
         sig = r.get("signals") or {}
-        # v2 is coincident (backtest lift <1, ~0.88x) — it dragged the forward
-        # ledger down without predicting, so it is no longer logged. v3 never
-        # fires. v1/v4 are the accumulation setups (quiet OI build under a flat
-        # price). `probe` is the complementary BREAKOUT setup — a volume-burst
-        # range break out of a tight coil — which catches pumps that skip the
-        # accumulation tell entirely (e.g. VELVET +122% on 2026-06-26, which v1/v4
-        # missed but probe fired on at the coil break). Only the setups with edge
-        # (v1, v4, probe ~2.5x) go into the fire-log + Telegram (all share the
-        # ALERT_MIN_PUMP gate in _alert_buy). `dump` is a SHORT — not alert-wired.
-        for strat in ("v1", "v4", "probe"):
+        # v3 never fires. v1/v4 are the accumulation setups (quiet OI build under a
+        # flat price). v2 (IGNITION, replaced the old coincident EMA-cross v2 on
+        # 2026-06-27) and `probe` are the BREAKOUT setups that catch pumps which
+        # skip the accumulation tell entirely (e.g. VELVET +122% on 2026-06-26,
+        # which v1/v4 missed): v2 = OI-confirmed coil-break, probe = pure
+        # price/volume coil-break (the no-OI-needed fallback). All edge setups
+        # (v1, v4, v2, probe) go into the fire-log + Telegram, sharing the
+        # ALERT_MIN_PUMP gate in _alert_buy. `dump` is a SHORT — not alert-wired.
+        for strat in ("v1", "v4", "v2", "probe"):
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
             key = f"{sym}|{strat}|{d.get('t')}"
             if key in seen:
                 continue
+            ft = d.get("t") or 0
+            if ft - last_fire.get((sym, strat), 0) < FIRE_REFRACTORY_H * 3600:
+                continue                       # same trade still inside the refractory
             seen.add(key)
+            last_fire[(sym, strat)] = ft
             px = r.get("mark_price")
             entry = {
                 "sym": sym, "strat": strat, "t": d.get("t"),

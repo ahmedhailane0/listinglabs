@@ -80,7 +80,7 @@ LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
 STRATS = ("v1", "v2", "v3", "v4")
 STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4"}
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
-               "v2": "OI + EMA golden cross", "v3": "Washout reversal",
+               "v2": "Ignition (OI-confirmed coil-break)", "v3": "Washout reversal",
                "v4": "Coiled accumulation (pre-pump build)"}
 
 
@@ -428,7 +428,9 @@ def _funding_str(rec):
 COND_KEY_MAP = {
     "oi_3up": "oi3up", "oi_3h>=8%": "oi3h8", "oi_3h>=5%": "oi3h5",
     "price_3h<=8%": "px3h8", "breaks_6h_high": "brk6h",
-    "near_ema20<=5%": "ema20", "ema20>ema60+cross": "emacross",
+    # v2 — ignition (OI-confirmed coil-break)
+    "tight_coil<=45%": "coiltt", "vol_ignition>=5x": "volign",
+    "oi_surge>=15%": "oisrg", "breaks_coil_high": "brkcoil", "funding_cold": "fundcold",
     "oi/price>=1.5": "oipx15", "oi/price>=2.0": "oipx20", "oi/price>=1.0": "oipx10",
     "funding<0.1%": "fund01", "funding<0.05%": "fund005", "|funding_8h|<=0.02%": "fund002",
     "oi_dd>=15%": "oidd15", "price_dd<=10%": "pxdd10",
@@ -1526,7 +1528,10 @@ def _filter_bar() -> str:
       """ + _cb("oi3up", "OI rising 3 candles") + _cb("oi3h8", "OI 3h ≥8%") + _cb("oi3h5", "OI 3h ≥5%") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Price action</legend>
-      """ + _cb("px3h8", "Price 3h ≤8%") + _cb("brk6h", "Breaks 6h high") + _cb("ema20", "Near EMA20 ≤5%") + _cb("emacross", "EMA20&gt;EMA60 cross") + """
+      """ + _cb("px3h8", "Price 3h ≤8%") + _cb("brk6h", "Breaks 6h high") + """
+    </fieldset>
+    <fieldset class="fp-group"><legend>Ignition (v2)</legend>
+      """ + _cb("coiltt", "Tight coil ≤45%") + _cb("volign", "Volume ≥5×") + _cb("oisrg", "OI surge ≥15%") + _cb("brkcoil", "Breaks coil high") + _cb("fundcold", "Funding cold") + """
     </fieldset>
     <fieldset class="fp-group"><legend>OI / price ratio</legend>
       """ + _cb("oipx15", "OI/price ≥1.5") + _cb("oipx10", "OI/price ≥1.0") + """
@@ -1698,9 +1703,11 @@ SETUP_PANEL = """
           price <b>breaks the 6h high</b> with funding still low. Catches the
           breakout as it starts — later than v4, but more confirmed.</p>
       </div>
-      <div class="sm-setup"><h3><span class="buy v2 mini">Buy v2</span> OI + trend cross</h3>
-        <p>OI rising and the short moving average crosses <b>above</b> the long one
-          (EMA20&gt;EMA60) near price — momentum confirmation that the trend has turned up.</p>
+      <div class="sm-setup"><h3><span class="buy v2 mini">Buy v2</span> Ignition (coil-break)</h3>
+        <p>After a <b>tight multi-day coil</b>, price <b>breaks the coil high</b> on a
+          <b>volume burst (≥5×)</b> with open interest <b>surging ≥15%</b> and funding
+          still cold — leveraged money igniting the move. Catches "cold" pumps that
+          skip v1/v4's quiet-accumulation tell (caught VELVET at its breakout).</p>
       </div>
       <div class="sm-setup"><h3><span class="buy v3 mini">Buy v3</span> Washout reversal</h3>
         <p>After a sharp shakeout (OI flushed <b>≥15%</b> but price held, <b>≤10%</b>
