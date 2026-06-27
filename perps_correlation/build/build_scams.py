@@ -1895,6 +1895,19 @@ def _pnl_card(closed) -> str:
             f'</aside>')
 
 
+_JOURNAL_TABS_JS = """
+<script>(function(){
+  var tabs=[].slice.call(document.querySelectorAll('.jtab'));
+  var views={pumps:document.getElementById('view-pumps'),movers:document.getElementById('view-movers')};
+  function setv(v){tabs.forEach(function(b){b.classList.toggle('active',b.dataset.view===v);});
+    for(var k in views){if(views[k])views[k].style.display=(k===v)?'':'none';}
+    try{localStorage.setItem('ll-journal-view',v);}catch(e){}}
+  tabs.forEach(function(b){b.addEventListener('click',function(){setv(b.dataset.view);});});
+  var jv='pumps';try{jv=localStorage.getItem('ll-journal-view')||'pumps';}catch(e){}
+  setv(jv==='movers'?'movers':'pumps');
+})();</script>"""
+
+
 def _journal_page(recs) -> str:
     """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
     (entry + stop, logged by the box), graded 72h later on real price. A scorecard
@@ -2135,16 +2148,20 @@ def _journal_page(recs) -> str:
 <nav class="topnav"><a href="index.html">← Watchlist</a>
 <a class="active" href="journal.html">AI Track Record</a>{theme_toggle_button()}</nav>
 <p class="sub">A journal of the <b>trained model's live Buy v1, v2 &amp; v4 setups</b> — the
-patterns it reads as a coming pump. Each fire is logged with an entry price the moment
-it triggers, then <b>scored 72h later on the real price</b> (target: +50%). These are
-<b>research paper signals scored on real prices — not executed trades and not financial
-advice</b>; nothing here places an order or risks capital. The sample is small and grows
-over time, so read the rates as early evidence, not a settled edge.</p>
-<nav class="jjumpnav"><a href="#movers">↓ +10% Movers tracker</a></nav></header>
+patterns it reads as a coming pump. Each fire is logged with an entry price the moment it
+triggers, then <b>scored on the real price</b>. Two views below: the headline <b>+50% pump</b>
+target (72h) and a faster <b>+10% mover</b> target (24h). <b>Research paper signals scored
+on real prices — not executed trades, not financial advice</b>; the sample is small and
+grows over time, so read the rates as early evidence.</p></header>
 <main>
+<div class="jtabs" role="tablist">
+  <button class="jtab active" data-view="pumps" type="button">+50% Pumps</button>
+  <button class="jtab" data-view="movers" type="button">+10% Movers</button>
+</div>
+<div id="view-pumps" class="jview">
 <div class="jtop">
 <section class="card span jscore">
-  <h3>Scorecard <span class="asof">v1 &amp; v4 · closed (graded) paper trades</span></h3>
+  <h3>Scorecard <span class="asof">v1/v2/v4 · +50% / 72h · closed (graded)</span></h3>
   {scorecard}
   {by_html}
 </section>
@@ -2156,9 +2173,12 @@ over time, so read the rates as early evidence, not a settled edge.</p>
   {closed_tbl}
 </section>
 {f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
+</div>
+<div id="view-movers" class="jview" style="display:none">
 {mover_section}
+</div>
 </main>
-{THEME_JS}"""
+{THEME_JS}{_JOURNAL_TABS_JS}"""
     desc = ("The trained model's live track record on the Manipulated tab — every Buy "
             "v1/v4 setup it fired, graded 72h later on real price: win rate, +50% hit "
             "rate and average result. Research paper signals, not executed trades.")
@@ -2249,11 +2269,13 @@ EXTRA_CSS = """
 .jtable .jhit{color:#1a8a4f}
 .jtable .jstop{color:#c0392b}
 .jtable .jmiss{color:var(--text-4)}
-/* a "jump to the +10% Movers tracker" chip in the journal header */
-.jjumpnav{margin:10px 0 0}
-.jjumpnav a{display:inline-block;font-size:12px;font-weight:600;color:var(--header-fg);opacity:.85;
-  border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:3px 12px}
-.jjumpnav a:hover{opacity:1;background:rgba(255,255,255,.1);text-decoration:none}
+/* segmented toggle between the +50% Pumps and +10% Movers views */
+.jtabs{display:flex;gap:4px;margin:0 0 18px;background:var(--bg-subtle);border:1px solid var(--border);
+  border-radius:11px;padding:4px;max-width:330px}
+.jtab{flex:1;font:inherit;font-size:13px;font-weight:700;color:var(--text-3);background:none;border:none;
+  border-radius:8px;padding:9px 10px;cursor:pointer;white-space:nowrap}
+.jtab:hover:not(.active){color:var(--text-1)}
+.jtab.active{background:var(--primary);color:#fff}
 /* mobile: the journal trade tables SCROLL inside their wrap instead of crushing
    their columns into each other; stat cards stay 2-up but less chunky */
 @media(max-width:640px){
