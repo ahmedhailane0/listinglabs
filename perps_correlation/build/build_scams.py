@@ -1895,6 +1895,79 @@ def _pnl_card(closed) -> str:
             f'</aside>')
 
 
+def _winrate_chart(closed) -> str:
+    """Cumulative win rate (P&L > 0) over time, one polyline per setup (v1/v2/v4).
+    X = trade resolution time, Y = running win %. A static SVG (no JS) so it renders
+    correctly even inside a hidden tab. Honest: it swings a lot at low sample."""
+    import datetime as _dt
+    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a"}
+
+    def _restime(e):
+        o = e.get("outcome") or {}
+        return o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
+
+    series = {}
+    for strat in ("v1", "v2", "v4"):
+        es = sorted([e for e in closed if e.get("strat") == strat], key=_restime)
+        pts, wins = [], 0
+        for i, e in enumerate(es, 1):
+            if (_real_pnl(e) or 0) > 0:
+                wins += 1
+            pts.append((_restime(e), wins / i))
+        if pts:
+            series[strat] = pts
+    if not series:
+        return ""
+    all_t = [t for pts in series.values() for t, _ in pts]
+    tmin, tmax = min(all_t), max(all_t)
+    span = (tmax - tmin) or 1
+    W, H, L, R, T, B = 360, 184, 34, 10, 10, 24
+    pw, ph = W - L - R, H - T - B
+
+    def X(t):
+        return L + (t - tmin) / span * pw
+
+    def Y(wr):
+        return T + (1 - wr) * ph
+
+    def _d(t):
+        return _dt.datetime.fromtimestamp(t, _dt.timezone.utc).strftime("%b %d")
+
+    grid = []
+    for pct in (0, 25, 50, 75, 100):
+        y = Y(pct / 100)
+        grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="wc-grid"/>')
+        grid.append(f'<text x="{L-5}" y="{y+3:.1f}" class="wc-yl">{pct}%</text>')
+    xlabs = (f'<text x="{L}" y="{H-7}" class="wc-xl" text-anchor="start">{_d(tmin)}</text>'
+             f'<text x="{W-R}" y="{H-7}" class="wc-xl" text-anchor="end">{_d(tmax)}</text>')
+    lines, legend = [], []
+    for strat in ("v1", "v2", "v4"):
+        pts = series.get(strat)
+        if not pts:
+            continue
+        if len(pts) == 1:                       # a lone point needs a visible dot
+            t, wr = pts[0]
+            lines.append(f'<circle cx="{X(t):.1f}" cy="{Y(wr):.1f}" r="2.5" fill="{COL[strat]}"/>')
+        else:
+            d = " ".join(f"{X(t):.1f},{Y(wr):.1f}" for t, wr in pts)
+            lines.append(f'<polyline points="{d}" fill="none" stroke="{COL[strat]}" '
+                         f'stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>')
+        legend.append((strat, COL[strat], pts[-1][1] * 100, len(pts)))
+    leg_html = " ".join(
+        f'<span class="wc-leg"><i style="background:{c}"></i>{s} {f:.0f}% '
+        f'<small>({n})</small></span>' for s, c, f, n in legend)
+    svg = (f'<svg class="wc-svg" viewBox="0 0 {W} {H}" role="img" '
+           f'aria-label="cumulative win rate over time by setup">'
+           + "".join(grid) + "".join(lines) + xlabs + '</svg>')
+    return (f'<section class="card span">'
+            f'<h3>Win rate over time <span class="asof">running win% (P&amp;L&gt;0) per setup · '
+            f'+50% / 72h</span></h3>'
+            f'<div class="wc-legend">{leg_html}</div>{svg}'
+            f"<p class=\"jnote\">Each line is a setup's win rate as its trades resolve over time — "
+            f'climbing = winning more often as evidence builds. With ~15–20 trades per setup it '
+            f'swings hard early, so read the trend, not the day-to-day wiggle.</p></section>')
+
+
 _JOURNAL_TABS_JS = """
 <script>(function(){
   var tabs=[].slice.call(document.querySelectorAll('.jtab'));
@@ -1998,7 +2071,6 @@ def _journal_page(recs) -> str:
         '<div class="jb-row">'
         + _bcell("AI strategy (net of fees)", avg_pnl, lead=True)
         + _bcell("Buy &amp; hold same coins", avg_bh)
-        + _bcell("Hold BTC", avg_bt)
         + '</div>' + edge_txt
         + '<p class="jnote">The strategy beating a flat hold of the same coins is the '
         'proof of edge — its timed exits bank pumps that holders give back, and its '
@@ -2168,6 +2240,7 @@ grows over time, so read the rates as early evidence.</p></header>
 {_pnl_card(closed)}
 </div>
 {bench}
+{_winrate_chart(closed)}
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
@@ -2276,6 +2349,14 @@ EXTRA_CSS = """
   border-radius:8px;padding:9px 10px;cursor:pointer;white-space:nowrap}
 .jtab:hover:not(.active){color:var(--text-1)}
 .jtab.active{background:var(--primary);color:#fff}
+/* win-rate-over-time chart (one polyline per setup) */
+.wc-svg{width:100%;height:auto;margin-top:8px;background:var(--bg-subtle);border-radius:8px;display:block}
+.wc-grid{stroke:var(--border)}
+.wc-yl,.wc-xl{fill:var(--text-4);font-size:9px}
+.wc-legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 0;font-size:12.5px;font-weight:700}
+.wc-leg{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}
+.wc-leg i{width:11px;height:11px;border-radius:3px}
+.wc-leg small{color:var(--text-4);font-weight:400}
 /* mobile: the journal trade tables SCROLL inside their wrap instead of crushing
    their columns into each other; stat cards stay 2-up but less chunky */
 @media(max-width:640px){
