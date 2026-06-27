@@ -2036,7 +2036,7 @@ def _journal_page(recs) -> str:
                 f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
                 f'<td class="jnum">{_jpct(_real_pnl(e))}</td></tr>')
         closed_tbl = (
-            '<table class="jtable"><thead><tr>'
+            '<div class="tablewrap"><table class="jtable"><thead><tr>'
             '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
             '<th title="the intended stop — where it bails if wrong">Stop</th>'
             '<th title="intended take-profit 1: +25% (sell half)">TP1 +25%</th>'
@@ -2044,7 +2044,7 @@ def _journal_page(recs) -> str:
             '<th title="what actually closed the trade">Exit</th>'
             '<th title="realistic P&amp;L, net of fees + slippage">Result</th>'
             '</tr></thead><tbody>'
-            + "".join(crows) + '</tbody></table>'
+            + "".join(crows) + '</tbody></table></div>'
             + '<p class="jnote">Each row is the plan as logged at entry — stop, TP1 '
             '(+25%, sell half), TP2 (+50%, sell rest) — with ✓/✗ showing which targets '
             'price reached, then how the trade actually closed.</p>')
@@ -2068,9 +2068,9 @@ def _journal_page(recs) -> str:
                 f'<td><span class="jpending">pending</span></td></tr>')
         open_tbl = (
             '<h3>Open trades <span class="asof">fired · awaiting 72h grade</span></h3>'
-            '<table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
+            '<div class="tablewrap"><table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
             '<th>Setup</th><th>Entry</th><th>Matures (UTC)</th><th>Status</th>'
-            '</tr></thead><tbody>' + "".join(orows) + '</tbody></table>')
+            '</tr></thead><tbody>' + "".join(orows) + '</tbody></table></div>')
     else:
         open_tbl = ""
 
@@ -2111,18 +2111,18 @@ def _journal_page(recs) -> str:
                 f'<td class="jnum">{_jpct(_o(e, "m_pnl_real"))}</td></tr>')
         mover_inner = (
             f'{m_score}'
-            '<table class="jtable"><thead><tr>'
+            '<div class="tablewrap"><table class="jtable"><thead><tr>'
             '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
             '<th title="reached +10% within 12h">+10% ≤12h</th>'
             '<th title="reached +10% within 24h">+10% ≤24h</th>'
             '<th title="how the +10% trade closed">Exit</th>'
             '<th title="realistic P&amp;L: +10% TP / own stop / 24h close, net of fees+slippage">Result</th>'
-            '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table>')
+            '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table></div>')
     else:
         mover_inner = ('<p class="jnote">No mover trades graded yet — each fire is '
                        'scored once it matures. Check back as the ledger fills.</p>')
     mover_section = (
-        '<section class="card span">'
+        '<section class="card span" id="movers">'
         '<h3>+10% Movers <span class="asof">same setups · easier target: +10% within 24h</span></h3>'
         '<p class="jnote">A faster, higher-frequency <b>early-mover</b> track: the SAME '
         'v1/v2/v4 fires, scored against a <b>+10% target within 24h</b> (the first leg of '
@@ -2139,7 +2139,8 @@ patterns it reads as a coming pump. Each fire is logged with an entry price the 
 it triggers, then <b>scored 72h later on the real price</b> (target: +50%). These are
 <b>research paper signals scored on real prices — not executed trades and not financial
 advice</b>; nothing here places an order or risks capital. The sample is small and grows
-over time, so read the rates as early evidence, not a settled edge.</p></header>
+over time, so read the rates as early evidence, not a settled edge.</p>
+<nav class="jjumpnav"><a href="#movers">↓ +10% Movers tracker</a></nav></header>
 <main>
 <div class="jtop">
 <section class="card span jscore">
@@ -2240,6 +2241,7 @@ EXTRA_CSS = """
 .jset{display:inline-block;padding:1px 7px;border-radius:6px;font-size:11px;font-weight:600;
   border:1px solid var(--border)}
 .jset.v1{background:rgba(46,109,164,.14);color:#2e6da4}
+.jset.v2{background:rgba(31,78,121,.18);color:#3b7cc4}
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
 .jpending{color:var(--text-4);font-size:12px}
 .jnote{color:var(--text-4);font-style:italic;margin:8px 0}
@@ -2247,6 +2249,22 @@ EXTRA_CSS = """
 .jtable .jhit{color:#1a8a4f}
 .jtable .jstop{color:#c0392b}
 .jtable .jmiss{color:var(--text-4)}
+/* a "jump to the +10% Movers tracker" chip in the journal header */
+.jjumpnav{margin:10px 0 0}
+.jjumpnav a{display:inline-block;font-size:12px;font-weight:600;color:var(--header-fg);opacity:.85;
+  border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:3px 12px}
+.jjumpnav a:hover{opacity:1;background:rgba(255,255,255,.1);text-decoration:none}
+/* mobile: the journal trade tables SCROLL inside their wrap instead of crushing
+   their columns into each other; stat cards stay 2-up but less chunky */
+@media(max-width:640px){
+  .tablewrap .jtable{min-width:560px}
+  .jtable{font-size:12px}
+  .jtable th,.jtable td{padding:7px 8px}
+  .jcards{grid-template-columns:1fr 1fr;gap:8px}
+  .jstat{padding:11px 13px}
+  .jstat-v{font-size:21px}
+  .jb-v,.pnl-val{font-size:22px}
+}
 .jtable .jx.jhit{font-weight:600}
 .jtable .jx.jstop{font-weight:600}
 /* edge check (#3 benchmark) */
