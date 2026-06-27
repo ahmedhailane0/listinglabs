@@ -65,7 +65,7 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
 # Only the setups the trained model currently trades — v2/v3 were dropped (no edge),
 # so featuring them would misrepresent "what the AI thinks is a good trade".
-JOURNAL_SETUPS = ("v1", "v4")
+JOURNAL_SETUPS = ("v1", "v2", "v4")
 # Hypothetical equal stake per paper trade, so the PnL card can show a $ figure
 # (Polymarket-style) while staying honest — the model risks NO real capital. The
 # card labels this assumption; change it here and the whole card rescales.
@@ -600,7 +600,8 @@ def _list_row(rec) -> str:
     chg = _oi_vol_chg(sym)
     tok =(f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
-           f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}</a></td>')
+           f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}'
+           f'<span class="lbuys" data-buyrow>{_buy_badges(sym, mini=True)}</span></a></td>')
     memo = html.escape(rec.get("memo_en") or "")
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
@@ -1617,7 +1618,8 @@ LIVE_JS = (
     'if(ci.oibn!=null&&v.oi_bn!=null)setCell(row.cells[ci.oibn],fmtUsd(v.oi_bn),(+v.oi_bn).toFixed(0));'
     'if(ci.oicomb!=null&&v.oi_combined!=null)setVmain(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));'
-    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));}'
+    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));'
+    'if(v.sig){var lbr=row.querySelector("[data-buyrow]");if(lbr){var lnb=buyBadges(v.sig);if(lbr.innerHTML!==lnb){lbr.innerHTML=lnb;flash(lbr);}}}}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
     'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
@@ -2043,7 +2045,7 @@ def _journal_page(recs) -> str:
             '(+25%, sell half), TP2 (+50%, sell rest) — with ✓/✗ showing which targets '
             'price reached, then how the trade actually closed.</p>')
     else:
-        closed_tbl = ('<p class="jnote">No v1/v4 trades have matured yet — each is '
+        closed_tbl = ('<p class="jnote">No v1/v2/v4 trades have matured yet — each is '
                       'graded 72h after it fires. Check back as the ledger fills.</p>')
 
     # Open trades (fired, not yet matured).
@@ -2068,11 +2070,67 @@ def _journal_page(recs) -> str:
     else:
         open_tbl = ""
 
+    # ── +10% MOVER track (same fires, easier/faster target: +10% within 24h) ──
+    def _mpx(v):
+        return fmt_subscript_price(v) if v else "—"
+    m_closed = [e for e in closed if _o(e, "m_pnl_real") is not None]
+    if m_closed:
+        mn = len(m_closed)
+        mh24 = sum(1 for e in m_closed if _o(e, "m_hit_24h"))
+        mh12 = sum(1 for e in m_closed if _o(e, "m_hit_12h"))
+        mw = sum(1 for e in m_closed if (_o(e, "m_pnl_real") or 0) > 0)
+        mps = [_o(e, "m_pnl_real") for e in m_closed]
+        m_avg = sum(mps) / len(mps) if mps else None
+        m_score = (
+            '<div class="jcards">'
+            + _stat("closed mover trades", mn)
+            + _stat("hit +10% / 24h", f"{mh24}/{mn}", "good" if mh24 else "")
+            + _stat("hit +10% / 12h", f"{mh12}/{mn}")
+            + _stat("win rate (P&amp;L &gt; 0)", _pct0(mw / mn * 100))
+            + _stat("avg result / trade (net)", _signed(m_avg),
+                    "good" if (m_avg or 0) > 0 else "bad")
+            + '</div>')
+        _mx = {"target": ("+10% hit ✓", "jhit"), "stopped": ("Stopped ✗", "jstop"),
+               "timeout": ("24h close", "jmiss")}
+        mrows = []
+        for e in m_closed[:300]:
+            ep = e.get("entry_price") or _o(e, "entry")
+            h12, h24 = _o(e, "m_hit_12h"), _o(e, "m_hit_24h")
+            xlbl, xcls = _mx.get(_o(e, "m_exit"), (_o(e, "m_exit") or "—", "jmiss"))
+            c12 = f'<td class="jnum {"jhit" if h12 else "jmiss"}">{"✓" if h12 else "·"}</td>'
+            c24 = f'<td class="jnum {"jhit" if h24 else "jmiss"}">{"✓" if h24 else "·"}</td>'
+            mrows.append(
+                f'<tr><td>{_dt_day(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))} {_setup_chip(e.get("strat"))}</td>'
+                f'<td class="jnum">{_mpx(ep)}</td>{c12}{c24}'
+                f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
+                f'<td class="jnum">{_jpct(_o(e, "m_pnl_real"))}</td></tr>')
+        mover_inner = (
+            f'{m_score}'
+            '<table class="jtable"><thead><tr>'
+            '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
+            '<th title="reached +10% within 12h">+10% ≤12h</th>'
+            '<th title="reached +10% within 24h">+10% ≤24h</th>'
+            '<th title="how the +10% trade closed">Exit</th>'
+            '<th title="realistic P&amp;L: +10% TP / own stop / 24h close, net of fees+slippage">Result</th>'
+            '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table>')
+    else:
+        mover_inner = ('<p class="jnote">No mover trades graded yet — each fire is '
+                       'scored once it matures. Check back as the ledger fills.</p>')
+    mover_section = (
+        '<section class="card span">'
+        '<h3>+10% Movers <span class="asof">same setups · easier target: +10% within 24h</span></h3>'
+        '<p class="jnote">A faster, higher-frequency <b>early-mover</b> track: the SAME '
+        'v1/v2/v4 fires, scored against a <b>+10% target within 24h</b> (the first leg of '
+        'a move) instead of +50%/72h. More trades, smaller wins — read it as an '
+        'early-warning feed, not the main pump bet.</p>'
+        f'{mover_inner}</section>')
+
     body = f"""
 <header><h1>AI Track Record</h1>
 <nav class="topnav"><a href="index.html">← Watchlist</a>
 <a class="active" href="journal.html">AI Track Record</a>{theme_toggle_button()}</nav>
-<p class="sub">A journal of the <b>trained model's live Buy v1 &amp; v4 setups</b> — the
+<p class="sub">A journal of the <b>trained model's live Buy v1, v2 &amp; v4 setups</b> — the
 patterns it reads as a coming pump. Each fire is logged with an entry price the moment
 it triggers, then <b>scored 72h later on the real price</b> (target: +50%). These are
 <b>research paper signals scored on real prices — not executed trades and not financial
@@ -2093,6 +2151,7 @@ over time, so read the rates as early evidence, not a settled edge.</p></header>
   {closed_tbl}
 </section>
 {f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
+{mover_section}
 </main>
 {THEME_JS}"""
     desc = ("The trained model's live track record on the Manipulated tab — every Buy "
@@ -2401,6 +2460,8 @@ section.card.span p.note{font-size:12px;color:var(--text-4);margin:10px 0 0}
 .sm-setup ul{margin:4px 0 0;padding-left:16px}
 .sm-foot{font-size:12px;color:var(--text-3);margin:16px 0 0;line-height:1.6}
 .buyrow{margin:2px 0 0;display:flex;flex-wrap:wrap}
+.lbuys{margin-left:2px}.lbuys:empty{display:none}
+.lbuys .buy{margin:0 3px 0 0;vertical-align:middle}
 .ven{display:inline-block;border-radius:6px;font-size:9.5px;font-weight:700;padding:1px 5px;margin-left:5px;vertical-align:middle;white-space:nowrap}
 .ven.bn{background:#f3ba2f;color:#3a2c00}
 .ven.byb{background:#e9eef5;color:#1f4e79;border:1px solid #cdd9e8}
