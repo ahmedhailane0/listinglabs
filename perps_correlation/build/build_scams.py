@@ -2293,6 +2293,38 @@ EXTRA_CSS = """
 #ltab th:nth-child(9){width:7.5%}                  /* FDV */
 #ltab th:nth-child(10){width:7.5%}                 /* MC */
 #ltab th:nth-child(11){width:12%;text-align:left}  /* Memo */
+/* ── responsive: de-chunk the phone layout ──────────────────────────────
+   pills wrap as whole chips (never break their text); the dense 11-col list
+   drops low-priority columns so the essentials fit with NO horizontal scroll. */
+.topnav{flex-wrap:wrap}
+.topnav a{white-space:nowrap}
+@media(max-width:640px){
+  header{padding:12px 14px}
+  header h1{font-size:17px}
+  header p{font-size:11.5px;line-height:1.45}
+  .topnav a{font-size:12px;padding:3px 10px}
+  .filters{padding:10px 14px}
+  /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest */
+  #ltab{min-width:0;width:100%}
+  #ltab th:nth-child(1),#ltab td:nth-child(1),
+  #ltab th:nth-child(5),#ltab td:nth-child(5),
+  #ltab th:nth-child(8),#ltab td:nth-child(8),
+  #ltab th:nth-child(9),#ltab td:nth-child(9),
+  #ltab th:nth-child(10),#ltab td:nth-child(10),
+  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
+  #ltab th:nth-child(2){width:40%}
+  #ltab th:nth-child(3){width:12%}
+  #ltab th:nth-child(4){width:21%}
+  #ltab th:nth-child(6){width:14%}
+  #ltab th:nth-child(7){width:13%}
+  #ltab th{font-size:10.5px}
+  #ltab td,#ltab th{padding:7px 4px}
+  #ltab td.n{font-size:12px}
+  #ltab td.tok a{gap:7px;flex-wrap:wrap}
+  #ltab td.tok .thumb{width:40px;height:22px}
+  #ltab td.tok .lname{white-space:normal;word-break:normal;overflow-wrap:normal}
+  #ltab td .p24,#ltab td .vchg{font-size:10.5px}
+}
 /* pump-probability cell/badge: bold in the list, color-graded by strength */
 #ltab td.pump{font-weight:700}
 .pump-hi{color:var(--pos)}
@@ -2504,7 +2536,7 @@ const cbs=[...panel.querySelectorAll('input[data-k]')];
 // header counts even though it filters on the per-condition checkboxes.
 const PRESETS={
   v1:['oi3up','oi3h8','px3h8','brk6h','fund01','oipx15'],
-  v2:['oi3up','oi3h5','emacross','ema20','oipx10','fund01'],
+  v2:['coiltt','volign','oisrg','brkcoil','fundcold'],   // Ignition (OI-confirmed coil-break)
   v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash'],
   v4:['oibld48','pxflat48','coil30','oilead2','fundsqz']};
 window.__PRESETS=PRESETS;   // shared with LIVE_JS for the live data-cond rewrite
