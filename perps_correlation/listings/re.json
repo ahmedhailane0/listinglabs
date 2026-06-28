@@ -1,0 +1,30 @@
+{
+  "token": "RE",
+  "name": "ReProtocol",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-06-18T07:47:21Z",
+  "window_end_utc": "2026-06-19T15:00:04Z",
+  "events": [
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2026-06-18T09:47:21Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Re (RE) with Seed Tag Applied 币安重要公告: 币安将上线已应用种子标签的 Re (RE) 代币。 ———————————— 2026-06-18 17:47:21 source: https\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16271",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-06-19T02:51:59Z",
+      "note": "Auto-listed from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场新增] ReProtocol (RE) 韩元市场新增 RE MarketCap: 89M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 2026-\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16273",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-06-19T09:00:04Z",
+      "note": "Auto-listed from BWEnews RSS: \"UPBIT LISTING: [거래] 리(RE) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: [交易] RE 新币上线公告 (韩元、BTC、USDT 市场) RE MarketCap: 91M (Auto match could be wr\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16274",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}

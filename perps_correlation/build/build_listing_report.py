@@ -731,6 +731,10 @@ def _detail(cfg: dict) -> str:
             import shutil as _sh
             _sh.copyfile(png, OUT_DIR / png.name)
             chart_block = f"<img src=\"{png.name}\" alt=\"{token} chart\">"
+        elif cfg.get("source") == "bwenews-auto":
+            chart_block = ('<div class="awaiting"><b>Auto-listed from a BWEnews listing signal.</b>'
+                           '<span>Price chart &amp; market data fill in on a later refresh — '
+                           'the listing events are recorded below.</span></div>')
         else:
             chart_block = "<div class=\"missing\">chart not rendered</div>"
         extra_head = ""
@@ -1241,6 +1245,12 @@ h4 .asof { text-transform: none; letter-spacing: 0; font-weight: 400;
 .chart img { width: 100%; height: auto; border-radius: 6px; }
 .chart > div { width: 100%; }
 .missing { color: var(--neg); font-style: italic; }
+.awaiting { display: flex; flex-direction: column; gap: 6px; align-items: center;
+  justify-content: center; text-align: center; min-height: 200px; padding: 24px;
+  background: var(--bg-subtle); border: 1px dashed var(--border); border-radius: var(--radius);
+  color: var(--text-3); }
+.awaiting b { color: var(--text-2); font-size: 14px; }
+.awaiting span { font-size: 12.5px; max-width: 360px; }
 
 /* TradingView Lightweight Charts embed */
 .tvchart-wrap { position: relative; width: 100%; display: flex; flex-direction: column; }

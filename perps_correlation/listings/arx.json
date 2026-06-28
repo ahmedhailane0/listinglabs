@@ -1,0 +1,30 @@
+{
+  "token": "ARX",
+  "name": "Archium",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-06-23T00:00:02Z",
+  "window_end_utc": "2026-06-26T12:07:58Z",
+  "events": [
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-06-23T02:00:02Z",
+      "note": "Auto-listed from BWEnews RSS: \"UPBIT LISTING: [거래] 아르키움(ARX) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: [交易] Archylium (ARX) 新增交易支持指南 (KRW, BTC, USDT 市场) ARX MarketCap: 61.9\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16278",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-06-23T03:30:38Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined ARXUSDT Perpetual Contract (2026-06-23) 币安重要公告: 币安合约将上线USDⓈ结算的ARXUSDT永续合约（2026-06-23） \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16281",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-06-26T06:07:58Z",
+      "note": "Auto-listed from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场新增] Archium (ARX) 韩元市场新增 ARX MarketCap: 60.2M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 2026\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16290",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
