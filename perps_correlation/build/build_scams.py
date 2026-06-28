@@ -490,7 +490,7 @@ def _tile(rec) -> str:
     if r.get("pump_score") is not None:
         ps = r["pump_score"]
         pc = "pump-hi" if ps >= 15 else ("pump-mid" if ps >= 8 else "pump-lo")
-        metas.append(f'<span class="{pc}"><b>Pump</b> {ps:.0f}</span>')
+        metas.append(f'<span class="{pc}" title="{_PUMP_TITLE}"><b>Pump</b> {_pump_pct(ps)}</span>')
     if px:
         metas.append(f'<span><b>Price</b> {fmt_subscript_price(px)}</span>')
     metas.append(f'<span><b>OI</b> {_usd(oi)}</span>')
@@ -519,20 +519,32 @@ def _tile(rec) -> str:
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-LIST_COLS = ["#", "Token", "Pump", "Price / 24h", "BN OI", "OI (BN+BYB)",
+LIST_COLS = ["#", "Token", "Pump %", "Price / 24h", "BN OI", "OI (BN+BYB)",
              "Funding", "Vol", "FDV", "MC", "Memo"]
 
 
+def _pump_pct(s) -> str:
+    """The pump score is a CALIBRATED PROBABILITY (P of +50% within 72h), so we
+    show it straight as a percent. Sub-1% rounds to "<1%" (honest: very unlikely,
+    not impossible) rather than a flat "0%"."""
+    if s is None:
+        return "—"
+    return f"{s:.0f}%" if s >= 1 else "&lt;1%"
+
+
+_PUMP_TITLE = "Model's predicted chance this pumps +50% within 72h (base rate ~5%; 15%+ is strong)"
+
+
 def _pump_cell(r) -> str:
-    """Pump-probability score (0-100): the model's calibrated chance the token
-    reaches +50% within 72h (base rate ~5%, so 15+ is strong). Sorts by the raw
-    score. Computed by the box (tools/pump_score) into cache/screener/screener.json."""
+    """Pump-probability % (0-100): the model's calibrated chance the token reaches
+    +50% within 72h (base rate ~5%, so 15%+ is strong). Sorts by the raw score.
+    Computed by the box (tools/pump_score) into cache/screener/screener.json."""
     s = r.get("pump_score")
     if s is None:
         return f'<td class="n" data-s="{_NEG_INF}">—</td>'
     cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
     return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
-            f'title="≈{s:.0f}% modelled chance of +50% within 72h (base ~5%)">{s:.0f}</td>')
+            f'title="{_PUMP_TITLE}">{_pump_pct(s)}</td>')
 
 
 def _price24_cell(rec) -> str:
@@ -1351,9 +1363,8 @@ def _signals_section(sym, rec=None) -> str:
     # rebuild. FDV / OI/FDV / Bybit OI move slowly (hourly).
     chg = _oi_vol_chg(sym)
     _ps = r.get("pump_score")
-    _pstxt = (f'{_ps:.0f} / 100' if _ps is not None else "—")
     meta = (f'<div class="sigmeta">'
-            f'<span title="modelled chance of +50% within 72h (base rate ~5%; 15+ is strong)"><b>Pump score</b> {_pstxt}</span>'
+            f'<span title="{_PUMP_TITLE}"><b>Pump chance</b> {_pump_pct(_ps)}</span>'
             f'<span title="24h change in tracked-venue perp OI"><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}{_chg_span(chg["oi"])}</span>'
             f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
             f'<span><b>Bybit OI</b> {_usd(r.get("oi_byb"))}</span>'
