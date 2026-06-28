@@ -228,6 +228,7 @@ def detail_html(m):
 CSS = THEME_VARS + """
 *{box-sizing:border-box}body{font:14px/1.55 var(--font-sans);margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 :where(h1,h2,h3,h4){text-wrap:balance}:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--radius-sm)}
+@media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
 header{padding:18px 28px;background:var(--header-bg);background-image:var(--header-grad);color:var(--header-fg);box-shadow:var(--shadow-md);position:relative;z-index:5}header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.015em}header p{margin:4px 0 0;opacity:.85;font-size:13px}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.back{color:var(--header-fg)}
 section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}

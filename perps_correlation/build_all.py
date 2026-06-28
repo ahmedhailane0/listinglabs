@@ -66,6 +66,7 @@ def landing() -> str:
   -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}}
 a{{color:inherit;text-decoration:none}}
 :focus-visible{{outline:none;box-shadow:var(--ring);border-radius:var(--radius-sm)}}
+@media (prefers-reduced-motion: reduce){{*,*::before,*::after{{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}}}
 /* hero */
 .hero{{background:var(--header-grad);color:var(--header-fg);box-shadow:var(--shadow-md);
   position:relative;overflow:hidden}}

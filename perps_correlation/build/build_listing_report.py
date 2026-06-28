@@ -383,6 +383,8 @@ def page_meta(title: str, desc: str, favicon_rel: str = "../favicon.svg",
         csp = csp.replace("connect-src 'self'", f"connect-src 'self' {connect_extra}")
     return (f'<meta http-equiv="Content-Security-Policy" content="{csp}">\n'
             f'<meta name="description" content="{d}">\n'
+            f'<meta name="theme-color" content="#16202b" media="(prefers-color-scheme: dark)">\n'
+            f'<meta name="theme-color" content="#1f4e79" media="(prefers-color-scheme: light)">\n'
             f'<meta property="og:title" content="{t}">\n'
             f'<meta property="og:description" content="{d}">\n'
             f'<meta property="og:type" content="website">\n'
@@ -1025,6 +1027,10 @@ THEME_VARS = """
 
 CSS = THEME_VARS + """
 * { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
 body { font: 14px/1.55 var(--font-sans); margin: 0;
        background: var(--bg); color: var(--text);
        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
