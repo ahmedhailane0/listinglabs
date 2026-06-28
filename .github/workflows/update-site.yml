@@ -54,6 +54,12 @@ jobs:
         run: python -m pip install --quiet requests==2.34.2 matplotlib==3.11.0
 
       - name: Box-down watchdog (Telegram heartbeat)
+        # The data-refresh + health steps run on the SCHEDULED cron (and manual
+        # runs), NOT on a code push. A push (an edit/redeploy) skips straight to
+        # build + deploy, so editing the site no longer drags a full FDV/MC/OI
+        # refetch along — it just rebuilds from the cache the last cron left and
+        # publishes. The ~20-min cron keeps all the data current.
+        if: github.event_name != 'push'
         # Independent of the box (a dead box can't alert about itself): if the
         # always-on screener box stops updating screener.json, ping Telegram once —
         # and again on recovery. Keyless-SAFE: no-ops without the secrets, so it can
@@ -69,6 +75,7 @@ jobs:
         timeout-minutes: 2
 
       - name: Refresh price candles (charts stay current)
+        if: github.event_name != 'push'
         # GeckoTerminal rate-limits GitHub's shared IP hard, so each run refreshes only
         # a capped set (incremental: ~1 page each). WEIGHTED priority: the newest
         # REFRESH_NEWEST listings (QAIT, CTR, SLX…) refresh EVERY run so the actively-
@@ -91,6 +98,7 @@ jobs:
                                   # timeout just means the rest resume on the next run
 
       - name: Refresh per-exchange perp OI + funding (Scam Watchlist)
+        if: github.event_name != 'push'
         # Autonomous + keyless via CoinGecko's /derivatives aggregator — ONE call
         # that returns every exchange's perp OI + funding SERVER-SIDE, so GitHub's
         # geo-blocked runner IP (Binance/OKX/Bybit return 451 to datacenter IPs)
@@ -102,6 +110,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Refresh Scam Watchlist prices + supply (charts stay current)
+        if: github.event_name != 'push'
         # The full fetch_scam_data.py needs a local CSV + RootData key, so it can't
         # run in CI. This is the keyless price/supply subset: re-pulls CoinGecko
         # market data + 180d daily series and CMC's authoritative supply for every
@@ -117,6 +126,7 @@ jobs:
         timeout-minutes: 6
 
       - name: Refresh top holders (Scam Watchlist)
+        if: github.event_name != 'push'
         # Keyless multichain holders via GoPlus token-security (BNB Chain / Base /
         # ETH / …). Non-EVM chains gracefully report "unavailable".
         run: python fetch/fetch_holders.py
@@ -124,6 +134,7 @@ jobs:
         timeout-minutes: 5
 
       - name: Fetch TGE dates (Manipulated tab)
+        if: github.event_name != 'push'
         # Keyless CMC dateLaunched (the real launch; CoinGecko genesis / dateAdded
         # fallbacks) -> cache/scam_tge.json. Static per token + skips ones already
         # cached, so this only does work when a new watchlist token appears. Drives
@@ -133,6 +144,7 @@ jobs:
         timeout-minutes: 4
 
       - name: Refresh live FDV / market cap / supply (reactions tokens)
+        if: github.event_name != 'push'
         # Keyless CMC detail per listings/*.json -> cache/token_market.json so the
         # reactions report's FDV/MC/supply match CoinMarketCap instead of the stale
         # hand-entered values. build_listing_report prefers these live numbers.
@@ -141,6 +153,7 @@ jobs:
         timeout-minutes: 6
 
       - name: Fetch precise Binance perp-announce times (spike annotations)
+        if: github.event_name != 'push'
         # Keyless Binance Futures CMS detail (publishDate, ms-precise) -> per token
         # cache/perp_announce.json. Drives the auto-generated "BN perp announce" Alpha
         # spike annotations. Static per token; only chases ones not already cached.
@@ -149,6 +162,7 @@ jobs:
         timeout-minutes: 6
 
       - name: Sweep new CEX listings (candle-verified) + merge into configs
+        if: github.event_name != 'push'
         # Catches major-venue listings that land AFTER a token's first sweep —
         # the gap that previously stayed invisible until a manual re-sweep. Self-
         # healing: sweep_venues re-probes venues cached as ABSENT (active tokens
