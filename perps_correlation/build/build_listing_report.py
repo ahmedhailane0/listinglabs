@@ -990,6 +990,8 @@ THEME_VARS = """
   --bg:#eef2f7; --bg-card:#ffffff; --bg-subtle:#f5f8fc; --bg-hover:#f3f8ff;
   --bg-chip:#e8f1fb; --bg-thead:#f1f5fa; --bg-chart:#fafcff;
   --text:#16212e; --text-2:#3d4b5a; --text-3:#65727f; --text-4:#8b97a4;
+  /* aliases the scams/journal CSS expects (theme-aware via var reference) */
+  --text-1:var(--text); --bg-2:var(--bg-subtle);
   --border:#dde4ed; --border-2:#eaeef4; --border-input:#c8d2de;
   --primary:#1f4e79; --primary-deep:#163a5b; --link:#1f6fb2;
   --pos:#16864a; --neg:#c0392b; --amber:#b9770e; --accent-purple:#9c6ade;
