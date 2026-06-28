@@ -1895,28 +1895,28 @@ def _pnl_card(closed) -> str:
             f'</aside>')
 
 
-def _winrate_chart(closed) -> str:
-    """Win rate (P&L > 0) per day, broken out per setup (v1/v2/v4) — grouped bars,
-    one cluster per day, bar height = that setup's win % that day (hover for win/
-    total). A static SVG (no JS) so it renders inside a hidden tab. Honest about
-    tiny daily samples — far less misleading than a cumulative running average."""
+def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
+    """Win rate (pnl_fn > 0) per day, broken out per setup (v1/v2/v4) — grouped
+    bars, one cluster per day, bar height = that setup's win % that day (hover for
+    win/total). `pnl_fn` selects the target (pump +50%/72h or mover +10%/24h). A
+    static SVG (no JS) so it renders inside a hidden tab. Honest about tiny daily
+    samples — far less misleading than a cumulative running average."""
     import datetime as _dt
     SETS = ("v1", "v2", "v4")
     COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a"}
 
-    def _restime(e):
-        o = e.get("outcome") or {}
-        return o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
+    def _day(e):                                   # bucket by the day it fired
+        return (e.get("t") or 0)
 
     # day -> strat -> [wins, total]; plus per-strat overall for the legend
     buckets, totals = {}, {s: [0, 0] for s in SETS}
-    for e in closed:
+    for e in rows:
         s = e.get("strat")
         if s not in COL:
             continue
-        d = _dt.datetime.fromtimestamp(_restime(e), _dt.timezone.utc).strftime("%Y-%m-%d")
+        d = _dt.datetime.fromtimestamp(_day(e), _dt.timezone.utc).strftime("%Y-%m-%d")
         wn = buckets.setdefault(d, {}).setdefault(s, [0, 0])
-        won = 1 if (_real_pnl(e) or 0) > 0 else 0
+        won = 1 if (pnl_fn(e) or 0) > 0 else 0
         wn[0] += won
         wn[1] += 1
         totals[s][0] += won
@@ -1966,11 +1966,11 @@ def _winrate_chart(closed) -> str:
     svg = (f'<svg class="wc-svg" viewBox="0 0 {W} {H}" role="img" '
            f'aria-label="win rate per day by setup">'
            + "".join(grid) + "".join(bars) + '</svg>')
-    return (f'<section class="card span">'
-            f'<h3>Win rate per day <span class="asof">per setup · P&amp;L&gt;0 · +50% / 72h</span></h3>'
+    return (f'<section class="card span wc-card">'
+            f'<h3>Win rate per day <span class="asof">per setup · win&gt;0 · {target_label}</span></h3>'
             f'<div class="wc-legend">{leg_html}</div>{svg}'
-            f"<p class=\"jnote\">Each bar is that setup's win rate on the day its trades "
-            f'resolved (hover a bar for win/total). Legend shows each setup\'s overall rate. '
+            f"<p class=\"jnote\">Each bar is that setup's win rate on the day it fired "
+            f'(hover a bar for win/total). Legend shows each setup\'s overall rate. '
             f'Daily samples are small, so read across days, not any single bar.</p></section>')
 
 
@@ -2254,6 +2254,7 @@ grows over time, so read the rates as early evidence.</p></header>
 {f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
 </div>
 <div id="view-movers" class="jview" style="display:none">
+{_winrate_chart(m_closed, lambda e: _o(e, "m_pnl_real"), "+10% / 24h")}
 {mover_section}
 </div>
 </main>
@@ -2356,6 +2357,7 @@ EXTRA_CSS = """
 .jtab:hover:not(.active){color:var(--text-1)}
 .jtab.active{background:var(--primary);color:#fff}
 /* win-rate-over-time chart (one polyline per setup) */
+.wc-card{max-width:460px}
 .wc-svg{width:100%;height:auto;margin-top:8px;background:var(--bg-subtle);border-radius:10px;display:block}
 .wc-grid{stroke:var(--border);stroke-width:1;stroke-dasharray:2 4;opacity:.7}
 .wc-base{stroke-dasharray:none;opacity:1}
