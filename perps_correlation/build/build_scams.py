@@ -1896,108 +1896,72 @@ def _pnl_card(closed) -> str:
 
 
 def _winrate_chart(closed) -> str:
-    """Cumulative win rate (P&L > 0) over time, one polyline per setup (v1/v2/v4).
-    X = trade resolution time, Y = running win %. A static SVG (no JS) so it renders
-    correctly even inside a hidden tab. Honest: it swings a lot at low sample."""
+    """Win rate (P&L > 0) per day across all journal setups — one bar per day,
+    height = that day's win %, with the day's win/total under it. A static SVG (no
+    JS) so it renders inside a hidden tab. Honest about tiny daily samples — far
+    less misleading than a cumulative running average that starts at 0%/100%."""
     import datetime as _dt
-    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a"}
 
     def _restime(e):
         o = e.get("outcome") or {}
         return o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
 
-    series = {}
-    for strat in ("v1", "v2", "v4"):
-        es = sorted([e for e in closed if e.get("strat") == strat], key=_restime)
-        pts, wins = [], 0
-        for i, e in enumerate(es, 1):
-            if (_real_pnl(e) or 0) > 0:
-                wins += 1
-            pts.append((_restime(e), wins / i))
-        if pts:
-            series[strat] = pts
-    if not series:
+    buckets = {}                                  # day -> [wins, total]
+    for e in closed:
+        d = _dt.datetime.fromtimestamp(_restime(e), _dt.timezone.utc).strftime("%Y-%m-%d")
+        wn = buckets.setdefault(d, [0, 0])
+        wn[1] += 1
+        if (_real_pnl(e) or 0) > 0:
+            wn[0] += 1
+    if not buckets:
         return ""
-    all_t = [t for pts in series.values() for t, _ in pts]
-    tmin, tmax = min(all_t), max(all_t)
-    span = (tmax - tmin) or 1
-    W, H, L, R, T, B = 360, 184, 34, 10, 10, 24
+    days = sorted(buckets)
+    tw = sum(w for w, _ in buckets.values())
+    tn = sum(n for _, n in buckets.values())
+    overall = tw / tn * 100 if tn else 0
+
+    W, H, L, R, T, B = 360, 184, 30, 10, 16, 32
     pw, ph = W - L - R, H - T - B
+    slot = pw / len(days)
+    bw = min(38.0, slot * 0.62)
 
-    def X(t):
-        return L + (t - tmin) / span * pw
-
-    def Y(wr):
-        return T + (1 - wr) * ph
-
-    def _d(t):
-        return _dt.datetime.fromtimestamp(t, _dt.timezone.utc).strftime("%b %d")
-
-    def _smooth(coords):
-        """Catmull-Rom → cubic-bezier path so the step-y win-rate reads as one
-        flowing curve instead of jagged segments."""
-        p = coords
-        n = len(p)
-        if n < 2:
-            return ""
-        d = [f"M{p[0][0]:.1f},{p[0][1]:.1f}"]
-        for i in range(n - 1):
-            p0 = p[i - 1] if i > 0 else p[0]
-            p1, p2 = p[i], p[i + 1]
-            p3 = p[i + 2] if i + 2 < n else p[n - 1]
-            c1x, c1y = p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6
-            c2x, c2y = p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6
-            d.append(f"C{c1x:.1f},{c1y:.1f} {c2x:.1f},{c2y:.1f} {p2[0]:.1f},{p2[1]:.1f}")
-        return " ".join(d)
+    def _col(wr):                                 # graded: poor / mixed / good
+        return "#c0492f" if wr < 25 else ("#c47a3a" if wr < 50 else "#2e8b57")
 
     grid = []
-    for pct in (0, 25, 50, 75, 100):
-        y = Y(pct / 100)
+    for pct in (0, 50, 100):
+        y = T + (1 - pct / 100) * ph
         cls = "wc-grid wc-base" if pct == 0 else "wc-grid"
         grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="{cls}"/>')
         grid.append(f'<text x="{L-6}" y="{y+3:.1f}" class="wc-yl">{pct}%</text>')
-    xlabs = (f'<text x="{L}" y="{H-7}" class="wc-xl" text-anchor="start">{_d(tmin)}</text>'
-             f'<text x="{W-R}" y="{H-7}" class="wc-xl" text-anchor="end">{_d(tmax)}</text>')
-    defs, fills, lines, dots, legend = [], [], [], [], []
-    y0 = Y(0)
-    for strat in ("v1", "v2", "v4"):
-        pts = series.get(strat)
-        if not pts:
-            continue
-        col = COL[strat]
-        coords = [(X(t), Y(wr)) for t, wr in pts]
-        ex, ey = coords[-1]
-        if len(coords) == 1:                    # a lone point needs a visible dot
-            dots.append(f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3" fill="{col}"/>')
-        else:
-            path = _smooth(coords)
-            gid = f"wcg-{strat}"
-            defs.append(f'<linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
-                        f'<stop offset="0" stop-color="{col}" stop-opacity="0.22"/>'
-                        f'<stop offset="1" stop-color="{col}" stop-opacity="0"/>'
-                        f'</linearGradient>')
-            fills.append(f'<path d="{path} L{ex:.1f},{y0:.1f} L{coords[0][0]:.1f},{y0:.1f} Z" '
-                         f'fill="url(#{gid})"/>')
-            lines.append(f'<path d="{path}" fill="none" stroke="{col}" stroke-width="1.6" '
-                         f'stroke-linejoin="round" stroke-linecap="round"/>')
-        dots.append(f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="2.6" fill="{col}" '
-                    f'stroke="var(--bg-subtle)" stroke-width="1.5"/>')
-        legend.append((strat, col, pts[-1][1] * 100, len(pts)))
-    leg_html = " ".join(
-        f'<span class="wc-leg"><i style="background:{c}"></i>{s} {f:.0f}% '
-        f'<small>({n})</small></span>' for s, c, f, n in legend)
+
+    bars = []
+    for i, d in enumerate(days):
+        w, n = buckets[d]
+        wr = w / n * 100
+        cx = L + slot * (i + 0.5)
+        bh = wr / 100 * ph
+        col = _col(wr)
+        bars.append(f'<rect x="{cx-bw/2:.1f}" y="{T+ph-bh:.1f}" width="{bw:.1f}" '
+                    f'height="{max(bh,1.0):.1f}" rx="3" fill="{col}" opacity="0.92"/>')
+        bars.append(f'<text x="{cx:.1f}" y="{T+ph-bh-4:.1f}" class="wc-val" '
+                    f'text-anchor="middle">{round(wr)}%</text>')
+        lbl = _dt.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
+        bars.append(f'<text x="{cx:.1f}" y="{H-16:.1f}" class="wc-xl" '
+                    f'text-anchor="middle">{lbl}</text>')
+        bars.append(f'<text x="{cx:.1f}" y="{H-5:.1f}" class="wc-n" '
+                    f'text-anchor="middle">{w}/{n}</text>')
+
     svg = (f'<svg class="wc-svg" viewBox="0 0 {W} {H}" role="img" '
-           f'aria-label="cumulative win rate over time by setup">'
-           f'<defs>{"".join(defs)}</defs>'
-           + "".join(grid) + "".join(fills) + "".join(lines) + "".join(dots)
-           + xlabs + '</svg>')
+           f'aria-label="win rate per day across setups">'
+           + "".join(grid) + "".join(bars) + '</svg>')
     return (f'<section class="card span">'
-            f'<h3>Win rate over time <span class="asof">running win% (P&amp;L&gt;0) per setup · '
-            f'+50% / 72h</span></h3>'
-            f'<div class="wc-legend">{leg_html}</div>{svg}'
-            f"<p class=\"jnote\">Each line is a setup's win rate as its trades resolve over time — "
-            f'climbing = winning more often as evidence builds. With ~15–20 trades per setup it '
-            f'swings hard early, so read the trend, not the day-to-day wiggle.</p></section>')
+            f'<h3>Win rate per day <span class="asof">all setups · P&amp;L&gt;0 · '
+            f'{overall:.0f}% overall ({tw}/{tn})</span></h3>'
+            f'{svg}'
+            f"<p class=\"jnote\">Each bar is that day's win rate across all v1/v2/v4 fires "
+            f'resolved that day (win/total under each). Daily samples are small, so read the '
+            f'level across days, not any single bar.</p></section>')
 
 
 _JOURNAL_TABS_JS = """
@@ -2386,6 +2350,8 @@ EXTRA_CSS = """
 .wc-grid{stroke:var(--border);stroke-width:1;stroke-dasharray:2 4;opacity:.7}
 .wc-base{stroke-dasharray:none;opacity:1}
 .wc-yl,.wc-xl{fill:var(--text-4);font-size:9px}
+.wc-val{fill:var(--text-2);font-size:10px;font-weight:700}
+.wc-n{fill:var(--text-4);font-size:8.5px}
 .wc-legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 0;font-size:12.5px;font-weight:700}
 .wc-leg{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}
 .wc-leg i{width:11px;height:11px;border-radius:3px}
