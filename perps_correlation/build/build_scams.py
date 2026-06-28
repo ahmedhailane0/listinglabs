@@ -2200,26 +2200,28 @@ def _journal_page(recs) -> str:
                 f'<td class="jnum">{_mpx(ep)}</td>{c12}{c24}'
                 f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
                 f'<td class="jnum">{_jpct(_o(e, "m_pnl_real"))}</td></tr>')
-        mover_inner = (
-            f'{m_score}'
+        mover_table = (
+            '<section class="card span" id="movers">'
+            '<h3>Mover trades <span class="asof">graded on real price 24h after entry</span></h3>'
             '<div class="tablewrap"><table class="jtable"><thead><tr>'
             '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
             '<th title="reached +10% within 12h">+10% ≤12h</th>'
             '<th title="reached +10% within 24h">+10% ≤24h</th>'
             '<th title="how the +10% trade closed">Exit</th>'
             '<th title="realistic P&amp;L: +10% TP / own stop / 24h close, net of fees+slippage">Result</th>'
-            '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table></div>')
+            '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table></div></section>')
     else:
-        mover_inner = ('<p class="jnote">No mover trades graded yet — each fire is '
-                       'scored once it matures. Check back as the ledger fills.</p>')
-    mover_section = (
-        '<section class="card span" id="movers">'
+        m_score = ('<p class="jnote">No mover trades graded yet — each fire is '
+                   'scored once it matures. Check back as the ledger fills.</p>')
+        mover_table = ""
+    mover_scorecard = (
+        '<section class="card span jscore" id="movers">'
         '<h3>+10% Movers <span class="asof">same setups · easier target: +10% within 24h</span></h3>'
         '<p class="jnote">A faster, higher-frequency <b>early-mover</b> track: the SAME '
         'v1/v2/v4 fires, scored against a <b>+10% target within 24h</b> (the first leg of '
         'a move) instead of +50%/72h. More trades, smaller wins — read it as an '
         'early-warning feed, not the main pump bet.</p>'
-        f'{mover_inner}</section>')
+        f'{m_score}</section>')
 
     body = f"""
 <header><h1>AI Track Record</h1>
@@ -2245,8 +2247,7 @@ grows over time, so read the rates as early evidence.</p></header>
 </section>
 {_pnl_card(closed)}
 </div>
-{bench}
-{_winrate_chart(closed)}
+<div class="jrow">{bench}{_winrate_chart(closed)}</div>
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
@@ -2254,8 +2255,8 @@ grows over time, so read the rates as early evidence.</p></header>
 {f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
 </div>
 <div id="view-movers" class="jview" style="display:none">
-{_winrate_chart(m_closed, lambda e: _o(e, "m_pnl_real"), "+10% / 24h")}
-{mover_section}
+<div class="jrow">{mover_scorecard}{_winrate_chart(m_closed, lambda e: _o(e, "m_pnl_real"), "+10% / 24h")}</div>
+{mover_table}
 </div>
 </main>
 {THEME_JS}{_JOURNAL_TABS_JS}"""
@@ -2395,6 +2396,11 @@ EXTRA_CSS = """
 /* top row: scorecard left, PnL card top-right */
 .jtop{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;margin-bottom:18px}
 .jtop .jscore{flex:1 1 360px;margin:0}
+/* paired half-rows (Edge check + Win-rate chart, mover scorecard + chart) */
+.jrow{display:flex;gap:18px;align-items:stretch;flex-wrap:wrap;margin-top:18px}
+.jrow>.card.span{margin-top:0;flex:1 1 360px;min-width:0}
+.jrow>.wc-card{flex:1 1 360px;max-width:460px}
+@media(max-width:760px){.jrow>.wc-card{max-width:none}}
 .pnl-card{flex:0 0 340px;align-self:flex-start;background:#0f1620;border:1px solid #1e2a38;
   border-radius:14px;padding:15px 18px 12px;color:#e6ebf1;box-shadow:0 3px 16px rgba(0,0,0,.20)}
 .pnl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
