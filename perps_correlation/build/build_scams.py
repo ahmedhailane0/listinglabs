@@ -1896,37 +1896,41 @@ def _pnl_card(closed) -> str:
 
 
 def _winrate_chart(closed) -> str:
-    """Win rate (P&L > 0) per day across all journal setups — one bar per day,
-    height = that day's win %, with the day's win/total under it. A static SVG (no
-    JS) so it renders inside a hidden tab. Honest about tiny daily samples — far
-    less misleading than a cumulative running average that starts at 0%/100%."""
+    """Win rate (P&L > 0) per day, broken out per setup (v1/v2/v4) — grouped bars,
+    one cluster per day, bar height = that setup's win % that day (hover for win/
+    total). A static SVG (no JS) so it renders inside a hidden tab. Honest about
+    tiny daily samples — far less misleading than a cumulative running average."""
     import datetime as _dt
+    SETS = ("v1", "v2", "v4")
+    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a"}
 
     def _restime(e):
         o = e.get("outcome") or {}
         return o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
 
-    buckets = {}                                  # day -> [wins, total]
+    # day -> strat -> [wins, total]; plus per-strat overall for the legend
+    buckets, totals = {}, {s: [0, 0] for s in SETS}
     for e in closed:
+        s = e.get("strat")
+        if s not in COL:
+            continue
         d = _dt.datetime.fromtimestamp(_restime(e), _dt.timezone.utc).strftime("%Y-%m-%d")
-        wn = buckets.setdefault(d, [0, 0])
+        wn = buckets.setdefault(d, {}).setdefault(s, [0, 0])
+        won = 1 if (_real_pnl(e) or 0) > 0 else 0
+        wn[0] += won
         wn[1] += 1
-        if (_real_pnl(e) or 0) > 0:
-            wn[0] += 1
+        totals[s][0] += won
+        totals[s][1] += 1
     if not buckets:
         return ""
     days = sorted(buckets)
-    tw = sum(w for w, _ in buckets.values())
-    tn = sum(n for _, n in buckets.values())
-    overall = tw / tn * 100 if tn else 0
 
-    W, H, L, R, T, B = 360, 184, 30, 10, 16, 32
+    W, H, L, R, T, B = 380, 188, 30, 10, 16, 28
     pw, ph = W - L - R, H - T - B
-    slot = pw / len(days)
-    bw = min(38.0, slot * 0.62)
-
-    def _col(wr):                                 # graded: poor / mixed / good
-        return "#c0492f" if wr < 25 else ("#c47a3a" if wr < 50 else "#2e8b57")
+    gslot = pw / len(days)
+    inner = gslot * 0.74
+    subw = inner / len(SETS)
+    bw = subw * 0.82
 
     grid = []
     for pct in (0, 50, 100):
@@ -1937,31 +1941,37 @@ def _winrate_chart(closed) -> str:
 
     bars = []
     for i, d in enumerate(days):
-        w, n = buckets[d]
-        wr = w / n * 100
-        cx = L + slot * (i + 0.5)
-        bh = wr / 100 * ph
-        col = _col(wr)
-        bars.append(f'<rect x="{cx-bw/2:.1f}" y="{T+ph-bh:.1f}" width="{bw:.1f}" '
-                    f'height="{max(bh,1.0):.1f}" rx="3" fill="{col}" opacity="0.92"/>')
-        bars.append(f'<text x="{cx:.1f}" y="{T+ph-bh-4:.1f}" class="wc-val" '
-                    f'text-anchor="middle">{round(wr)}%</text>')
+        gleft = L + gslot * i + (gslot - inner) / 2
+        for j, s in enumerate(SETS):
+            wn = buckets[d].get(s)
+            if not wn:
+                continue
+            w, n = wn
+            wr = w / n * 100
+            bh = wr / 100 * ph
+            x = gleft + subw * j + (subw - bw) / 2
+            lbl = _dt.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
+            bars.append(f'<rect x="{x:.1f}" y="{T+ph-bh:.1f}" width="{bw:.1f}" '
+                        f'height="{max(bh,1.4):.1f}" rx="2" fill="{COL[s]}" opacity="0.92">'
+                        f'<title>{s} {lbl}: {w}/{n} ({round(wr)}%)</title></rect>')
+        cx = L + gslot * (i + 0.5)
         lbl = _dt.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
-        bars.append(f'<text x="{cx:.1f}" y="{H-16:.1f}" class="wc-xl" '
+        bars.append(f'<text x="{cx:.1f}" y="{H-7:.1f}" class="wc-xl" '
                     f'text-anchor="middle">{lbl}</text>')
-        bars.append(f'<text x="{cx:.1f}" y="{H-5:.1f}" class="wc-n" '
-                    f'text-anchor="middle">{w}/{n}</text>')
 
+    leg_html = " ".join(
+        f'<span class="wc-leg"><i style="background:{COL[s]}"></i>{s} '
+        f'{(totals[s][0]/totals[s][1]*100):.0f}% <small>({totals[s][0]}/{totals[s][1]})</small>'
+        f'</span>' for s in SETS if totals[s][1])
     svg = (f'<svg class="wc-svg" viewBox="0 0 {W} {H}" role="img" '
-           f'aria-label="win rate per day across setups">'
+           f'aria-label="win rate per day by setup">'
            + "".join(grid) + "".join(bars) + '</svg>')
     return (f'<section class="card span">'
-            f'<h3>Win rate per day <span class="asof">all setups · P&amp;L&gt;0 · '
-            f'{overall:.0f}% overall ({tw}/{tn})</span></h3>'
-            f'{svg}'
-            f"<p class=\"jnote\">Each bar is that day's win rate across all v1/v2/v4 fires "
-            f'resolved that day (win/total under each). Daily samples are small, so read the '
-            f'level across days, not any single bar.</p></section>')
+            f'<h3>Win rate per day <span class="asof">per setup · P&amp;L&gt;0 · +50% / 72h</span></h3>'
+            f'<div class="wc-legend">{leg_html}</div>{svg}'
+            f"<p class=\"jnote\">Each bar is that setup's win rate on the day its trades "
+            f'resolved (hover a bar for win/total). Legend shows each setup\'s overall rate. '
+            f'Daily samples are small, so read across days, not any single bar.</p></section>')
 
 
 _JOURNAL_TABS_JS = """
