@@ -383,6 +383,15 @@ def _esc(s) -> str:
     return str(s).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
+def _pump_pct(s) -> str:
+    """The pump score is a calibrated P(+50% within 72h), so show it as a percent
+    in the alerts (matches the site). Sub-1% -> "<1%" (HTML-escaped for Telegram's
+    HTML parse mode). None -> "n/a"."""
+    if s is None:
+        return "n/a"
+    return f"{s:.0f}%" if s >= 1 else "&lt;1%"
+
+
 def _alert_buy(e: dict, r: dict) -> bool:
     """Send a Telegram BUY alert for a brand-new v1/v4 fire (tiered exit:
     TP1 +25% sell half, TP2 +50% sell rest, the setup's own stop, 72h time-stop).
@@ -406,7 +415,7 @@ def _alert_buy(e: dict, r: dict) -> bool:
                      if stop else "Stop   n/a")
         ctx = f"Size {e.get('position') or '?'}"
         if score is not None:
-            ctx += f" · confidence {score:.0f}/100"
+            ctx += f" · pump chance {_pump_pct(score)}"
         if oifdv is not None:
             ctx += f" · OI/FDV {oifdv:.0f}%"
         if fund is not None:
@@ -458,7 +467,7 @@ def _alert_result(e: dict) -> bool:
         ]
         sc = e.get("pump_score")
         if sc is not None:
-            lines.append(f"confidence was {sc:.0f}/100")
+            lines.append(f"pump chance was {_pump_pct(sc)}")
         return _tg.send("\n".join(lines))
     except Exception as ex:
         print(f"  telegram result-alert failed: {ex}")
@@ -540,7 +549,7 @@ def _alert_score_watch(recs: dict) -> int:
                    if len(spark) >= 2 and spark[0] else None)
             name = (r.get("market") or {}).get("name") or sym
             oifdv, fund = r.get("oi_fdv_pct"), r.get("funding")
-            ctx = f"score {score:.0f}/100"
+            ctx = f"pump chance {_pump_pct(score)}"
             if chg is not None:
                 ctx += f" · ~24h {chg:+.0f}%"
             if oifdv is not None:
