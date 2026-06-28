@@ -21,7 +21,7 @@ from pathlib import Path as _Path
 _sys.path.insert(0, str(_Path(__file__).resolve().parents[1]))  # make lib./fetch./build. importable from anywhere
 from build.build_listing_report import CSS as RCSS          # reuse reactions styling
 from build.build_listing_report import _num_cell, _pct, _NEG_INF  # reuse reactions list/stat cells
-from build.build_listing_report import page_meta  # shared CSP/OG head
+from build.build_listing_report import page_meta, site_nav  # shared CSP/OG head + unified nav
 from build.build_listing_report import theme_toggle_button, THEME_JS  # shared dark/light toggle
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
@@ -2256,8 +2256,7 @@ def _journal_page(recs) -> str:
 
     body = f"""
 <header><h1>AI Track Record</h1>
-<nav class="topnav"><a href="index.html">← Watchlist</a>
-<a class="active" href="journal.html">AI Track Record</a>{theme_toggle_button()}</nav>
+{site_nav("journal")}
 <p class="sub">A journal of the <b>trained model's live Buy v1, v2 &amp; v4 setups</b> — the
 patterns it reads as a coming pump. Each fire is logged with an entry price the moment it
 triggers, then <b>scored on the real price</b>. Two views below: the headline <b>+50% pump</b>
@@ -2305,23 +2304,12 @@ def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
     rows = "\n".join(_list_row(r) for r in recs)
-    reactions_n = len(list((HERE / "listings").glob("*.json")))
-    fm = HERE / "funnel" / "funnel_master.json"
-    try:
-        funnel_n = len(json.loads(fm.read_text(encoding="utf-8")))
-    except Exception:
-        funnel_n = None
-    react_lbl = f"Binance Alpha &amp; Perps ({reactions_n})" if reactions_n else "Binance Alpha &amp; Perps"
-    fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
     c = SCREENER_META.get("counts") or {}
     as_of = SCREENER_META.get("as_of_hour")
     asof_txt = _dt_hour(as_of) if as_of else "—"
     body = f"""
 <header><h1>Manipulated</h1>
-<nav class="topnav"><a href="../report/index.html">{react_lbl}</a>
-<a href="../funnel/report/index.html">{fun_lbl}</a>
-<a class="active" href="index.html">Manipulated ({len(recs)})</a>
-<a class="jlink" href="journal.html" title="The trained model's live Buy v1/v4 track record — paper trades graded on real price">★ AI Track Record</a>{theme_toggle_button()}</nav>
+{site_nav("scams")}
 <p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1–v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1–v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {SETUP_PANEL}
@@ -2348,7 +2336,6 @@ EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
 /* ── AI Track Record (journal.html) ── */
-.topnav a.jlink{color:#9c6ade;font-weight:600}
 .jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
 .jstat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
   padding:14px 16px;display:flex;flex-direction:column;gap:4px}

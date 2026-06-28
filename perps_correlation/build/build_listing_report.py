@@ -953,6 +953,43 @@ def screener_count() -> int | None:
         return None
 
 
+# Page location -> relative hrefs for the four nav destinations, one row per
+# `active` value so links resolve correctly from any folder depth.
+_NAV_REL = {
+    #            reactions                  funnel                          manipulated            journal
+    "reactions": ("index.html",             "../funnel/report/index.html",  "../scams/index.html",  "../scams/journal.html"),
+    "funnel":    ("../../report/index.html", "index.html",                  "../../scams/index.html", "../../scams/journal.html"),
+    "scams":     ("../report/index.html",   "../funnel/report/index.html",  "index.html",           "journal.html"),
+    "journal":   ("../report/index.html",   "../funnel/report/index.html",  "index.html",           "journal.html"),
+}
+
+
+def site_nav(active: str) -> str:
+    """The ONE unified top navigation — the same four tabs on every page; only the
+    active pill changes. `active` ∈ {reactions, funnel, scams, journal}. Counts are
+    read from each report's real source so they never drift between pages (the
+    Manipulated count uses the live screener universe, ~139, not the 28 curated)."""
+    react_n = len(list((HERE / "listings").glob("*.json")))
+    funnel_n, scams_curated = sibling_counts()
+    man_n = screener_count() or scams_curated
+    r, f, s, j = _NAV_REL.get(active, _NAV_REL["scams"])
+
+    def _lbl(text: str, n) -> str:
+        return f"{text} ({n})" if n else text
+
+    tabs = [
+        ("reactions", r, _lbl("Binance Alpha &amp; Perps", react_n)),
+        ("funnel",    f, _lbl("CEX → Korea", funnel_n)),
+        ("scams",     s, _lbl("Manipulated", man_n)),
+        ("journal",   j, "AI Track Record"),
+    ]
+    parts = []
+    for key, href, text in tabs:
+        cls = ' class="active"' if key == active else ""
+        parts.append(f'<a{cls} href="{href}">{text}</a>')
+    return f'<nav class="topnav">{"".join(parts)}{theme_toggle_button()}</nav>'
+
+
 def build_stamp() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
 
@@ -960,13 +997,10 @@ def build_stamp() -> str:
 def _index(cfgs: list[dict]) -> str:
     tiles = "\n".join(_tile(c) for c in cfgs)
     tracked = {c["token"].upper() for c in cfgs}
-    funnel_n, scams_n = sibling_counts()
-    fun_lbl = f"CEX → Korea ({funnel_n})" if funnel_n else "CEX → Korea"
-    scam_lbl = f"Manipulated ({scams_n})" if scams_n else "Manipulated"
     defs = spark_defs(_SPARK_BODIES.items())
     body = f"""
 <header><h1>Binance Alpha &amp; Perps</h1>
-<nav class="topnav"><a class="active" href="index.html">Binance Alpha &amp; Perps ({len(cfgs)})</a><a href="../funnel/report/index.html">{fun_lbl}</a><a href="../scams/index.html">{scam_lbl}</a>{theme_toggle_button()}</nav>
+{site_nav("reactions")}
 <p>{len(cfgs)} tokens · click a token for its info + chart · updated {build_stamp()} UTC, rebuilds every ~20 min</p></header>
 {_news_strip(tracked)}
 {_filter_bar(cfgs)}
