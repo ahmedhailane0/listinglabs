@@ -7,9 +7,44 @@
   "window_end_utc": "2026-06-19T15:00:04Z",
   "events": [
     {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-06-18T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Spot",
       "iso_time_utc": "2026-06-18T09:47:21Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Re (RE) with Seed Tag Applied 币安重要公告: 币安将上线已应用种子标签的 Re (RE) 代币。 ———————————— 2026-06-18 17:47:21 source: https\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16271",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Re (RE) with Seed Tag Applied \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5c06\u4e0a\u7ebf\u5df2\u5e94\u7528\u79cd\u5b50\u6807\u7b7e\u7684 Re (RE) \u4ee3\u5e01\u3002 \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014 2026-06-18 17:47:21 source: https\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16271",
       "source": "bwenews"
     },
     {
@@ -20,13 +55,13 @@
     {
       "exchange": "Bithumb",
       "iso_time_utc": "2026-06-19T02:51:59Z",
-      "note": "Auto-listed from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场新增] ReProtocol (RE) 韩元市场新增 RE MarketCap: 89M (Auto match could be wrong, 自动匹配可能不准确) ———————————— 2026-\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16273",
+      "note": "Auto-listed from BWEnews RSS: \"Bithumb Listing: [\ub9c8\ucf13 \ucd94\uac00 Bithumb\u4e0a\u65b0: [\u5e02\u573a\u65b0\u589e] ReProtocol (RE) \u97e9\u5143\u5e02\u573a\u65b0\u589e RE MarketCap: 89M (Auto match could be wrong, \u81ea\u52a8\u5339\u914d\u53ef\u80fd\u4e0d\u51c6\u786e) \u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014\u2014 2026-\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16273",
       "source": "bwenews"
     },
     {
       "exchange": "Upbit",
       "iso_time_utc": "2026-06-19T09:00:04Z",
-      "note": "Auto-listed from BWEnews RSS: \"UPBIT LISTING: [거래] 리(RE) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: [交易] RE 新币上线公告 (韩元、BTC、USDT 市场) RE MarketCap: 91M (Auto match could be wr\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16274",
+      "note": "Auto-listed from BWEnews RSS: \"UPBIT LISTING: [\uac70\ub798] \ub9ac(RE) \uc2e0\uaddc \uac70\ub798\uc9c0\uc6d0 \uc548\ub0b4 (KRW, BTC, USDT \ub9c8\ucf13) Upbit \u4e0a\u65b0: [\u4ea4\u6613] RE \u65b0\u5e01\u4e0a\u7ebf\u516c\u544a (\u97e9\u5143\u3001BTC\u3001USDT \u5e02\u573a) RE MarketCap: 91M (Auto match could be wr\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16274",
       "source": "bwenews"
     }
   ],
