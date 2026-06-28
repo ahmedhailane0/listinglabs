@@ -966,21 +966,13 @@ _NAV_REL = {
 
 def site_nav(active: str) -> str:
     """The ONE unified top navigation — the same four tabs on every page; only the
-    active pill changes. `active` ∈ {reactions, funnel, scams, journal}. Counts are
-    read from each report's real source so they never drift between pages (the
-    Manipulated count uses the live screener universe, ~139, not the 28 curated)."""
-    react_n = len(list((HERE / "listings").glob("*.json")))
-    funnel_n, scams_curated = sibling_counts()
-    man_n = screener_count() or scams_curated
+    active pill changes. `active` ∈ {reactions, funnel, scams, journal}. No counts
+    on the tabs (they read cleaner and can't drift between pages)."""
     r, f, s, j = _NAV_REL.get(active, _NAV_REL["scams"])
-
-    def _lbl(text: str, n) -> str:
-        return f"{text} ({n})" if n else text
-
     tabs = [
-        ("reactions", r, _lbl("Binance Alpha &amp; Perps", react_n)),
-        ("funnel",    f, _lbl("CEX → Korea", funnel_n)),
-        ("scams",     s, _lbl("Manipulated", man_n)),
+        ("reactions", r, "Binance Alpha &amp; Perps"),
+        ("funnel",    f, "CEX → Korea"),
+        ("scams",     s, "Manipulated"),
         ("journal",   j, "AI Track Record"),
     ]
     parts = []
