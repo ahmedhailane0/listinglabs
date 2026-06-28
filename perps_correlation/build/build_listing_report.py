@@ -1142,11 +1142,13 @@ table.list th.sorted.asc::after  { content: " ▲"; font-size: 9px; }
 table.list th:focus-visible { outline: 2px solid var(--primary); outline-offset: -2px; }
 table.list tbody { counter-reset: rank; }
 table.list tbody tr { counter-increment: rank; }
-table.list td.rank::before { content: counter(rank); color: var(--text-4); font-variant-numeric: tabular-nums; }
+table.list td.rank::before { content: counter(rank); color: var(--text-4); font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 table.list td.rank { text-align: right; color: var(--text-4); width: 1%; white-space: nowrap; }
 table.list td { padding: 7px 10px; border-bottom: 1px solid var(--border-2); }
-table.list td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
-table.list td.tge { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap; font-size: 12.5px; }
+table.list td.n { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap;
+                  font-family: var(--font-mono); letter-spacing: -.02em; }
+table.list td.tge { text-align: left; font-variant-numeric: tabular-nums; white-space: nowrap;
+                    font-size: 12px; font-family: var(--font-mono); letter-spacing: -.02em; }
 table.list tr:hover td { background: var(--bg-hover); }
 table.list td.tok a { display: flex; align-items: center; gap: 10px; }
 table.list td.tok .thumb { width: 64px; height: 26px; border: 0; background: none; flex: 0 0 auto; }
@@ -1180,7 +1182,8 @@ table.list .pos { color: var(--pos); } table.list .neg { color: var(--neg); }
 .tile-head .name { font-size: 16px; font-weight: 700; }
 .tile-meta { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 8px;
              font-size: 12px; color: var(--text-3); }
-.tile-meta b { color: var(--primary); font-weight: 600; }
+.tile-meta b { color: var(--primary); font-weight: 600; font-family: var(--font-mono);
+               font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 
 /* detail card */
 main:not(.grid) { padding: 24px 32px; }
@@ -1229,7 +1232,8 @@ tr.alpha td { background: var(--alpha-bg); font-weight: 600; }
 .stat { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 8px; padding: 8px 10px; }
 .stat .k, .chk .k { display: block; font-size: 10.5px; text-transform: uppercase;
                     letter-spacing: .03em; color: var(--text-4); margin-bottom: 2px; }
-.stat .v { font-size: 15px; font-weight: 600; }
+.stat .v { font-size: 15px; font-weight: 600; font-family: var(--font-mono);
+           font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 .stat .v small { font-size: 11px; font-weight: 400; color: var(--text-4); }
 .checks { display: flex; flex-wrap: wrap; gap: 8px; }
 .chk { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;

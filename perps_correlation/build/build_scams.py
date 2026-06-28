@@ -2321,7 +2321,7 @@ EXTRA_CSS = """
 .jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
 .jstat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
   padding:14px 16px;display:flex;flex-direction:column;gap:4px}
-.jstat-v{font-size:26px;font-weight:700;line-height:1.1}
+.jstat-v{font-size:26px;font-weight:700;line-height:1.1;font-family:var(--font-mono);font-variant-numeric:tabular-nums;letter-spacing:-.03em}
 .jstat-l{font-size:12px;color:var(--text-4)}
 .jstat.good .jstat-v{color:#1a8a4f}
 .jstat.bad .jstat-v{color:#c0392b}
@@ -2334,7 +2334,7 @@ EXTRA_CSS = """
   padding:8px 10px;border-bottom:1px solid var(--border);white-space:nowrap}
 .jtable td{padding:9px 10px;border-bottom:1px solid var(--border-2,var(--border))}
 .jtable tr:hover td{background:var(--bg-2)}
-.jtable .jnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.jtable .jnum{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;font-family:var(--font-mono);letter-spacing:-.02em}
 .jtable .jt a{font-weight:600;color:var(--link,#2e6da4);text-decoration:none}
 .jtable .jt a:hover{text-decoration:underline}
 .jp.pos,.jnum.pos{color:#1a8a4f}

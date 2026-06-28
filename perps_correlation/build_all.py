@@ -92,7 +92,7 @@ h1{{margin:2px 0 0;font-size:27px;font-weight:750;letter-spacing:-.02em;line-hei
 .stats{{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:0 0 26px}}
 .stat{{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
   padding:14px 16px;box-shadow:var(--shadow-sm)}}
-.stat .v{{font-size:23px;font-weight:750;letter-spacing:-.02em;font-variant-numeric:tabular-nums}}
+.stat .v{{font-size:23px;font-weight:750;letter-spacing:-.03em;font-variant-numeric:tabular-nums;font-family:var(--font-mono)}}
 .stat .k{{font-size:12px;color:var(--text-3);margin-top:2px}}
 .cards{{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(min(100%,288px),1fr))}}
 .card{{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);

@@ -251,7 +251,7 @@ section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;te
 @media(max-width:700px){.lagrow{flex-wrap:wrap}.laglbl{flex-basis:100%}.lagsum{order:3}}
 table{width:100%;border-collapse:collapse;font-size:12.5px;background:var(--bg-card)}
 th{position:sticky;top:0;z-index:2;background:var(--bg-thead);text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);cursor:pointer;white-space:nowrap}
-td{padding:5px 8px;border-bottom:1px solid var(--border-2)}td.n{text-align:right;font-variant-numeric:tabular-nums}
+td{padding:5px 8px;border-bottom:1px solid var(--border-2)}td.n{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--font-mono);letter-spacing:-.02em}
 tr:hover td{background:var(--bg-hover)}
 /* FDV-bucket badges: colored text + currentColor outline (theme-safe, no pastel bg) */
 .b{padding:1px 7px;border-radius:6px;font-weight:600;border:1px solid currentColor}
