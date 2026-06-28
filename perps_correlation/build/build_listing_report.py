@@ -981,40 +981,62 @@ def _index(cfgs: list[dict]) -> str:
 # "just a darker hex".
 THEME_VARS = """
 :root{
-  --bg:#f4f6f9; --bg-card:#ffffff; --bg-subtle:#f7f9fc; --bg-hover:#f7faff;
-  --bg-chip:#eaf2fb; --bg-thead:#eef2f6; --bg-chart:#fafbfc;
-  --text:#1d2733; --text-2:#42505e; --text-3:#6b7785; --text-4:#8a96a3;
-  --border:#e1e7ee; --border-2:#eef2f6; --border-input:#cdd6e0;
+  --bg:#eef2f7; --bg-card:#ffffff; --bg-subtle:#f5f8fc; --bg-hover:#f3f8ff;
+  --bg-chip:#e8f1fb; --bg-thead:#f1f5fa; --bg-chart:#fafcff;
+  --text:#16212e; --text-2:#3d4b5a; --text-3:#65727f; --text-4:#8b97a4;
+  --border:#dde4ed; --border-2:#eaeef4; --border-input:#c8d2de;
   --primary:#1f4e79; --primary-deep:#163a5b; --link:#1f6fb2;
-  --pos:#1a8f4c; --neg:#c0392b; --amber:#b9770e; --accent-purple:#9c6ade;
+  --pos:#16864a; --neg:#c0392b; --amber:#b9770e; --accent-purple:#9c6ade;
   --header-bg:#1f4e79; --header-fg:#ffffff;
+  --header-grad:linear-gradient(165deg,#27598c 0%,#1f4e79 55%,#1a456c 100%);
   --newsbar-bg:#102a43; --newsbar-fg:#e5edf6; --newsbar-border:#0b1f33; --newsbar-link:#7fc4ff;
-  --spark-fill:rgba(31,111,178,.12); --alpha-bg:#fff7e6; --shadow:rgba(0,0,0,.05);
+  --spark-fill:rgba(31,111,178,.12); --alpha-bg:#fff7e6; --shadow:rgba(16,42,67,.06);
   --flag-bg:#fdecea; --fired-bg:#f3faf5;
+  /* scale tokens (shared by every page via THEME_VARS) */
+  --radius-sm:8px; --radius:12px; --radius-lg:16px;
+  --shadow-sm:0 1px 2px rgba(16,42,67,.06), 0 1px 1px rgba(16,42,67,.04);
+  --shadow-md:0 4px 16px rgba(16,42,67,.09), 0 1px 3px rgba(16,42,67,.05);
+  --shadow-lg:0 14px 38px rgba(16,42,67,.16);
+  --ring:0 0 0 3px rgba(31,78,121,.22);
+  --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
+  --font-mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
+  --ease:cubic-bezier(.22,.61,.36,1);
   color-scheme:light;
 }
 :root[data-theme="dark"]{
-  --bg:#0f141a; --bg-card:#1a212b; --bg-subtle:#222b36; --bg-hover:#232c38;
-  --bg-chip:#1c3349; --bg-thead:#232c38; --bg-chart:#141a22;
-  --text:#e6ebf1; --text-2:#b3bdc9; --text-3:#8a96a3; --text-4:#6b7785;
-  --border:#2c3744; --border-2:#232c38; --border-input:#3a4654;
-  --primary:#4a90d0; --primary-deep:#2d5f8f; --link:#5fb0f0;
+  --bg:#0c1117; --bg-card:#161e29; --bg-subtle:#1d2733; --bg-hover:#222d3a;
+  --bg-chip:#1b3249; --bg-thead:#1b2531; --bg-chart:#11171f;
+  --text:#e8edf3; --text-2:#b3bdc9; --text-3:#8694a2; --text-4:#67737f;
+  --border:#283440; --border-2:#1e2832; --border-input:#384654;
+  --primary:#4a90d0; --primary-deep:#2d5f8f; --link:#62b2f2;
   --pos:#3fc77a; --neg:#ef6a5c; --amber:#e0a93c; --accent-purple:#b48ce8;
-  --header-bg:#16202b; --header-fg:#e6ebf1;
-  --newsbar-bg:#0b1722; --newsbar-fg:#c7d2de; --newsbar-border:#060d15; --newsbar-link:#7fc4ff;
+  --header-bg:#16202b; --header-fg:#e8edf3;
+  --header-grad:linear-gradient(165deg,#1e2c3b 0%,#16202b 60%,#121a23 100%);
+  --newsbar-bg:#0a1620; --newsbar-fg:#c7d2de; --newsbar-border:#060d15; --newsbar-link:#7fc4ff;
   --spark-fill:rgba(95,176,240,.16); --alpha-bg:#2e2a1c; --shadow:rgba(0,0,0,.45);
   --flag-bg:#3a1f1d; --fired-bg:#16281c;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 6px 20px rgba(0,0,0,.45), 0 1px 3px rgba(0,0,0,.35);
+  --shadow-lg:0 18px 44px rgba(0,0,0,.58);
+  --ring:0 0 0 3px rgba(95,176,240,.32);
   color-scheme:dark;
 }
 """
 
 CSS = THEME_VARS + """
 * { box-sizing: border-box; }
-body { font: 14px/1.5 -apple-system, Segoe UI, Roboto, sans-serif; margin: 0;
-       background: var(--bg); color: var(--text); }
-header { padding: 18px 32px; background: var(--header-bg); color: var(--header-fg); }
-header h1 { margin: 0; font-size: 20px; }
-header p { margin: 4px 0 0; opacity: .8; font-size: 13px; }
+body { font: 14px/1.55 var(--font-sans); margin: 0;
+       background: var(--bg); color: var(--text);
+       -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+       text-rendering: optimizeLegibility; }
+:where(h1,h2,h3,h4){ text-wrap: balance; }
+header { padding: 20px 32px; background: var(--header-bg);
+         background-image: var(--header-grad); color: var(--header-fg);
+         box-shadow: var(--shadow-md); position: relative; z-index: 5; }
+header h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.015em; }
+header p { margin: 5px 0 0; opacity: .82; font-size: 13px; }
+::selection { background: rgba(31,111,178,.28); }
+:focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
 /* live BWEnews listing-signal strip */
 .newsbar { display: flex; align-items: center; gap: 12px; padding: 9px 32px;
            background: var(--newsbar-bg); color: var(--newsbar-fg); border-bottom: 1px solid var(--newsbar-border);
@@ -1085,7 +1107,8 @@ a { color: inherit; text-decoration: none; }
    screens — that's the intended trade for a page-pinned header. */
 .listwrap { padding: 16px 32px 28px; }
 table.list { width: 100%; border-collapse: collapse; background: var(--bg-card); font-size: 13px;
-             border: 1px solid var(--border); border-radius: 10px; table-layout: fixed; }
+             border: 1px solid var(--border); border-radius: var(--radius); table-layout: fixed;
+             box-shadow: var(--shadow-sm); }
 /* deterministic column widths so the # column can't balloon (auto-layout dumps
    slack into the first columns). 12 cols: #, Token, TGE, Since, 24h, 7d, 30d,
    90d, FDV, MC, OI%, Funding. */
@@ -1098,10 +1121,11 @@ table.list th:nth-child(9), table.list th:nth-child(10) { width: 9%; }
 table.list th:nth-child(11) { width: 7%; }
 table.list th:nth-child(12) { width: 13%; }
 table.list td { overflow: hidden; }
-table.list th { position: sticky; top: 0; z-index: 2; background: var(--bg-thead); text-align: right; padding: 8px 10px;
-                border-bottom: 2px solid var(--border); cursor: pointer; white-space: nowrap; font-size: 12px; color: var(--text-2); }
-table.list th:first-child { text-align: left; border-top-left-radius: 10px; }
-table.list th:last-child { border-top-right-radius: 10px; }
+table.list th { position: sticky; top: 0; z-index: 2; background: var(--bg-thead); text-align: right; padding: 10px 10px;
+                border-bottom: 1px solid var(--border); cursor: pointer; white-space: nowrap; font-size: 11px;
+                color: var(--text-3); font-weight: 600; letter-spacing: .03em; text-transform: uppercase; }
+table.list th:first-child { text-align: left; border-top-left-radius: var(--radius); }
+table.list th:last-child { border-top-right-radius: var(--radius); }
 table.list th.sorted { color: var(--primary); background: var(--bg-chip); }
 table.list th.sorted.desc::after { content: " ▼"; font-size: 9px; }
 table.list th.sorted.asc::after  { content: " ▲"; font-size: 9px; }
@@ -1130,10 +1154,11 @@ table.list .pos { color: var(--pos); } table.list .neg { color: var(--neg); }
 /* index grid */
 .grid { padding: 24px 32px; display: grid; gap: 18px;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
-.tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
-        overflow: hidden; box-shadow: 0 1px 3px var(--shadow);
-        transition: transform .12s, box-shadow .12s; display: block; }
-.tile:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(31,78,121,.18); }
+.tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+        overflow: hidden; box-shadow: var(--shadow-sm);
+        transition: transform .16s var(--ease), box-shadow .16s var(--ease), border-color .16s var(--ease);
+        display: block; }
+.tile:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--primary); }
 .thumb { display: block; width: 100%; height: 90px;
          border-bottom: 1px solid var(--border-2); background: var(--bg-hover); }
 .spark-fill { fill: var(--spark-fill); stroke: none; }
@@ -1150,8 +1175,8 @@ table.list .pos { color: var(--pos); } table.list .neg { color: var(--neg); }
 /* detail card */
 main:not(.grid) { padding: 24px 32px; }
 .card { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px;
-        background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
-        box-shadow: 0 1px 3px var(--shadow); overflow: hidden; }
+        background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
+        box-shadow: var(--shadow-md); overflow: hidden; }
 .info { padding: 20px 22px; min-width: 0; }
 .info h2 { margin: 0 0 14px; font-size: 18px; }
 .sym { color: var(--primary); font-weight: 600; font-size: 13px;

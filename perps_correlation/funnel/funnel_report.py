@@ -226,8 +226,9 @@ def detail_html(m):
 
 
 CSS = THEME_VARS + """
-*{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:var(--bg);color:var(--text)}
-header{padding:16px 28px;background:var(--header-bg);color:var(--header-fg)}header h1{margin:0;font-size:19px}header p{margin:4px 0 0;opacity:.85;font-size:13px}
+*{box-sizing:border-box}body{font:14px/1.55 var(--font-sans);margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+:where(h1,h2,h3,h4){text-wrap:balance}:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--radius-sm)}
+header{padding:18px 28px;background:var(--header-bg);background-image:var(--header-grad);color:var(--header-fg);box-shadow:var(--shadow-md);position:relative;z-index:5}header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.015em}header p{margin:4px 0 0;opacity:.85;font-size:13px}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.back{color:var(--header-fg)}
 section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
 .topnav{margin:8px 0 2px;display:flex;gap:8px;align-items:center}.topnav a{font-size:13px;color:var(--header-fg);opacity:.8;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)}
@@ -256,7 +257,7 @@ tr:hover td{background:var(--bg-hover)}
 .b-u100M{color:var(--neg)}.b-100-300M{color:var(--amber)}
 .b-300M-1B{color:var(--pos)}.b-o1B{color:var(--link)}.b-unknown{color:var(--text-4)}
 .detail{padding:24px 28px;max-width:760px}
-.info{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:18px}
+.info{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-sm)}
 .sym{background:var(--bg-chip);color:var(--primary);padding:2px 8px;border-radius:6px;font-size:13px}
 dl{display:grid;grid-template-columns:96px 1fr;gap:3px 10px;margin:12px 0}dt{color:var(--text-3);font-weight:600}dd{margin:0;word-break:break-word}
 h4{margin:14px 0 6px;font-size:12px;text-transform:uppercase;color:var(--text-3)}
