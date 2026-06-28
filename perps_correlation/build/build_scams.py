@@ -1951,8 +1951,10 @@ def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
             bh = wr / 100 * ph
             x = gleft + subw * j + (subw - bw) / 2
             lbl = _dt.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
-            bars.append(f'<rect x="{x:.1f}" y="{T+ph-bh:.1f}" width="{bw:.1f}" '
-                        f'height="{max(bh,1.4):.1f}" rx="2" fill="{COL[s]}" opacity="0.92">'
+            bars.append(f'<rect class="wc-bar" x="{x:.1f}" y="{T+ph-bh:.1f}" width="{bw:.1f}" '
+                        f'height="{max(bh,1.4):.1f}" rx="2" fill="{COL[s]}" '
+                        f'data-s="{s}" data-d="{lbl}" data-wr="{round(wr)}" data-wn="{w}/{n}" '
+                        f'data-col="{COL[s]}">'
                         f'<title>{s} {lbl}: {w}/{n} ({round(wr)}%)</title></rect>')
         cx = L + gslot * (i + 0.5)
         lbl = _dt.datetime.strptime(d, "%Y-%m-%d").strftime("%b %d")
@@ -1972,6 +1974,24 @@ def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
             f"<p class=\"jnote\">Each bar is that setup's win rate on the day it fired "
             f'(hover a bar for win/total). Legend shows each setup\'s overall rate. '
             f'Daily samples are small, so read across days, not any single bar.</p></section>')
+
+
+_WINRATE_TIP_JS = """
+<script>(function(){
+  var tip=document.createElement('div');tip.className='wc-tip';
+  tip.setAttribute('role','tooltip');document.body.appendChild(tip);
+  function isBar(t){return t&&t.classList&&t.classList.contains('wc-bar');}
+  function show(r){tip.innerHTML='<span class="dot" style="background:'+r.getAttribute('data-col')+'"></span>'
+    +'<b>'+r.getAttribute('data-s')+'</b> &middot; '+r.getAttribute('data-d')
+    +' &mdash; <span class="wr">'+r.getAttribute('data-wr')+'%</span> '
+    +'<span class="wn">('+r.getAttribute('data-wn')+')</span>';tip.classList.add('show');}
+  function move(e){var x=e.clientX+14,y=e.clientY+14,w=tip.offsetWidth,h=tip.offsetHeight;
+    if(x+w>innerWidth-8)x=e.clientX-w-14;if(y+h>innerHeight-8)y=e.clientY-h-14;
+    tip.style.left=x+'px';tip.style.top=y+'px';}
+  document.addEventListener('mouseover',function(e){if(isBar(e.target)){show(e.target);move(e);}});
+  document.addEventListener('mousemove',function(e){if(tip.classList.contains('show')&&isBar(e.target))move(e);});
+  document.addEventListener('mouseout',function(e){if(isBar(e.target))tip.classList.remove('show');});
+})();</script>"""
 
 
 _JOURNAL_TABS_JS = """
@@ -2259,7 +2279,7 @@ grows over time, so read the rates as early evidence.</p></header>
 {mover_table}
 </div>
 </main>
-{THEME_JS}{_JOURNAL_TABS_JS}"""
+{THEME_JS}{_JOURNAL_TABS_JS}{_WINRATE_TIP_JS}"""
     desc = ("The trained model's live track record on the Manipulated tab — every Buy "
             "v1/v4 setup it fired, graded 72h later on real price: win rate, +50% hit "
             "rate and average result. Research paper signals, not executed trades.")
@@ -2365,6 +2385,19 @@ EXTRA_CSS = """
 .wc-yl,.wc-xl{fill:var(--text-4);font-size:9px}
 .wc-val{fill:var(--text-2);font-size:10px;font-weight:700}
 .wc-n{fill:var(--text-4);font-size:8.5px}
+/* hoverable bars: dim the rest, light up the hovered one */
+.wc-bar{opacity:.9;cursor:pointer;transition:opacity .12s}
+.wc-svg:hover .wc-bar{opacity:.4}
+.wc-svg .wc-bar:hover{opacity:1}
+/* floating value tooltip (one shared node, follows the cursor) */
+.wc-tip{position:fixed;z-index:60;pointer-events:none;background:var(--bg-card);
+  border:1px solid var(--border);border-radius:8px;box-shadow:var(--shadow-md);
+  padding:7px 11px;font-size:12px;color:var(--text);white-space:nowrap;
+  opacity:0;transform:translateY(3px);transition:opacity .1s,transform .1s}
+.wc-tip.show{opacity:1;transform:none}
+.wc-tip .wr{font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-weight:700;font-size:13px}
+.wc-tip .wn{color:var(--text-4);font-family:var(--font-mono)}
+.wc-tip .dot{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;vertical-align:middle}
 .wc-legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 0;font-size:12.5px;font-weight:700}
 .wc-leg{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}
 .wc-leg i{width:11px;height:11px;border-radius:3px}
