@@ -179,12 +179,23 @@ def _run(script: Path):
     subprocess.run([sys.executable, str(script)], check=True)
 
 
+def _run_soft(script: Path, *args: str):
+    """Run a best-effort network step that must NEVER break the build — a flaky/
+    blocked endpoint just leaves its work for the next run."""
+    print(f"  - {script.relative_to(HERE)} (best-effort)", flush=True)
+    try:
+        subprocess.run([sys.executable, str(script), *args], check=False, timeout=180)
+    except Exception as e:                                # pragma: no cover
+        print(f"    (skipped: {e})", flush=True)
+
+
 def main():
     SITE.mkdir(parents=True, exist_ok=True)
 
     print("building reports into Listinglabs/ ...", flush=True)
     _run(HERE / "fetch" / "fetch_bwenews.py")                  # cache/bwenews_signals.json (RSS poll; never fails build)
-    _run(HERE / "build" / "apply_signals.py")                  # fold new venue signals into listings/*.json
+    _run(HERE / "build" / "apply_signals.py")                  # fold new venue signals into listings/*.json (auto-lists new Binance tokens)
+    _run_soft(HERE / "fetch" / "enrich_autolisted.py")         # resolve chain/contract/pool/FDV for auto-listed tokens (best-effort)
     _run(HERE / "build" / "build_funding.py")                  # cache/funding.json (offline merge)
     _run(HERE / "build" / "build_listing_report.py")          # -> Listinglabs/report
     _run(HERE / "funnel" / "funnel_report.py")       # -> Listinglabs/funnel/report

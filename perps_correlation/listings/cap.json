@@ -1,11 +1,16 @@
 {
   "token": "CAP",
-  "name": "CAP",
+  "name": "Cap",
   "new": true,
   "source": "bwenews-auto",
-  "window_start_utc": "2026-06-27T08:50:43Z",
+  "window_start_utc": "2026-06-26T11:00:00Z",
   "window_end_utc": "2026-06-27T16:50:43Z",
   "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-06-26T12:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1782475200000, contract on BSC)."
+    },
     {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-06-27T10:50:43Z",
@@ -14,5 +19,14 @@
     }
   ],
   "not_listed": [],
-  "annotations": []
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0x99991c6aabba5a096f24f250b73580f5179b9999",
+  "gecko_pool": "0x3bca91b9b847cff6f4b666fa1d966981678975e13fd69d647bd11bed99f5fa14",
+  "fdv_usd": 265253112.21396306,
+  "fdv_source": "Binance Alpha listings API, 2026-06-28 (current, not at-listing)",
+  "mcap_usd": 41379485.50537823,
+  "circulating_supply": 1560000000.0,
+  "total_supply": 10000000000.0,
+  "cmc_slug": "cap"
 }

@@ -1,6 +1,6 @@
 {
   "token": "RE",
-  "name": "ReProtocol",
+  "name": "Re Protocol",
   "new": true,
   "source": "bwenews-auto",
   "window_start_utc": "2026-06-18T07:47:21Z",
@@ -11,6 +11,11 @@
       "iso_time_utc": "2026-06-18T09:47:21Z",
       "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Re (RE) with Seed Tag Applied 币安重要公告: 币安将上线已应用种子标签的 Re (RE) 代币。 ———————————— 2026-06-18 17:47:21 source: https\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16271",
       "source": "bwenews"
+    },
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-06-18T12:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1781784000000, contract on Ethereum)."
     },
     {
       "exchange": "Bithumb",
@@ -26,5 +31,14 @@
     }
   ],
   "not_listed": [],
-  "annotations": []
+  "annotations": [],
+  "chain": "eth",
+  "token_contract": "0x526526528f35ac738177003b8773b402b8df8143",
+  "gecko_pool": "0x17f50f4b3de80d8a1ad23d7313b4a2664594ab90",
+  "fdv_usd": 597358594.9956288,
+  "fdv_source": "Binance Alpha listings API, 2026-06-28 (current, not at-listing)",
+  "mcap_usd": 120756039.97836636,
+  "circulating_supply": 202150000.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "re-protocol"
 }
