@@ -1933,32 +1933,64 @@ def _winrate_chart(closed) -> str:
     def _d(t):
         return _dt.datetime.fromtimestamp(t, _dt.timezone.utc).strftime("%b %d")
 
+    def _smooth(coords):
+        """Catmull-Rom → cubic-bezier path so the step-y win-rate reads as one
+        flowing curve instead of jagged segments."""
+        p = coords
+        n = len(p)
+        if n < 2:
+            return ""
+        d = [f"M{p[0][0]:.1f},{p[0][1]:.1f}"]
+        for i in range(n - 1):
+            p0 = p[i - 1] if i > 0 else p[0]
+            p1, p2 = p[i], p[i + 1]
+            p3 = p[i + 2] if i + 2 < n else p[n - 1]
+            c1x, c1y = p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6
+            c2x, c2y = p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6
+            d.append(f"C{c1x:.1f},{c1y:.1f} {c2x:.1f},{c2y:.1f} {p2[0]:.1f},{p2[1]:.1f}")
+        return " ".join(d)
+
     grid = []
     for pct in (0, 25, 50, 75, 100):
         y = Y(pct / 100)
-        grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="wc-grid"/>')
-        grid.append(f'<text x="{L-5}" y="{y+3:.1f}" class="wc-yl">{pct}%</text>')
+        cls = "wc-grid wc-base" if pct == 0 else "wc-grid"
+        grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="{cls}"/>')
+        grid.append(f'<text x="{L-6}" y="{y+3:.1f}" class="wc-yl">{pct}%</text>')
     xlabs = (f'<text x="{L}" y="{H-7}" class="wc-xl" text-anchor="start">{_d(tmin)}</text>'
              f'<text x="{W-R}" y="{H-7}" class="wc-xl" text-anchor="end">{_d(tmax)}</text>')
-    lines, legend = [], []
+    defs, fills, lines, dots, legend = [], [], [], [], []
+    y0 = Y(0)
     for strat in ("v1", "v2", "v4"):
         pts = series.get(strat)
         if not pts:
             continue
-        if len(pts) == 1:                       # a lone point needs a visible dot
-            t, wr = pts[0]
-            lines.append(f'<circle cx="{X(t):.1f}" cy="{Y(wr):.1f}" r="2.5" fill="{COL[strat]}"/>')
+        col = COL[strat]
+        coords = [(X(t), Y(wr)) for t, wr in pts]
+        ex, ey = coords[-1]
+        if len(coords) == 1:                    # a lone point needs a visible dot
+            dots.append(f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="3" fill="{col}"/>')
         else:
-            d = " ".join(f"{X(t):.1f},{Y(wr):.1f}" for t, wr in pts)
-            lines.append(f'<polyline points="{d}" fill="none" stroke="{COL[strat]}" '
-                         f'stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>')
-        legend.append((strat, COL[strat], pts[-1][1] * 100, len(pts)))
+            path = _smooth(coords)
+            gid = f"wcg-{strat}"
+            defs.append(f'<linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
+                        f'<stop offset="0" stop-color="{col}" stop-opacity="0.22"/>'
+                        f'<stop offset="1" stop-color="{col}" stop-opacity="0"/>'
+                        f'</linearGradient>')
+            fills.append(f'<path d="{path} L{ex:.1f},{y0:.1f} L{coords[0][0]:.1f},{y0:.1f} Z" '
+                         f'fill="url(#{gid})"/>')
+            lines.append(f'<path d="{path}" fill="none" stroke="{col}" stroke-width="1.6" '
+                         f'stroke-linejoin="round" stroke-linecap="round"/>')
+        dots.append(f'<circle cx="{ex:.1f}" cy="{ey:.1f}" r="2.6" fill="{col}" '
+                    f'stroke="var(--bg-subtle)" stroke-width="1.5"/>')
+        legend.append((strat, col, pts[-1][1] * 100, len(pts)))
     leg_html = " ".join(
         f'<span class="wc-leg"><i style="background:{c}"></i>{s} {f:.0f}% '
         f'<small>({n})</small></span>' for s, c, f, n in legend)
     svg = (f'<svg class="wc-svg" viewBox="0 0 {W} {H}" role="img" '
            f'aria-label="cumulative win rate over time by setup">'
-           + "".join(grid) + "".join(lines) + xlabs + '</svg>')
+           f'<defs>{"".join(defs)}</defs>'
+           + "".join(grid) + "".join(fills) + "".join(lines) + "".join(dots)
+           + xlabs + '</svg>')
     return (f'<section class="card span">'
             f'<h3>Win rate over time <span class="asof">running win% (P&amp;L&gt;0) per setup · '
             f'+50% / 72h</span></h3>'
@@ -2350,8 +2382,9 @@ EXTRA_CSS = """
 .jtab:hover:not(.active){color:var(--text-1)}
 .jtab.active{background:var(--primary);color:#fff}
 /* win-rate-over-time chart (one polyline per setup) */
-.wc-svg{width:100%;height:auto;margin-top:8px;background:var(--bg-subtle);border-radius:8px;display:block}
-.wc-grid{stroke:var(--border)}
+.wc-svg{width:100%;height:auto;margin-top:8px;background:var(--bg-subtle);border-radius:10px;display:block}
+.wc-grid{stroke:var(--border);stroke-width:1;stroke-dasharray:2 4;opacity:.7}
+.wc-base{stroke-dasharray:none;opacity:1}
 .wc-yl,.wc-xl{fill:var(--text-4);font-size:9px}
 .wc-legend{display:flex;gap:16px;flex-wrap:wrap;margin:2px 0 0;font-size:12.5px;font-weight:700}
 .wc-leg{display:inline-flex;align-items:center;gap:6px;color:var(--text-2)}
