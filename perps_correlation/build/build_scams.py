@@ -515,14 +515,15 @@ def _tile(rec) -> str:
 
 # Screener-focused list: Binance + combined OI, the OI/FDV and OI/MC ratios, and
 # funding drive the scan; price 24h + memo carry context. Full rich data
-# (chart/holders/funding rounds) stays on each coin's detail page. 14 cols — keep
+# (chart/holders/funding rounds) stays on each coin's detail page. 11 cols — keep
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-# Pump % = the per-coin PumpFinder probability; Old % = the previous-gen logistic
-# engine (for comparison); v1/v2/v4 = each setup's OWN live track-record pump-rate,
-# shown when it fires (each model stays separately visible). Memo removed per owner.
-LIST_COLS = ["#", "Token", "Pump %", "Old %", "v1", "v2", "v4", "Price / 24h",
+# Pump % = the per-coin PumpFinder +50% probability; Old % = the previous-gen
+# logistic engine (for comparison). The per-setup v1/v2/v4 columns were removed per
+# owner — those signals still live on the tiles, detail page, filters, and the AI
+# Track Record sub-tab. The +25%/+10% odds live on the Pump Odds sub-tab.
+LIST_COLS = ["#", "Token", "Pump %", "Old %", "Price / 24h",
              "BN OI", "OI (BN+BYB)", "Funding", "Vol", "FDV", "MC"]
 
 
@@ -536,72 +537,30 @@ def _pump_pct(s) -> str:
 
 
 _PUMP_TITLE = "Model's predicted chance this pumps +50% within 72h (base rate ~5%; 15%+ is strong)"
-
-
-def _pump_cell(r) -> str:
-    """Pump-probability % (0-100): the model's calibrated chance the token reaches
-    +50% within 72h (base rate ~5%, so 15%+ is strong). Sorts by the raw score.
-    Computed by the box (tools/pump_score) into cache/screener/screener.json."""
-    s = r.get("pump_score")
-    if s is None:
-        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
-    cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
-    return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
-            f'title="{_PUMP_TITLE}">{_pump_pct(s)}</td>')
-
-
+_PUMP_TITLE_25 = "Model's predicted chance this moves +25% within 72h"
+_PUMP_TITLE_10 = "Model's predicted chance this moves +10% within 72h"
 _PUMP_TITLE_OLD = ("Previous-generation engine (linear logistic) for comparison. "
                    "PumpFinder (the Pump % column) replaced it — it was less "
                    "calibrated and tended to over-state already-pumped coins.")
 
 
-def _pump_cell_old(r) -> str:
-    """The OLD logistic engine's score, rendered EXACTLY like the Pump % column
-    (same bold + hi/mid/lo color grading) so the two engines compare cleanly.
-    Box-computed into pump_score_log."""
-    s = r.get("pump_score_log")
+def _odds_cell(s, title) -> str:
+    """A probability cell (0-100): shared pump hi/mid/lo grading + data-s sort hook.
+    Used for Pump % (+50%), Old % (logistic), and the +25%/+10% Pump-Odds columns."""
     if s is None:
         return f'<td class="n" data-s="{_NEG_INF}">—</td>'
     cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
-    return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
-            f'title="{_PUMP_TITLE_OLD}">{_pump_pct(s)}</td>')
+    return f'<td class="n pump {cls}" data-s="{s:.1f}" title="{title}">{_pump_pct(s)}</td>'
 
 
-_SETUP_RATES = None
+def _pump_cell(r) -> str:
+    """Pump-probability % — calibrated chance of +50% within 72h. From screener.json."""
+    return _odds_cell(r.get("pump_score"), _PUMP_TITLE)
 
 
-def _setup_live_rates() -> dict:
-    """LIVE forward pump-rate per setup from the graded fires ledger (committed
-    cache/screener/fires_log.json): {strat: (pumped, total)}. A setup is a binary
-    trigger, so this is its TRACK RECORD — the same number for every coin it fires
-    on (unlike the per-coin Pump %). Computed once per build."""
-    global _SETUP_RATES
-    if _SETUP_RATES is None:
-        by: dict = {}
-        for e in _load_fires():
-            if not e.get("outcome"):
-                continue
-            s = e.get("strat")
-            w, n = by.get(s, (0, 0))
-            by[s] = (w + (1 if (e["outcome"] or {}).get("pump") else 0), n + 1)
-        _SETUP_RATES = by
-    return _SETUP_RATES
-
-
-def _setup_cell(sym, strat) -> str:
-    """One per-setup column. Shows that setup's live pump-rate (pumped/total graded
-    fires) ONLY when the setup is firing for this coin right now; '—' otherwise. So
-    each setup stays its OWN visible model, separate from the blended Pump %."""
-    firing = bool(((_sig(sym).get("signals") or {}).get(strat) or {}).get("fired"))
-    if not firing:
-        return f'<td class="n setupcol" data-s="{_NEG_INF}">—</td>'
-    w, n = _setup_live_rates().get(strat, (0, 0))
-    if not n:
-        return (f'<td class="n setupcol setupfire" data-s="0" '
-                f'title="{strat} firing now — no graded live fires yet">✓</td>')
-    rate = 100.0 * w / n
-    return (f'<td class="n setupcol setupfire" data-s="{rate:.2f}" '
-            f'title="{strat}: pumped {w} of {n} live fires (+50% within 72h)">{rate:.0f}%</td>')
+def _pump_cell_old(r) -> str:
+    """The OLD logistic engine's +50% score, rendered like Pump % for comparison."""
+    return _odds_cell(r.get("pump_score_log"), _PUMP_TITLE_OLD)
 
 
 def _price24_cell(rec) -> str:
@@ -674,11 +633,8 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f'{_pump_cell(r)}'                               # Pump % (PumpFinder, per-coin)
+        f'{_pump_cell(r)}'                               # Pump % (PumpFinder, +50%)
         f'{_pump_cell_old(r)}'                           # Old % (previous logistic engine)
-        f'{_setup_cell(sym, "v1")}'                      # v1 track-record (when firing)
-        f'{_setup_cell(sym, "v2")}'                      # v2 track-record
-        f'{_setup_cell(sym, "v4")}'                      # v4 track-record
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
@@ -1424,6 +1380,8 @@ def _signals_section(sym, rec=None) -> str:
     _ps = r.get("pump_score")
     meta = (f'<div class="sigmeta">'
             f'<span title="{_PUMP_TITLE}"><b>Pump chance</b> {_pump_pct(_ps)}</span>'
+            f'<span title="{_PUMP_TITLE_25}"><b>+25% odds</b> {_pump_pct(r.get("pump_score_25"))}</span>'
+            f'<span title="{_PUMP_TITLE_10}"><b>+10% odds</b> {_pump_pct(r.get("pump_score_10"))}</span>'
             f'<span title="24h change in tracked-venue perp OI"><b>OI (BN+BYB)</b> {_usd(r.get("oi_combined"))}{_chg_span(chg["oi"])}</span>'
             f'<span><b>Binance OI</b> {_usd(r.get("oi_bn"))}</span>'
             f'<span><b>Bybit OI</b> {_usd(r.get("oi_byb"))}</span>'
@@ -2077,6 +2035,21 @@ _JOURNAL_TABS_JS = """
 })();</script>"""
 
 
+def scams_subnav(active: str) -> str:
+    """Sub-tabs under the Manipulated top tab — Screener / AI Track Record / Pump
+    Odds. All three pages live in scams/; the Manipulated TOP tab stays active for
+    all of them (these pages call site_nav("scams")). `active` ∈ {screener, journal,
+    pumpodds}."""
+    tabs = [("screener", "index.html", "Screener"),
+            ("journal", "journal.html", "AI Track Record"),
+            ("pumpodds", "pumpodds.html", "Pump Odds")]
+    parts = []
+    for key, href, text in tabs:
+        cls = ' class="active"' if key == active else ""
+        parts.append(f'<a{cls} href="{href}">{text}</a>')
+    return f'<nav class="subnav">{"".join(parts)}</nav>'
+
+
 def _journal_page(recs) -> str:
     """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
     (entry + stop, logged by the box), graded 72h later on real price. A scorecard
@@ -2315,7 +2288,8 @@ def _journal_page(recs) -> str:
 
     body = f"""
 <header><h1>AI Track Record</h1>
-{site_nav("journal")}
+{site_nav("scams")}
+{scams_subnav("journal")}
 <p class="sub">A journal of the <b>trained model's live Buy v1, v2 &amp; v4 setups</b> — the
 patterns it reads as a coming pump. Each fire is logged with an entry price the moment it
 triggers, then <b>scored on the real price</b>. Two views below: the headline <b>+50% pump</b>
@@ -2369,6 +2343,7 @@ def _index(recs) -> str:
     body = f"""
 <header><h1>Manipulated</h1>
 {site_nav("scams")}
+{scams_subnav("screener")}
 <p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1–v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1–v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
 <p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {SETUP_PANEL}
@@ -2388,6 +2363,64 @@ def _index(recs) -> str:
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("Manipulated — ListingLabs", desc, connect_extra=LIVE_ORIGIN)}'
             f'<title>Manipulated</title><link rel="stylesheet" href="style.css"></head>'
+            f'<body>{body}</body></html>')
+
+
+_ODDS_SORT_JS = """<script>(function(){
+  var tab=document.getElementById('otab');if(!tab)return;
+  var tb=tab.tBodies[0],ths=tab.tHead.rows[0].cells;
+  function val(c){var d=c.dataset.s;if(d===undefined)return c.textContent.toLowerCase();
+    var f=parseFloat(d);return isNaN(f)?d:f;}
+  function sort(i,dir){var rs=[].slice.call(tb.rows);
+    rs.sort(function(a,b){var x=val(a.cells[i]),y=val(b.cells[i]);return x<y?-dir:x>y?dir:0;});
+    rs.forEach(function(r){tb.appendChild(r);});   // CSS counter renumbers .rank by DOM order
+    for(var k=0;k<ths.length;k++)ths[k].classList.remove('sorted','asc','desc');
+    ths[i].classList.add('sorted',dir>0?'asc':'desc');}
+  for(var i=0;i<ths.length;i++)(function(i){ths[i].addEventListener('click',function(){
+    sort(i,ths[i].classList.contains('asc')?-1:1);});})(i);
+  sort(2,-1);   // default: +50% odds, highest first
+})();</script>"""
+
+
+def _odds_row(rec) -> str:
+    sym = rec["symbol"]
+    r = _sig(sym)
+    search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
+    tok = (f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">'
+           f'<span class="lname"><span class="lnm">{html.escape(rec.get("name", sym))}</span>'
+           f'<span class="sym">{html.escape(sym)}</span></span></a></td>')
+    return (f'<tr class="lrow">'
+            f'<td class="rank"></td>{tok}'
+            f'{_odds_cell(r.get("pump_score"), _PUMP_TITLE)}'
+            f'{_odds_cell(r.get("pump_score_25"), _PUMP_TITLE_25)}'
+            f'{_odds_cell(r.get("pump_score_10"), _PUMP_TITLE_10)}</tr>')
+
+
+def _pump_odds_page(recs) -> str:
+    """Pump Odds sub-tab: per-coin model probability of a +50% / +25% / +10% move
+    within 72h. Same engine, three targets — smaller move = higher odds. Default
+    sort by +50% (highest first)."""
+    head = "".join(f"<th>{c}</th>" for c in ("#", "Token", "+50%", "+25%", "+10%"))
+    rows = "\n".join(_odds_row(r) for r in recs)
+    body = f"""
+<header><h1>Manipulated</h1>
+{site_nav("scams")}
+{scams_subnav("pumpodds")}
+<p class="sub">Pump Odds — the model's calibrated probability that each coin makes a
+<b>+50% / +25% / +10%</b> move within <b>72h</b> (smaller move = higher odds). These are
+PumpFinder probabilities, not certainty — research only, not financial advice. Click a coin
+for its detail.</p></header>
+<div class="listwrap"><table class="list" id="otab"><thead><tr>{head}</tr></thead>
+<tbody>{rows}</tbody></table></div>
+{_ODDS_SORT_JS}
+{THEME_JS}"""
+    desc = ("Pump Odds — per-coin model probability of a +50% / +25% / +10% move within 72h "
+            "for each manipulated-watchlist token.")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta("Pump Odds — Manipulated", desc)}'
+            f'<title>Pump Odds — Manipulated</title>'
+            f'<link rel="stylesheet" href="style.css"></head>'
             f'<body>{body}</body></html>')
 
 
@@ -2510,24 +2543,21 @@ EXTRA_CSS = """
 .pnl-chart{width:100%;height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
 .pnl-val{transition:color .08s}
 @media(max-width:640px){.pnl-card{flex:1 1 100%}}
-/* deterministic column widths (14 cols: #, Token, Pump, Old, v1, v2, v4,
-   Price/24h, BN OI, OI (BN+BYB), Funding, Vol, FDV, MC). */
-#ltab{table-layout:fixed;min-width:1120px}
+/* deterministic column widths (11 cols: #, Token, Pump, Old, Price/24h,
+   BN OI, OI (BN+BYB), Funding, Vol, FDV, MC). */
+#ltab{table-layout:fixed;min-width:940px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:20%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:5%}                    /* Pump */
-#ltab th:nth-child(4){width:5%}                    /* Old */
-#ltab th:nth-child(5){width:4.5%}                  /* v1 */
-#ltab th:nth-child(6){width:4.5%}                  /* v2 */
-#ltab th:nth-child(7){width:4.5%}                  /* v4 */
-#ltab th:nth-child(8){width:9%}                    /* Price / 24h */
-#ltab th:nth-child(9){width:7%}                    /* BN OI */
-#ltab th:nth-child(10){width:9%}                   /* OI (BN+BYB) */
-#ltab th:nth-child(11){width:8%}                   /* Funding */
-#ltab th:nth-child(12){width:7%}                   /* Vol */
-#ltab th:nth-child(13){width:7%}                   /* FDV */
-#ltab th:nth-child(14){width:6%}                   /* MC */
+#ltab th:nth-child(2){width:24%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:6%}                    /* Pump */
+#ltab th:nth-child(4){width:6%}                    /* Old */
+#ltab th:nth-child(5){width:11%}                   /* Price / 24h */
+#ltab th:nth-child(6){width:9%}                    /* BN OI */
+#ltab th:nth-child(7){width:11%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(8){width:9%}                    /* Funding */
+#ltab th:nth-child(9){width:9%}                    /* Vol */
+#ltab th:nth-child(10){width:6%}                   /* FDV */
+#ltab th:nth-child(11){width:6%}                   /* MC */
 /* Token cell degrades cleanly as the column narrows: the sparkline + symbol keep
    their slots, and only the NAME ellipsis-truncates (so the symbol — the key id —
    is never the thing that gets cut). min-width:0 lets the flex children shrink. */
@@ -2552,19 +2582,16 @@ EXTRA_CSS = """
 @media(max-width:1080px){
   #ltab{min-width:0;width:100%}
   #ltab th:nth-child(1),#ltab td:nth-child(1),
+  #ltab th:nth-child(6),#ltab td:nth-child(6),
   #ltab th:nth-child(9),#ltab td:nth-child(9),
-  #ltab th:nth-child(12),#ltab td:nth-child(12),
-  #ltab th:nth-child(13),#ltab td:nth-child(13),
-  #ltab th:nth-child(14),#ltab td:nth-child(14){display:none}
-  #ltab th:nth-child(2){width:24%}                 /* Token */
+  #ltab th:nth-child(10),#ltab td:nth-child(10),
+  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
+  #ltab th:nth-child(2){width:26%}                 /* Token */
   #ltab th:nth-child(3){width:9%}                  /* Pump */
   #ltab th:nth-child(4){width:9%}                  /* Old */
-  #ltab th:nth-child(5){width:6%}                  /* v1 */
-  #ltab th:nth-child(6){width:6%}                  /* v2 */
-  #ltab th:nth-child(7){width:6%}                  /* v4 */
-  #ltab th:nth-child(8){width:13%}                 /* Price / 24h */
-  #ltab th:nth-child(10){width:13%}                /* OI (BN+BYB) */
-  #ltab th:nth-child(11){width:12%}                /* Funding */
+  #ltab th:nth-child(5){width:18%}                 /* Price / 24h */
+  #ltab th:nth-child(7){width:19%}                 /* OI (BN+BYB) */
+  #ltab th:nth-child(8){width:19%}                 /* Funding */
   /* token cell: smaller sparkline + drop the in-cell buy badges (the v1/v2/v4
      columns now carry that), so the name+symbol stay legible in a tight column */
   #ltab td.tok a{gap:7px}
@@ -2578,22 +2605,19 @@ EXTRA_CSS = """
   .topnav a{font-size:12px;padding:3px 10px}
   .filters{padding:10px 14px}
   /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest
-     (Old %, the v1/v2/v4 setup cols, BN OI, Vol, FDV, MC — low-priority on a phone). */
+     (Old %, BN OI, Vol, FDV, MC — low-priority on a phone). */
   #ltab{min-width:0;width:100%}
   #ltab th:nth-child(1),#ltab td:nth-child(1),
   #ltab th:nth-child(4),#ltab td:nth-child(4),
-  #ltab th:nth-child(5),#ltab td:nth-child(5),
   #ltab th:nth-child(6),#ltab td:nth-child(6),
-  #ltab th:nth-child(7),#ltab td:nth-child(7),
   #ltab th:nth-child(9),#ltab td:nth-child(9),
-  #ltab th:nth-child(12),#ltab td:nth-child(12),
-  #ltab th:nth-child(13),#ltab td:nth-child(13),
-  #ltab th:nth-child(14),#ltab td:nth-child(14){display:none}
+  #ltab th:nth-child(10),#ltab td:nth-child(10),
+  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
   #ltab th:nth-child(2){width:38%}                 /* Token */
   #ltab th:nth-child(3){width:12%}                 /* Pump */
-  #ltab th:nth-child(8){width:20%}                 /* Price / 24h */
-  #ltab th:nth-child(10){width:16%}                /* OI (BN+BYB) */
-  #ltab th:nth-child(11){width:14%}                /* Funding */
+  #ltab th:nth-child(5){width:20%}                 /* Price / 24h */
+  #ltab th:nth-child(7){width:16%}                 /* OI (BN+BYB) */
+  #ltab th:nth-child(8){width:14%}                 /* Funding */
   #ltab th{font-size:10.5px}
   #ltab td,#ltab th{padding:7px 4px}
   #ltab td.n{font-size:12px}
@@ -2602,17 +2626,27 @@ EXTRA_CSS = """
   #ltab td.tok .lname{white-space:normal;word-break:normal;overflow-wrap:normal}
   #ltab td .p24,#ltab td .vchg{font-size:10.5px}
 }
-/* pump-probability cell/badge: bold in the list, color-graded by strength */
-#ltab td.pump{font-weight:700}
+/* pump-probability cell/badge: bold in the list, color-graded by strength
+   (.list scope so both the Screener #ltab and the Pump Odds #otab share it) */
+.list td.pump{font-weight:700}
 .pump-hi{color:var(--pos)}
 .pump-mid{color:var(--text-1)}
 .pump-lo{color:var(--text-3)}
-/* per-setup (v1/v2/v4) track-record columns: muted '—' when idle, highlighted
-   when that setup is firing for the coin (each model stays separately legible) */
-#ltab td.setupcol{color:var(--text-3)}
-#ltab td.setupfire{font-weight:700;color:var(--text-1)}
-/* Old % (previous-gen logistic engine): rendered as a normal column, same as it
-   used to look — not greyed/italic. */
+/* sub-tabs under Manipulated (Screener / AI Track Record / Pump Odds) */
+.subnav{display:flex;gap:4px;margin:2px 0 16px;background:var(--bg-subtle);
+  border:1px solid var(--border);border-radius:11px;padding:4px;max-width:440px}
+.subnav a{flex:1;text-align:center;font-weight:700;color:var(--text-3);border-radius:8px;
+  padding:9px 10px;text-decoration:none;white-space:nowrap;font-size:13px}
+.subnav a.active{background:var(--primary);color:#fff}
+.subnav a:hover:not(.active){color:var(--text-1)}
+/* Pump Odds table (#otab): wide Token, three equal odds columns */
+#otab{table-layout:fixed;min-width:420px;max-width:760px}
+#otab th:nth-child(1){width:8%}
+#otab th:nth-child(2){width:46%;text-align:left}
+#otab th:nth-child(3),#otab th:nth-child(4),#otab th:nth-child(5){width:15.3%}
+#otab td.tok a{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
+#otab td.tok .lnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:520px){#otab{min-width:0;width:100%}}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
@@ -2997,6 +3031,7 @@ def main():
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     (SITE / "journal.html").write_text(_journal_page(recs), encoding="utf-8")
+    (SITE / "pumpodds.html").write_text(_pump_odds_page(recs), encoding="utf-8")
     for r in recs:
         page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")

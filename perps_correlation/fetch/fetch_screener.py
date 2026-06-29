@@ -103,13 +103,19 @@ FIRE_REFRACTORY_H = 72        # one fire per (sym, setup) per 72h — collapses 
 try:
     from tools.pump_score import (load_model as _load_pump_model,
                                   load_model_logistic as _load_pump_model_log,
+                                  load_model_25 as _load_pump_model_25,
+                                  load_model_10 as _load_pump_model_10,
                                   score_series as _pump_score)
-    _PUMP_MODEL = _load_pump_model()
+    _PUMP_MODEL = _load_pump_model()           # +50% (the headline Pump %)
     _PUMP_MODEL_LOG = _load_pump_model_log()   # previous-gen logistic, for the "Old %" column
+    _PUMP_MODEL_25 = _load_pump_model_25()     # +25% (pump-odds ladder)
+    _PUMP_MODEL_10 = _load_pump_model_10()     # +10% (pump-odds ladder)
 except Exception:
     _pump_score = None
     _PUMP_MODEL = None
     _PUMP_MODEL_LOG = None
+    _PUMP_MODEL_25 = None
+    _PUMP_MODEL_10 = None
 
 # Optional Telegram alerts (reads token from env; no-ops when unconfigured).
 try:
@@ -723,14 +729,25 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
         m5 = []
     candles = {"m5": m5, "h1": _candle_series(kl, 4)} if (m5 or kl) else None
     ok = bool(oi and kl)
-    pump = (_pump_score(oi, kl, fund, _PUMP_MODEL)
-            if (_pump_score and _PUMP_MODEL) else None)
-    pump_log = (_pump_score(oi, kl, fund, _PUMP_MODEL_LOG)
-                if (_pump_score and _PUMP_MODEL_LOG) else None)
+    def _ps(model):
+        return _pump_score(oi, kl, fund, model) if (_pump_score and model) else None
+    pump = _ps(_PUMP_MODEL)
+    pump_log = _ps(_PUMP_MODEL_LOG)
+    pump_25 = _ps(_PUMP_MODEL_25)
+    pump_10 = _ps(_PUMP_MODEL_10)
+    # Logical nesting floor: reaching a bigger move REQUIRES passing the smaller
+    # ones first, so P(+10%) >= P(+25%) >= P(+50%). The three models are fit
+    # independently and can violate this by estimation noise — clamp to the
+    # constraint so the odds ladder is always consistent.
+    if pump_25 is not None and pump is not None:
+        pump_25 = max(pump_25, pump)
+    if pump_10 is not None:
+        pump_10 = max(v for v in (pump_10, pump_25, pump) if v is not None)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
             "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
             "mark_price": mark_price, "spark": spark, "pump_score": pump,
-            "pump_score_log": pump_log, "_candles": candles,
+            "pump_score_log": pump_log, "pump_score_25": pump_25, "pump_score_10": pump_10,
+            "_candles": candles,
             # last-hour snapshot for the append-only training series (_log_hourly)
             "snap_t": int(oi[-1][0]) if oi else None,
             "vol1h": float(kl[-1][5]) if kl and len(kl[-1]) > 5 else None}

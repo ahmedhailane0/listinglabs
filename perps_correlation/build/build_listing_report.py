@@ -965,15 +965,15 @@ _NAV_REL = {
 
 
 def site_nav(active: str) -> str:
-    """The ONE unified top navigation — the same four tabs on every page; only the
-    active pill changes. `active` ∈ {reactions, funnel, scams, journal}. No counts
-    on the tabs (they read cleaner and can't drift between pages)."""
-    r, f, s, j = _NAV_REL.get(active, _NAV_REL["scams"])
+    """The ONE unified top navigation — three tabs on every page; only the active
+    pill changes. `active` ∈ {reactions, funnel, scams}. (AI Track Record is no
+    longer a top tab — it's a sub-tab under Manipulated; pages there pass "scams".)
+    No counts on the tabs (they read cleaner and can't drift between pages)."""
+    r, f, s, _j = _NAV_REL.get(active, _NAV_REL["scams"])
     tabs = [
         ("reactions", r, "Binance Alpha &amp; Perps"),
         ("funnel",    f, "CEX → Korea"),
         ("scams",     s, "Manipulated"),
-        ("journal",   j, "AI Track Record"),
     ]
     parts = []
     for key, href, text in tabs:
