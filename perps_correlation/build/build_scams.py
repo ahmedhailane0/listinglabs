@@ -2604,9 +2604,8 @@ EXTRA_CSS = """
    when that setup is firing for the coin (each model stays separately legible) */
 #ltab td.setupcol{color:var(--text-3)}
 #ltab td.setupfire{font-weight:700;color:var(--text-1)}
-/* old (previous-gen logistic) engine column: rendered muted/secondary so the
-   live PumpFinder % stays the visual anchor and the old one reads as a reference */
-#ltab td.pumpold{color:var(--text-3);font-style:italic}
+/* Old % (previous-gen logistic engine): rendered as a normal column, same as it
+   used to look — not greyed/italic. */
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
