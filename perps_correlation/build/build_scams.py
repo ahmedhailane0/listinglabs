@@ -556,12 +556,14 @@ _PUMP_TITLE_OLD = ("Previous-generation engine (linear logistic) for comparison.
 
 
 def _pump_cell_old(r) -> str:
-    """The OLD logistic engine's score, shown muted beside PumpFinder so the two
-    engines can be compared per coin. Box-computed into pump_score_log."""
+    """The OLD logistic engine's score, rendered EXACTLY like the Pump % column
+    (same bold + hi/mid/lo color grading) so the two engines compare cleanly.
+    Box-computed into pump_score_log."""
     s = r.get("pump_score_log")
     if s is None:
-        return f'<td class="n pumpold" data-s="{_NEG_INF}">—</td>'
-    return (f'<td class="n pumpold" data-s="{s:.1f}" '
+        return f'<td class="n" data-s="{_NEG_INF}">—</td>'
+    cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
+    return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
             f'title="{_PUMP_TITLE_OLD}">{_pump_pct(s)}</td>')
 
 
@@ -2513,28 +2515,33 @@ EXTRA_CSS = """
 #ltab{table-layout:fixed;min-width:1120px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:15%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:6%}                    /* Pump */
-#ltab th:nth-child(4){width:6%}                    /* Old */
+#ltab th:nth-child(2){width:20%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:5%}                    /* Pump */
+#ltab th:nth-child(4){width:5%}                    /* Old */
 #ltab th:nth-child(5){width:4.5%}                  /* v1 */
 #ltab th:nth-child(6){width:4.5%}                  /* v2 */
 #ltab th:nth-child(7){width:4.5%}                  /* v4 */
 #ltab th:nth-child(8){width:9%}                    /* Price / 24h */
-#ltab th:nth-child(9){width:8%}                    /* BN OI */
+#ltab th:nth-child(9){width:7%}                    /* BN OI */
 #ltab th:nth-child(10){width:9%}                   /* OI (BN+BYB) */
 #ltab th:nth-child(11){width:8%}                   /* Funding */
-#ltab th:nth-child(12){width:8%}                   /* Vol */
+#ltab th:nth-child(12){width:7%}                   /* Vol */
 #ltab th:nth-child(13){width:7%}                   /* FDV */
-#ltab th:nth-child(14){width:7%}                   /* MC */
+#ltab th:nth-child(14){width:6%}                   /* MC */
 /* Token cell degrades cleanly as the column narrows: the sparkline + symbol keep
    their slots, and only the NAME ellipsis-truncates (so the symbol — the key id —
    is never the thing that gets cut). min-width:0 lets the flex children shrink. */
-#ltab td.tok a{min-width:0;overflow:hidden}
-#ltab td.tok .thumb{flex:0 0 auto}
-#ltab td.tok .lname{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:5px;overflow:hidden}
+#ltab td.tok a{min-width:0;width:100%;overflow:hidden}
+#ltab td.tok .thumb{width:46px;height:24px;flex:0 0 auto}
+/* name+symbol size to content (so badges stay grouped left), and only the NAME
+   ellipsis-truncates if the row genuinely runs out of room — never prematurely */
+#ltab td.tok .lname{flex:0 1 auto;min-width:0;display:flex;align-items:baseline;gap:5px;overflow:hidden}
 #ltab td.tok .lnm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #ltab td.tok .sym{flex:0 0 auto}
-#ltab td.tok .lbuys{flex:0 0 auto}
+/* in-cell Buy badges are redundant now that v1/v2/v4 are their own columns —
+   hide them in the list so the token name always has room (markup kept intact
+   so live-refresh still works on the hidden node) */
+#ltab td.tok .lbuys{display:none}
 /* ── responsive: de-chunk the layout in two tiers ────────────────────────
    pills wrap as whole chips (never break their text); the dense 14-col list
    sheds low-priority columns at each tier so the essentials always fit with NO
