@@ -515,12 +515,14 @@ def _tile(rec) -> str:
 
 # Screener-focused list: Binance + combined OI, the OI/FDV and OI/MC ratios, and
 # funding drive the scan; price 24h + memo carry context. Full rich data
-# (chart/holders/funding rounds) stays on each coin's detail page. 11 cols — keep
+# (chart/holders/funding rounds) stays on each coin's detail page. 14 cols — keep
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-LIST_COLS = ["#", "Token", "Pump %", "Price / 24h", "BN OI", "OI (BN+BYB)",
-             "Funding", "Vol", "FDV", "MC", "Memo"]
+# Pump % = the per-coin PumpFinder probability; v1/v2/v4 = each setup's OWN live
+# track-record pump-rate, shown when it fires (each model stays separately visible).
+LIST_COLS = ["#", "Token", "Pump %", "v1", "v2", "v4", "Price / 24h", "BN OI",
+             "OI (BN+BYB)", "Funding", "Vol", "FDV", "MC", "Memo"]
 
 
 def _pump_pct(s) -> str:
@@ -545,6 +547,43 @@ def _pump_cell(r) -> str:
     cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
     return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
             f'title="{_PUMP_TITLE}">{_pump_pct(s)}</td>')
+
+
+_SETUP_RATES = None
+
+
+def _setup_live_rates() -> dict:
+    """LIVE forward pump-rate per setup from the graded fires ledger (committed
+    cache/screener/fires_log.json): {strat: (pumped, total)}. A setup is a binary
+    trigger, so this is its TRACK RECORD — the same number for every coin it fires
+    on (unlike the per-coin Pump %). Computed once per build."""
+    global _SETUP_RATES
+    if _SETUP_RATES is None:
+        by: dict = {}
+        for e in _load_fires():
+            if not e.get("outcome"):
+                continue
+            s = e.get("strat")
+            w, n = by.get(s, (0, 0))
+            by[s] = (w + (1 if (e["outcome"] or {}).get("pump") else 0), n + 1)
+        _SETUP_RATES = by
+    return _SETUP_RATES
+
+
+def _setup_cell(sym, strat) -> str:
+    """One per-setup column. Shows that setup's live pump-rate (pumped/total graded
+    fires) ONLY when the setup is firing for this coin right now; '—' otherwise. So
+    each setup stays its OWN visible model, separate from the blended Pump %."""
+    firing = bool(((_sig(sym).get("signals") or {}).get(strat) or {}).get("fired"))
+    if not firing:
+        return f'<td class="n setupcol" data-s="{_NEG_INF}">—</td>'
+    w, n = _setup_live_rates().get(strat, (0, 0))
+    if not n:
+        return (f'<td class="n setupcol setupfire" data-s="0" '
+                f'title="{strat} firing now — no graded live fires yet">✓</td>')
+    rate = 100.0 * w / n
+    return (f'<td class="n setupcol setupfire" data-s="{rate:.2f}" '
+            f'title="{strat}: pumped {w} of {n} live fires (+50% within 72h)">{rate:.0f}%</td>')
 
 
 def _price24_cell(rec) -> str:
@@ -618,7 +657,10 @@ def _list_row(rec) -> str:
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
-        f'{_pump_cell(r)}'                               # Pump score
+        f'{_pump_cell(r)}'                               # Pump % (PumpFinder, per-coin)
+        f'{_setup_cell(sym, "v1")}'                      # v1 track-record (when firing)
+        f'{_setup_cell(sym, "v2")}'                      # v2 track-record
+        f'{_setup_cell(sym, "v4")}'                      # v4 track-record
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
@@ -2451,21 +2493,24 @@ EXTRA_CSS = """
 .pnl-chart{width:100%;height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
 .pnl-val{transition:color .08s}
 @media(max-width:640px){.pnl-card{flex:1 1 100%}}
-/* deterministic column widths (11 cols: #, Token, Pump, Price/24h, BN OI,
-   OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
-#ltab{table-layout:fixed;min-width:1020px}
+/* deterministic column widths (14 cols: #, Token, Pump, v1, v2, v4, Price/24h,
+   BN OI, OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
+#ltab{table-layout:fixed;min-width:1180px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:17%;text-align:left}   /* Token */
+#ltab th:nth-child(2){width:14%;text-align:left}   /* Token */
 #ltab th:nth-child(3){width:6%}                    /* Pump */
-#ltab th:nth-child(4){width:9.5%}                  /* Price / 24h */
-#ltab th:nth-child(5){width:8.5%}                  /* BN OI */
-#ltab th:nth-child(6){width:8.5%}                  /* OI (BN+BYB) */
-#ltab th:nth-child(7){width:7.5%}                  /* Funding */
-#ltab th:nth-child(8){width:8.5%}                  /* Vol */
-#ltab th:nth-child(9){width:7.5%}                  /* FDV */
-#ltab th:nth-child(10){width:7.5%}                 /* MC */
-#ltab th:nth-child(11){width:12%;text-align:left}  /* Memo */
+#ltab th:nth-child(4){width:4.5%}                  /* v1 */
+#ltab th:nth-child(5){width:4.5%}                  /* v2 */
+#ltab th:nth-child(6){width:4.5%}                  /* v4 */
+#ltab th:nth-child(7){width:9%}                    /* Price / 24h */
+#ltab th:nth-child(8){width:8%}                    /* BN OI */
+#ltab th:nth-child(9){width:8%}                    /* OI (BN+BYB) */
+#ltab th:nth-child(10){width:7%}                   /* Funding */
+#ltab th:nth-child(11){width:8%}                   /* Vol */
+#ltab th:nth-child(12){width:7%}                   /* FDV */
+#ltab th:nth-child(13){width:7%}                   /* MC */
+#ltab th:nth-child(14){width:10%;text-align:left}  /* Memo */
 /* ── responsive: de-chunk the phone layout ──────────────────────────────
    pills wrap as whole chips (never break their text); the dense 11-col list
    drops low-priority columns so the essentials fit with NO horizontal scroll. */
@@ -2477,19 +2522,23 @@ EXTRA_CSS = """
   header p{font-size:11.5px;line-height:1.45}
   .topnav a{font-size:12px;padding:3px 10px}
   .filters{padding:10px 14px}
-  /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest */
+  /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest
+     (incl. the v1/v2/v4 setup columns — low-priority on a phone). */
   #ltab{min-width:0;width:100%}
   #ltab th:nth-child(1),#ltab td:nth-child(1),
+  #ltab th:nth-child(4),#ltab td:nth-child(4),
   #ltab th:nth-child(5),#ltab td:nth-child(5),
+  #ltab th:nth-child(6),#ltab td:nth-child(6),
   #ltab th:nth-child(8),#ltab td:nth-child(8),
-  #ltab th:nth-child(9),#ltab td:nth-child(9),
-  #ltab th:nth-child(10),#ltab td:nth-child(10),
-  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
-  #ltab th:nth-child(2){width:40%}
+  #ltab th:nth-child(11),#ltab td:nth-child(11),
+  #ltab th:nth-child(12),#ltab td:nth-child(12),
+  #ltab th:nth-child(13),#ltab td:nth-child(13),
+  #ltab th:nth-child(14),#ltab td:nth-child(14){display:none}
+  #ltab th:nth-child(2){width:38%}
   #ltab th:nth-child(3){width:12%}
-  #ltab th:nth-child(4){width:21%}
-  #ltab th:nth-child(6){width:14%}
-  #ltab th:nth-child(7){width:13%}
+  #ltab th:nth-child(7){width:20%}
+  #ltab th:nth-child(9){width:16%}
+  #ltab th:nth-child(10){width:14%}
   #ltab th{font-size:10.5px}
   #ltab td,#ltab th{padding:7px 4px}
   #ltab td.n{font-size:12px}
@@ -2503,6 +2552,10 @@ EXTRA_CSS = """
 .pump-hi{color:var(--pos)}
 .pump-mid{color:var(--text-1)}
 .pump-lo{color:var(--text-3)}
+/* per-setup (v1/v2/v4) track-record columns: muted '—' when idle, highlighted
+   when that setup is firing for the coin (each model stays separately legible) */
+#ltab td.setupcol{color:var(--text-3)}
+#ltab td.setupfire{font-weight:700;color:var(--text-1)}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
