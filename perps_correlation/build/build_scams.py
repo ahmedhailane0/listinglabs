@@ -519,10 +519,11 @@ def _tile(rec) -> str:
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-# Pump % = the per-coin PumpFinder probability; v1/v2/v4 = each setup's OWN live
-# track-record pump-rate, shown when it fires (each model stays separately visible).
-LIST_COLS = ["#", "Token", "Pump %", "v1", "v2", "v4", "Price / 24h", "BN OI",
-             "OI (BN+BYB)", "Funding", "Vol", "FDV", "MC", "Memo"]
+# Pump % = the per-coin PumpFinder probability; Old % = the previous-gen logistic
+# engine (for comparison); v1/v2/v4 = each setup's OWN live track-record pump-rate,
+# shown when it fires (each model stays separately visible). Memo removed per owner.
+LIST_COLS = ["#", "Token", "Pump %", "Old %", "v1", "v2", "v4", "Price / 24h",
+             "BN OI", "OI (BN+BYB)", "Funding", "Vol", "FDV", "MC"]
 
 
 def _pump_pct(s) -> str:
@@ -547,6 +548,21 @@ def _pump_cell(r) -> str:
     cls = "pump-hi" if s >= 15 else ("pump-mid" if s >= 8 else "pump-lo")
     return (f'<td class="n pump {cls}" data-s="{s:.1f}" '
             f'title="{_PUMP_TITLE}">{_pump_pct(s)}</td>')
+
+
+_PUMP_TITLE_OLD = ("Previous-generation engine (linear logistic) for comparison. "
+                   "PumpFinder (the Pump % column) replaced it — it was less "
+                   "calibrated and tended to over-state already-pumped coins.")
+
+
+def _pump_cell_old(r) -> str:
+    """The OLD logistic engine's score, shown muted beside PumpFinder so the two
+    engines can be compared per coin. Box-computed into pump_score_log."""
+    s = r.get("pump_score_log")
+    if s is None:
+        return f'<td class="n pumpold" data-s="{_NEG_INF}">—</td>'
+    return (f'<td class="n pumpold" data-s="{s:.1f}" '
+            f'title="{_PUMP_TITLE_OLD}">{_pump_pct(s)}</td>')
 
 
 _SETUP_RATES = None
@@ -653,11 +669,11 @@ def _list_row(rec) -> str:
            f'<span class="lname">{html.escape(rec.get("name", sym))} '
            f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}'
            f'<span class="lbuys" data-buyrow>{_buy_badges(sym, mini=True)}</span></a></td>')
-    memo = html.escape(rec.get("memo_en") or "")
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
         f'{_pump_cell(r)}'                               # Pump % (PumpFinder, per-coin)
+        f'{_pump_cell_old(r)}'                           # Old % (previous logistic engine)
         f'{_setup_cell(sym, "v1")}'                      # v1 track-record (when firing)
         f'{_setup_cell(sym, "v2")}'                      # v2 track-record
         f'{_setup_cell(sym, "v4")}'                      # v4 track-record
@@ -667,8 +683,7 @@ def _list_row(rec) -> str:
         f'{_fundcell(r)}'                                # Funding
         f'{_num_chg_cell(vol, chg["vol"], "24h change in tracked-venue perp 24h volume")}'  # Vol
         f'{_num_cell(fdv, pct=False, color=False)}'      # FDV
-        f'{_num_cell(mcap, pct=False, color=False)}'     # MC
-        f'<td class="memo"><span>{memo or "—"}</span></td></tr>')
+        f'{_num_cell(mcap, pct=False, color=False)}</tr>')   # MC
 
 
 def _reaction_block(rec) -> str:
@@ -2493,29 +2508,48 @@ EXTRA_CSS = """
 .pnl-chart{width:100%;height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
 .pnl-val{transition:color .08s}
 @media(max-width:640px){.pnl-card{flex:1 1 100%}}
-/* deterministic column widths (14 cols: #, Token, Pump, v1, v2, v4, Price/24h,
-   BN OI, OI (BN+BYB), Funding, Vol, FDV, MC, Memo). */
-#ltab{table-layout:fixed;min-width:1180px}
+/* deterministic column widths (14 cols: #, Token, Pump, Old, v1, v2, v4,
+   Price/24h, BN OI, OI (BN+BYB), Funding, Vol, FDV, MC). */
+#ltab{table-layout:fixed;min-width:1120px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:14%;text-align:left}   /* Token */
+#ltab th:nth-child(2){width:15%;text-align:left}   /* Token */
 #ltab th:nth-child(3){width:6%}                    /* Pump */
-#ltab th:nth-child(4){width:4.5%}                  /* v1 */
-#ltab th:nth-child(5){width:4.5%}                  /* v2 */
-#ltab th:nth-child(6){width:4.5%}                  /* v4 */
-#ltab th:nth-child(7){width:9%}                    /* Price / 24h */
-#ltab th:nth-child(8){width:8%}                    /* BN OI */
-#ltab th:nth-child(9){width:8%}                    /* OI (BN+BYB) */
-#ltab th:nth-child(10){width:7%}                   /* Funding */
-#ltab th:nth-child(11){width:8%}                   /* Vol */
-#ltab th:nth-child(12){width:7%}                   /* FDV */
-#ltab th:nth-child(13){width:7%}                   /* MC */
-#ltab th:nth-child(14){width:10%;text-align:left}  /* Memo */
-/* ── responsive: de-chunk the phone layout ──────────────────────────────
-   pills wrap as whole chips (never break their text); the dense 11-col list
-   drops low-priority columns so the essentials fit with NO horizontal scroll. */
+#ltab th:nth-child(4){width:6%}                    /* Old */
+#ltab th:nth-child(5){width:4.5%}                  /* v1 */
+#ltab th:nth-child(6){width:4.5%}                  /* v2 */
+#ltab th:nth-child(7){width:4.5%}                  /* v4 */
+#ltab th:nth-child(8){width:9%}                    /* Price / 24h */
+#ltab th:nth-child(9){width:8%}                    /* BN OI */
+#ltab th:nth-child(10){width:9%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(11){width:8%}                   /* Funding */
+#ltab th:nth-child(12){width:8%}                   /* Vol */
+#ltab th:nth-child(13){width:7%}                   /* FDV */
+#ltab th:nth-child(14){width:7%}                   /* MC */
+/* ── responsive: de-chunk the layout in two tiers ────────────────────────
+   pills wrap as whole chips (never break their text); the dense 14-col list
+   sheds low-priority columns at each tier so the essentials always fit with NO
+   horizontal scroll (tablet ≤1080: drop #, BN OI, Vol, FDV, MC; phone ≤640:
+   keep only Token · Pump · Price/24h · OI · Funding). */
 .topnav{flex-wrap:wrap}
 .topnav a{white-space:nowrap}
+@media(max-width:1080px){
+  #ltab{min-width:0;width:100%}
+  #ltab th:nth-child(1),#ltab td:nth-child(1),
+  #ltab th:nth-child(9),#ltab td:nth-child(9),
+  #ltab th:nth-child(12),#ltab td:nth-child(12),
+  #ltab th:nth-child(13),#ltab td:nth-child(13),
+  #ltab th:nth-child(14),#ltab td:nth-child(14){display:none}
+  #ltab th:nth-child(2){width:24%}                 /* Token */
+  #ltab th:nth-child(3){width:9%}                  /* Pump */
+  #ltab th:nth-child(4){width:9%}                  /* Old */
+  #ltab th:nth-child(5){width:6%}                  /* v1 */
+  #ltab th:nth-child(6){width:6%}                  /* v2 */
+  #ltab th:nth-child(7){width:6%}                  /* v4 */
+  #ltab th:nth-child(8){width:13%}                 /* Price / 24h */
+  #ltab th:nth-child(10){width:13%}                /* OI (BN+BYB) */
+  #ltab th:nth-child(11){width:12%}                /* Funding */
+}
 @media(max-width:640px){
   header{padding:12px 14px}
   header h1{font-size:17px}
@@ -2523,22 +2557,22 @@ EXTRA_CSS = """
   .topnav a{font-size:12px;padding:3px 10px}
   .filters{padding:10px 14px}
   /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest
-     (incl. the v1/v2/v4 setup columns — low-priority on a phone). */
+     (Old %, the v1/v2/v4 setup cols, BN OI, Vol, FDV, MC — low-priority on a phone). */
   #ltab{min-width:0;width:100%}
   #ltab th:nth-child(1),#ltab td:nth-child(1),
   #ltab th:nth-child(4),#ltab td:nth-child(4),
   #ltab th:nth-child(5),#ltab td:nth-child(5),
   #ltab th:nth-child(6),#ltab td:nth-child(6),
-  #ltab th:nth-child(8),#ltab td:nth-child(8),
-  #ltab th:nth-child(11),#ltab td:nth-child(11),
+  #ltab th:nth-child(7),#ltab td:nth-child(7),
+  #ltab th:nth-child(9),#ltab td:nth-child(9),
   #ltab th:nth-child(12),#ltab td:nth-child(12),
   #ltab th:nth-child(13),#ltab td:nth-child(13),
   #ltab th:nth-child(14),#ltab td:nth-child(14){display:none}
-  #ltab th:nth-child(2){width:38%}
-  #ltab th:nth-child(3){width:12%}
-  #ltab th:nth-child(7){width:20%}
-  #ltab th:nth-child(9){width:16%}
-  #ltab th:nth-child(10){width:14%}
+  #ltab th:nth-child(2){width:38%}                 /* Token */
+  #ltab th:nth-child(3){width:12%}                 /* Pump */
+  #ltab th:nth-child(8){width:20%}                 /* Price / 24h */
+  #ltab th:nth-child(10){width:16%}                /* OI (BN+BYB) */
+  #ltab th:nth-child(11){width:14%}                /* Funding */
   #ltab th{font-size:10.5px}
   #ltab td,#ltab th{padding:7px 4px}
   #ltab td.n{font-size:12px}
@@ -2556,6 +2590,9 @@ EXTRA_CSS = """
    when that setup is firing for the coin (each model stays separately legible) */
 #ltab td.setupcol{color:var(--text-3)}
 #ltab td.setupfire{font-weight:700;color:var(--text-1)}
+/* old (previous-gen logistic) engine column: rendered muted/secondary so the
+   live PumpFinder % stays the visual anchor and the old one reads as a reference */
+#ltab td.pumpold{color:var(--text-3);font-style:italic}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make

@@ -101,11 +101,15 @@ FIRE_REFRACTORY_H = 72        # one fire per (sym, setup) per 72h — collapses 
 # Optional pump-probability scorer (LOCAL/BOX-only module + model; absent in CI,
 # so this no-ops there). When present, writes a 0-100 `pump_score` per coin.
 try:
-    from tools.pump_score import load_model as _load_pump_model, score_series as _pump_score
+    from tools.pump_score import (load_model as _load_pump_model,
+                                  load_model_logistic as _load_pump_model_log,
+                                  score_series as _pump_score)
     _PUMP_MODEL = _load_pump_model()
+    _PUMP_MODEL_LOG = _load_pump_model_log()   # previous-gen logistic, for the "Old %" column
 except Exception:
     _pump_score = None
     _PUMP_MODEL = None
+    _PUMP_MODEL_LOG = None
 
 # Optional Telegram alerts (reads token from env; no-ops when unconfigured).
 try:
@@ -721,9 +725,12 @@ def _fetch_token(sym: str, intervals: dict) -> dict:
     ok = bool(oi and kl)
     pump = (_pump_score(oi, kl, fund, _PUMP_MODEL)
             if (_pump_score and _PUMP_MODEL) else None)
+    pump_log = (_pump_score(oi, kl, fund, _PUMP_MODEL_LOG)
+                if (_pump_score and _PUMP_MODEL_LOG) else None)
     return {"oi_bn": oi_bn, "funding": cur_funding, "funding_interval_h": float(interval_h),
             "signals": sig, "as_of": sig.get("as_of"), "data": "ok" if ok else "partial",
-            "mark_price": mark_price, "spark": spark, "pump_score": pump, "_candles": candles,
+            "mark_price": mark_price, "spark": spark, "pump_score": pump,
+            "pump_score_log": pump_log, "_candles": candles,
             # last-hour snapshot for the append-only training series (_log_hourly)
             "snap_t": int(oi[-1][0]) if oi else None,
             "vol1h": float(kl[-1][5]) if kl and len(kl[-1]) > 5 else None}
