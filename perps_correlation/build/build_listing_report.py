@@ -1085,7 +1085,9 @@ header p { margin: 5px 0 0; opacity: .82; font-size: 13px; }
 /* live BWEnews listing-signal strip */
 .newsbar { display: flex; align-items: center; gap: 12px; padding: 9px var(--gutter);
            background: var(--newsbar-bg); color: var(--newsbar-fg); border-bottom: 1px solid var(--newsbar-border);
-           overflow-x: auto; white-space: nowrap; font-size: 12.5px; }
+           overflow-x: auto; white-space: nowrap; font-size: 12.5px;
+           scrollbar-width: none; }
+.newsbar::-webkit-scrollbar { display: none; }
 .newsbar .nlabel { font-weight: 700; display: inline-flex; flex-direction: column;
                    line-height: 1.2; flex: 0 0 auto; }
 .newsbar .nlabel small { font-weight: 400; opacity: .6; font-size: 10.5px; }
