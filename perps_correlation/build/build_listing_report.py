@@ -1035,6 +1035,9 @@ THEME_VARS = """
   --font-sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,system-ui,sans-serif;
   --font-mono:ui-monospace,'SF Mono','JetBrains Mono','Cascadia Code',Menlo,Consolas,monospace;
   --ease:cubic-bezier(.22,.61,.36,1);
+  /* horizontal page gutter: 28px on laptops, grows on wide screens so content
+     centres at ~1560px instead of sprawling edge-to-edge (full-bleed bars stay). */
+  --gutter:max(28px, calc((100vw - 1560px) / 2));
   color-scheme:light;
 }
 :root[data-theme="dark"]{
@@ -1055,6 +1058,8 @@ THEME_VARS = """
   --ring:0 0 0 3px rgba(95,176,240,.32);
   color-scheme:dark;
 }
+/* tighter page gutter on phones (the wide-screen centering gutter is too big there) */
+@media (max-width:640px){ :root{ --gutter:16px; } }
 """
 
 CSS = THEME_VARS + """
@@ -1068,7 +1073,7 @@ body { font: 14px/1.55 var(--font-sans); margin: 0;
        -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
        text-rendering: optimizeLegibility; }
 :where(h1,h2,h3,h4){ text-wrap: balance; }
-header { padding: 20px 32px; background: var(--header-bg);
+header { padding: 20px var(--gutter); background: var(--header-bg);
          background-image: var(--header-grad); color: var(--header-fg);
          box-shadow: var(--shadow-md); position: relative; z-index: 5; }
 header h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.015em; }
@@ -1078,7 +1083,7 @@ header p { margin: 5px 0 0; opacity: .82; font-size: 13px; }
 ::selection { background: rgba(31,111,178,.28); }
 :focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
 /* live BWEnews listing-signal strip */
-.newsbar { display: flex; align-items: center; gap: 12px; padding: 9px 32px;
+.newsbar { display: flex; align-items: center; gap: 12px; padding: 9px var(--gutter);
            background: var(--newsbar-bg); color: var(--newsbar-fg); border-bottom: 1px solid var(--newsbar-border);
            overflow-x: auto; white-space: nowrap; font-size: 12.5px; }
 .newsbar .nlabel { font-weight: 700; display: inline-flex; flex-direction: column;
@@ -1110,7 +1115,7 @@ a { color: inherit; text-decoration: none; }
 .theme-toggle:hover { background: rgba(255,255,255,.2); }
 
 /* filter bar */
-.filters { padding: 14px 32px; background: var(--bg-card); border-bottom: 1px solid var(--border);
+.filters { padding: 14px var(--gutter); background: var(--bg-card); border-bottom: 1px solid var(--border);
            display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
 .filters #search { font-size: 13px; padding: 6px 12px; border: 1px solid var(--border-input);
                    border-radius: 999px; outline: none; min-width: 220px; flex: 0 1 260px;
@@ -1151,7 +1156,7 @@ a { color: inherit; text-decoration: none; }
    page (the "table scrolling by itself" bug). The page is the scroll container;
    the header sticks to the viewport. Wide tables overflow the body on narrow
    screens — that's the intended trade for a page-pinned header. */
-.listwrap { padding: 16px 32px 28px; }
+.listwrap { padding: 16px var(--gutter) 28px; }
 table.list { width: 100%; border-collapse: collapse; background: var(--bg-card); font-size: 13px;
              border: 1px solid var(--border); border-radius: var(--radius); table-layout: fixed;
              box-shadow: var(--shadow-sm); }
@@ -1200,7 +1205,7 @@ table.list .pos { color: var(--pos); } table.list .neg { color: var(--neg); }
 .lead { color: var(--link); font-size: 11px; font-weight: 600; }
 
 /* index grid */
-.grid { padding: 24px 32px; display: grid; gap: 18px;
+.grid { padding: 24px var(--gutter); display: grid; gap: 18px;
         grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
 .tile { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
         overflow: hidden; box-shadow: var(--shadow-sm);
@@ -1222,7 +1227,7 @@ table.list .pos { color: var(--pos); } table.list .neg { color: var(--neg); }
                font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
 
 /* detail card */
-main:not(.grid) { padding: 24px 32px; }
+main:not(.grid) { padding: 24px var(--gutter); }
 .card { display: grid; grid-template-columns: minmax(320px, 420px) 1fr; gap: 20px;
         background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
         box-shadow: var(--shadow-md); overflow: hidden; }

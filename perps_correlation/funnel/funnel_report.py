@@ -228,9 +228,9 @@ CSS = THEME_VARS + """
 *{box-sizing:border-box}body{font:14px/1.55 var(--font-sans);margin:0;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
 :where(h1,h2,h3,h4){text-wrap:balance}:focus-visible{outline:none;box-shadow:var(--ring);border-radius:var(--radius-sm)}
 @media (prefers-reduced-motion: reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
-header{padding:18px 28px;background:var(--header-bg);background-image:var(--header-grad);color:var(--header-fg);box-shadow:var(--shadow-md);position:relative;z-index:5}header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.015em}header p{margin:4px 0 0;opacity:.85;font-size:13px}
+header{padding:18px var(--gutter);background:var(--header-bg);background-image:var(--header-grad);color:var(--header-fg);box-shadow:var(--shadow-md);position:relative;z-index:5}header h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-.015em}header p{margin:4px 0 0;opacity:.85;font-size:13px}
 a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}.back{color:var(--header-fg)}
-section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
+section{padding:18px var(--gutter)}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;text-transform:uppercase;letter-spacing:.04em;color:var(--text-3)}
 .topnav{margin:8px 0 2px;display:flex;gap:8px;align-items:center}.topnav a{font-size:13px;color:var(--header-fg);opacity:.8;padding:4px 12px;border-radius:999px;border:1px solid rgba(255,255,255,.35)}
 .topnav a:hover{opacity:1;text-decoration:none;background:rgba(255,255,255,.1)}.topnav a.active{opacity:1;background:var(--header-fg);color:var(--header-bg);border-color:var(--header-fg);font-weight:600}
 .theme-toggle{margin-left:auto;font-size:15px;line-height:1;cursor:pointer;background:rgba(255,255,255,.1);color:var(--header-fg);border:1px solid rgba(255,255,255,.35);border-radius:999px;width:30px;height:30px;padding:0;flex:0 0 auto}
