@@ -2546,8 +2546,8 @@ EXTRA_CSS = """
    sections render content (h3 / tables / donuts) as DIRECT children, so they need
    their own padding — without it titles sit flush in the top-left corner and the
    right edge (donut legends, wide tables) gets clipped by .card{overflow:hidden}. */
-section.card.span{display:block;margin-top:18px;padding:20px 24px}
-section.card.span h3{margin:0 0 12px;font-size:15px;color:var(--text)}
+section.card.span{display:block;margin-top:22px;padding:22px 26px}
+section.card.span h3{margin:0 0 14px;font-size:15px;color:var(--text);letter-spacing:-.01em}
 section.card.span h3 .asof{font-size:12px;color:var(--text-4);font-weight:400;margin-left:8px}
 .badge{display:inline-block;padding:2px 9px;border-radius:11px;font-size:12px;font-weight:600;white-space:nowrap}
 /* in the narrow info panel a long ratio badge would overflow the dl value column
@@ -2679,8 +2679,8 @@ td.sig .buy{margin:1px 3px 1px 0}
 .sigmeta{display:flex;flex-wrap:wrap;gap:6px 18px;margin:0 0 14px;font-size:13px;color:var(--text-2)}
 .sigmeta b{color:var(--text-3);font-weight:600;margin-right:4px;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
 .buycards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px}
-.buycard{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--bg-subtle)}
-.buycard.fired{border-color:var(--pos);background:var(--fired-bg)}
+.buycard{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;background:var(--bg-subtle);transition:border-color .16s var(--ease)}
+.buycard.fired{border-color:var(--pos);background:var(--fired-bg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pos) 22%,transparent)}
 .buy.probe{background:#7d4ec9}.buy.dump{background:#c0392b}
 .xcard{border-style:dashed}
 .xcard.dump{border-color:#c0392b55}
@@ -2694,9 +2694,9 @@ td.sig .buy{margin:1px 3px 1px 0}
 .bc-no{font-size:11px;color:var(--text-4);font-weight:600;margin-left:auto}
 .bc-rec{font-size:12px;color:var(--text-2);margin:-2px 0 8px}
 .bc-state.na{font-size:12px;color:var(--text-4);font-style:italic}
-.conds{list-style:none;margin:0;padding:0;font-size:11.5px;display:grid;gap:3px}
+.conds{list-style:none;margin:0;padding:0;font-size:11.5px;line-height:1.5;display:grid;gap:4px;font-family:var(--font-mono);letter-spacing:-.02em}
 .conds li.ok{color:var(--pos)}
-.conds li.x{color:var(--text-4)}
+.conds li.x{color:var(--text-4);opacity:.85}
 .binance-btn{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:8px;background:#f3ba2f;color:#3a2c00;font-weight:700;font-size:13px;text-decoration:none}
 .binance-btn:hover{background:#e0a91d}
 """
