@@ -477,9 +477,11 @@ def _alert_result(e: dict) -> bool:
                 "TP1 +25% ✓ (sold half)" if tp1 else
                 "no TP — stop / 72h time-stop")
         name = (e.get("name") or e.get("sym"))
+        strat = e.get("strat")
+        label = "buy signal" if strat == "buy15" else strat
         lines = [
             f"{head} <b>RESULT — {_esc(e.get('sym'))}</b> ({_esc(name)})  "
-            f"[{e.get('strat')}]  {'WIN' if win else 'LOSS'}",
+            f"[{label}]  {'WIN' if win else 'LOSS'}",
             f"Entry  ~ ${_fmt_px(e.get('entry_price'))}",
             (f"Best   {mfe*100:+.0f}%" if mfe is not None else "Best   n/a"),
             tier,
@@ -778,7 +780,10 @@ def _log_fires(recs: dict) -> int:
                     "funding": r.get("funding"), "fdv": r.get("fdv"),
                     "pump_score": ps, "pump_score_25": r.get("pump_score_25"),
                     "pump_score_10": r.get("pump_score_10"),
-                    "alerted": False, "outcome": None,
+                    # alerted=True: the play-by-play (_alert_buy_climb) pings the user
+                    # on this crossing, so _send_results will close the loop with a
+                    # WIN/LOSS Telegram once this fire is graded 72h later.
+                    "alerted": True, "alerted_utc": now, "outcome": None,
                 })
                 added += 1
     try:
