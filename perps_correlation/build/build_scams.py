@@ -84,6 +84,12 @@ STRAT_TITLE = {"v1": "High-control accumulation breakout",
                "v2": "Ignition (OI-confirmed coil-break)", "v3": "Washout reversal",
                "v4": "Coiled accumulation (pre-pump build)",
                "buy15": "Pump odds crossed 15%"}
+# plain-English "why the AI bought" — for the AI Journal table (non-expert friendly)
+STRAT_WHY = {"v1": "quiet OI build",
+             "v2": "coil breakout on volume",
+             "v3": "washout reversal",
+             "v4": "quiet accumulation",
+             "buy15": "odds crossed 15%"}
 BUY_ODDS_GATE = 15.0   # the +50% pump_score that flags a coin as a "buy signal"
 
 
@@ -2044,7 +2050,7 @@ def scams_subnav(active: str) -> str:
     all of them (these pages call site_nav("scams")). `active` ∈ {screener, journal,
     pumpodds, buy}."""
     tabs = [("screener", "index.html", "Screener"),
-            ("journal", "journal.html", "AI Track Record"),
+            ("journal", "journal.html", "AI Journal"),
             ("pumpodds", "pumpodds.html", "Pump Odds"),
             ("buy", "buysignals.html", "Buy Signals")]
     parts = []
@@ -2052,6 +2058,29 @@ def scams_subnav(active: str) -> str:
         cls = ' class="active"' if key == active else ""
         parts.append(f'<a{cls} href="{href}">{text}</a>')
     return f'<nav class="subnav">{"".join(parts)}</nav>'
+
+
+def _dts(ts) -> str:
+    """Compact UTC date for the journal tables (frees column width): 'Jun 26 00:00'."""
+    import datetime as _dt
+    return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%b %d %H:%M")
+
+
+def _outcome_story(o) -> str:
+    """Plain-English 'what happened' from a graded outcome: pumped / half-win /
+    stopped out / no move, with the peak move in the hover tooltip."""
+    o = o or {}
+    mfe = o.get("mfe") or 0
+    peak = f"peaked +{mfe*100:.0f}%"
+    if o.get("pump") or mfe >= 0.50:
+        cls, txt = "jhit", "🟢 Pumped"
+    elif mfe >= 0.25:
+        cls, txt = "jhit", "🟡 Half-win"
+    elif o.get("exit_reason") in ("stopped", "tp1+stop"):
+        cls, txt = "jstop", "🔴 Stopped out"
+    else:
+        cls, txt = "jmiss", "⚪ No move"
+    return f'<span class="{cls}" title="{peak}">{txt}</span>'
 
 
 def _journal_page(recs) -> str:
@@ -2175,37 +2204,38 @@ def _journal_page(recs) -> str:
         for e in closed:
             o = e["outcome"] or {}
             ep = e.get("entry_price") or o.get("entry")
-            tp1 = e.get("tp1") or (ep * 1.25 if ep else None)
-            tp2 = e.get("tp2") or (ep * 1.50 if ep else None)
-            stop = e.get("stop")
             mfe = o.get("mfe") or 0
-            xr = o.get("exit_reason")
-            xlbl, xcls = _exit.get(xr, (xr or "—", "jmiss"))
             hit1, hit2 = mfe >= 0.25, mfe >= 0.50
-            stopped = xr in ("stopped", "tp1+stop")
-            tp1c = f'<td class="jnum {"jhit" if hit1 else "jmiss"}">{_px(tp1)}{" ✓" if hit1 else ""}</td>'
-            tp2c = f'<td class="jnum {"jhit" if hit2 else "jmiss"}">{_px(tp2)}{" ✓" if hit2 else ""}</td>'
-            stopc = f'<td class="jnum {"jstop" if stopped else "jmiss"}">{_px(stop)}{" ✗" if stopped else ""}</td>'
+            k = e.get("strat")
+            why = (f'{_setup_chip(k)} '
+                   f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
+            h1c = f'<td class="jnum {"jhit" if hit1 else "jmiss"}">{"✓" if hit1 else "✗"}</td>'
+            h2c = f'<td class="jnum {"jhit" if hit2 else "jmiss"}">{"✓" if hit2 else "✗"}</td>'
             crows.append(
-                f'<tr><td>{_dt_day(_key(e))}</td>'
-                f'<td class="jt">{_tok(e.get("sym"))} {_setup_chip(e.get("strat"))}</td>'
+                f'<tr><td>{_dts(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))}</td>'
+                f'<td class="jwhycell">{why}</td>'
                 f'<td class="jnum">{_px(ep)}</td>'
-                f'{stopc}{tp1c}{tp2c}'
-                f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
+                f'<td class="jnum">{_px(e.get("stop"))}</td>'
+                f'{h1c}{h2c}'
+                f'<td>{_outcome_story(o)}</td>'
                 f'<td class="jnum">{_jpct(_real_pnl(e))}</td></tr>')
         closed_tbl = (
-            '<div class="tablewrap"><table class="jtable"><thead><tr>'
-            '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
-            '<th title="the intended stop — where it bails if wrong">Stop</th>'
-            '<th title="intended take-profit 1: +25% (sell half)">TP1 +25%</th>'
-            '<th title="intended take-profit 2: +50% (sell rest)">TP2 +50%</th>'
-            '<th title="what actually closed the trade">Exit</th>'
+            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<th>When</th><th>Token</th>'
+            '<th title="the pattern the AI spotted">Why it bought</th>'
+            '<th title="entry reference price (Binance mark at the signal)">Bought at</th>'
+            '<th title="where the trade bails if it goes wrong">Stop</th>'
+            '<th title="did price reach +25% (sell half)?">Hit +25%?</th>'
+            '<th title="did price reach +50% (sell rest)?">Hit +50%?</th>'
+            '<th>What happened</th>'
             '<th title="realistic P&amp;L, net of fees + slippage">Result</th>'
             '</tr></thead><tbody>'
             + "".join(crows) + '</tbody></table></div>'
-            + '<p class="jnote">Each row is the plan as logged at entry — stop, TP1 '
-            '(+25%, sell half), TP2 (+50%, sell rest) — with ✓/✗ showing which targets '
-            'price reached, then how the trade actually closed.</p>')
+            + '<p class="jnote">Each row: <b>when</b> the AI bought, <b>why</b> (the pattern it '
+            'spotted), the plan (bought-at price + the safety stop), whether price reached '
+            '+25% / +50%, then <b>what actually happened</b> and the realistic result '
+            '(net of fees + slippage).</p>')
     else:
         closed_tbl = ('<p class="jnote">No v1/v2/v4 trades have matured yet — each is '
                       'graded 72h after it fires. Check back as the ledger fills.</p>')
@@ -2216,18 +2246,22 @@ def _journal_page(recs) -> str:
         for e in open_:
             ep = e.get("entry_price")
             entry = fmt_subscript_price(ep) if ep else "—"
-            matures = _dt_day(_key(e) + 72 * 3600)
+            grades = _dts(_key(e) + 72 * 3600)
+            k = e.get("strat")
+            why = (f'{_setup_chip(k)} '
+                   f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
             orows.append(
-                f'<tr><td>{_dt_day(_key(e))}</td>'
+                f'<tr><td>{_dts(_key(e))}</td>'
                 f'<td class="jt">{_tok(e.get("sym"))}</td>'
-                f'<td>{_setup_chip(e.get("strat"))}</td>'
+                f'<td class="jwhycell">{why}</td>'
                 f'<td class="jnum">{entry}</td>'
-                f'<td>{matures}</td>'
-                f'<td><span class="jpending">pending</span></td></tr>')
+                f'<td>{grades}</td>'
+                f'<td><span class="jpending">⏳ watching</span></td></tr>')
         open_tbl = (
-            '<h3>Open trades <span class="asof">fired · awaiting 72h grade</span></h3>'
-            '<div class="tablewrap"><table class="jtable"><thead><tr><th>Entered (UTC)</th><th>Token</th>'
-            '<th>Setup</th><th>Entry</th><th>Matures (UTC)</th><th>Status</th>'
+            '<h3>Open trades <span class="asof">bought · waiting for the 72h grade</span></h3>'
+            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<th>When</th><th>Token</th><th>Why it bought</th><th>Bought at</th>'
+            '<th>Grades on</th><th>Status</th>'
             '</tr></thead><tbody>' + "".join(orows) + '</tbody></table></div>')
     else:
         open_tbl = ""
@@ -2258,23 +2292,32 @@ def _journal_page(recs) -> str:
         for e in m_closed[:300]:
             ep = e.get("entry_price") or _o(e, "entry")
             h12, h24 = _o(e, "m_hit_12h"), _o(e, "m_hit_24h")
-            xlbl, xcls = _mx.get(_o(e, "m_exit"), (_o(e, "m_exit") or "—", "jmiss"))
-            c12 = f'<td class="jnum {"jhit" if h12 else "jmiss"}">{"✓" if h12 else "·"}</td>'
-            c24 = f'<td class="jnum {"jhit" if h24 else "jmiss"}">{"✓" if h24 else "·"}</td>'
+            k = e.get("strat")
+            why = (f'{_setup_chip(k)} '
+                   f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
+            c12 = f'<td class="jnum {"jhit" if h12 else "jmiss"}">{"✓" if h12 else "✗"}</td>'
+            c24 = f'<td class="jnum {"jhit" if h24 else "jmiss"}">{"✓" if h24 else "✗"}</td>'
+            if h24:
+                story = '<span class="jhit">🟢 Hit +10%</span>'
+            elif _o(e, "m_exit") == "stopped":
+                story = '<span class="jstop">🔴 Stopped out</span>'
+            else:
+                story = '<span class="jmiss">⚪ No move</span>'
             mrows.append(
-                f'<tr><td>{_dt_day(_key(e))}</td>'
-                f'<td class="jt">{_tok(e.get("sym"))} {_setup_chip(e.get("strat"))}</td>'
+                f'<tr><td>{_dts(_key(e))}</td>'
+                f'<td class="jt">{_tok(e.get("sym"))}</td>'
+                f'<td class="jwhycell">{why}</td>'
                 f'<td class="jnum">{_mpx(ep)}</td>{c12}{c24}'
-                f'<td class="jx {xcls}">{html.escape(xlbl)}</td>'
+                f'<td>{story}</td>'
                 f'<td class="jnum">{_jpct(_o(e, "m_pnl_real"))}</td></tr>')
         mover_table = (
             '<section class="card span" id="movers">'
             '<h3>Mover trades <span class="asof">graded on real price 24h after entry</span></h3>'
-            '<div class="tablewrap"><table class="jtable"><thead><tr>'
-            '<th>Entered (UTC)</th><th>Token</th><th>Entry</th>'
+            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<th>When</th><th>Token</th><th>Why it bought</th><th>Bought at</th>'
             '<th title="reached +10% within 12h">+10% ≤12h</th>'
             '<th title="reached +10% within 24h">+10% ≤24h</th>'
-            '<th title="how the +10% trade closed">Exit</th>'
+            '<th>What happened</th>'
             '<th title="realistic P&amp;L: +10% TP / own stop / 24h close, net of fees+slippage">Result</th>'
             '</tr></thead><tbody>' + "".join(mrows) + '</tbody></table></div></section>')
     else:
@@ -2291,15 +2334,15 @@ def _journal_page(recs) -> str:
         f'{m_score}</section>')
 
     body = f"""
-<header><h1>AI Track Record</h1>
+<header><h1>AI Journal</h1>
 {site_nav("scams")}
 {scams_subnav("journal")}
-<p class="sub">A journal of the <b>trained model's live Buy v1, v2 &amp; v4 setups</b> — the
-patterns it reads as a coming pump. Each fire is logged with an entry price the moment it
-triggers, then <b>scored on the real price</b>. Two views below: the headline <b>+50% pump</b>
-target (72h) and a faster <b>+10% mover</b> target (24h). <b>Research paper signals scored
-on real prices — not executed trades, not financial advice</b>; the sample is small and
-grows over time, so read the rates as early evidence.</p></header>
+<p class="sub">The AI's <b>journal</b> of its live Buy v1, v2 &amp; v4 setups — the patterns it reads
+as a coming pump. Each trade is logged with an entry price the moment it triggers, then <b>scored on
+the real price</b>. Two views below: the headline <b>+50% pump</b> target (72h) and a faster
+<b>+10% mover</b> target (24h). <b>Research paper signals scored on real prices — not executed
+trades, not financial advice</b>; the sample is small and grows over time, so read the rates as
+early evidence.</p></header>
 <main>
 <div class="jtabs" role="tablist">
   <button class="jtab active" data-view="pumps" type="button">+50% Pumps</button>
@@ -2327,13 +2370,13 @@ grows over time, so read the rates as early evidence.</p></header>
 </div>
 </main>
 {THEME_JS}{_JOURNAL_TABS_JS}{_WINRATE_TIP_JS}"""
-    desc = ("The trained model's live track record on the Manipulated tab — every Buy "
-            "v1/v4 setup it fired, graded 72h later on real price: win rate, +50% hit "
+    desc = ("The AI's live journal on the Manipulated tab — every Buy v1/v4 setup it "
+            "bought, graded 72h later on real price: why it bought, what happened, win "
             "rate and average result. Research paper signals, not executed trades.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("AI Track Record — Manipulated — ListingLabs", desc)}'
-            f'<title>AI Track Record — Manipulated</title>'
+            f'{page_meta("AI Journal — Manipulated — ListingLabs", desc)}'
+            f'<title>AI Journal — Manipulated</title>'
             f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
 
 
@@ -2774,6 +2817,16 @@ EXTRA_CSS = """
 .buynow-scroll{max-height:340px;overflow:auto;
   border:1px solid var(--border);border-radius:10px}
 .buynow-scroll thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead)}
+/* AI Journal trade tables scroll inside their own box, header pinned. A comfy
+   min-width keeps the 9 columns readable — the box scrolls sideways if narrower. */
+.jscroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:10px}
+.jscroll .jtable{min-width:820px}
+.jscroll .jtable thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead);
+  white-space:normal;overflow:visible;vertical-align:bottom;line-height:1.2}
+.jscroll .jtable td{white-space:nowrap}
+/* the "why it bought" cell wraps at spaces (never mid-word); the reason is muted */
+.jscroll .jtable td.jwhycell{white-space:normal;word-break:normal;overflow-wrap:normal;min-width:150px}
+.jwhy{color:var(--text-3);font-size:12px}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
