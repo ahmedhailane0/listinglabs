@@ -106,19 +106,14 @@ def test_v3_blocked_by_funding():
     assert out["v3"]["conditions"]["|funding_8h|<=0.02%"] is False
 
 
-# ── Buy v2 (OI + EMA golden cross) ────────────────────────────────────────────
+# ── Buy v2 (IGNITION: OI-confirmed coil-break) ────────────────────────────────
 def _v2_series():
-    n = 80
-    closes = [10.0] * n
-    # gentle rise that triggers an EMA20-over-EMA60 cross inside the last 10 bars,
-    # then a flat shelf so price sits on EMA20 (the "near EMA20" condition).
-    for i in range(72, 75):
-        closes[i] = 10.0 + (i - 71) * 0.1          # 10.1, 10.2, 10.3
-    for i in range(75, n):
-        closes[i] = 10.3                            # flat shelf at 10.3
-    oi = [100.0] * n
-    oi[-4:] = [100, 103, 106, 110]                  # 3 consecutive up, +10%/3h
-    vols = [1.0] * n
+    # 48h tight flat coil at 10.0, then the last 4 bars break out +10% above the
+    # coil top on a 6x volume burst WHILE OI surges +20% over 3h — funding cold.
+    n = 60
+    closes = [10.0] * 56 + [11.0] * 4               # break > coil_hi(10.01)*1.08
+    vols = [1.0] * 56 + [6.0] * 4                   # >=5x the coil's median (1.0)
+    oi = [100.0] * 57 + [110.0, 115.0, 120.0]       # oi(t-3h)=100 -> oi(t)=120 = +20%
     return build(oi, closes, vols=vols)
 
 
@@ -127,17 +122,20 @@ def test_v2_fires():
     out = evaluate(oi, kl, current_funding=0.0)
     assert out["v2"]["fired"] is True, out["v2"]["conditions"]
     assert out["v2"]["t"] == ts[-1]
+    assert abs(out["v2"]["stop"] - 10.0 * 1.001) < 1e-6     # stop = coil high
 
 
-def test_v2_blocked_without_cross():
-    # Perfectly flat price -> EMA20 never crosses EMA60 -> no v2.
-    n = 80
-    oi = [100.0] * n
-    oi[-4:] = [100, 103, 106, 110]
-    o, kl, _ = build(oi, [10.0] * n)
+def test_v2_blocked_without_oi_surge():
+    # Same price/volume breakout but OI stays FLAT -> the conjunction fails: a
+    # spot-only fakeout, exactly what Ignition's OI-surge condition filters out.
+    n = 60
+    closes = [10.0] * 56 + [11.0] * 4
+    vols = [1.0] * 56 + [6.0] * 4
+    oi = [100.0] * n                                # no OI surge
+    o, kl, _ = build(oi, closes, vols=vols)
     out = evaluate(o, kl, current_funding=0.0)
     assert out["v2"]["fired"] is False
-    assert out["v2"]["conditions"]["ema20>ema60+cross"] is False
+    assert out["v2"]["conditions"]["oi_surge>=15%"] is False
 
 
 # ── insufficient / gappy data must never fire ─────────────────────────────────
