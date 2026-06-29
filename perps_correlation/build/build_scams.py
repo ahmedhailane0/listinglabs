@@ -666,8 +666,8 @@ def _list_row(rec) -> str:
     vol = rec.get("vol") or rec.get("csv_vol") or (r.get("market") or {}).get("vol24h")
     chg = _oi_vol_chg(sym)
     tok =(f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">{_sparkline(sym)}'
-           f'<span class="lname">{html.escape(rec.get("name", sym))} '
-           f'<span class="sym">{html.escape(sym)}</span></span> {_venue_badges(sym)}'
+           f'<span class="lname"><span class="lnm">{html.escape(rec.get("name", sym))}</span>'
+           f'<span class="sym">{html.escape(sym)}</span></span>{_venue_badges(sym)}'
            f'<span class="lbuys" data-buyrow>{_buy_badges(sym, mini=True)}</span></a></td>')
     return (
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
@@ -2526,6 +2526,15 @@ EXTRA_CSS = """
 #ltab th:nth-child(12){width:8%}                   /* Vol */
 #ltab th:nth-child(13){width:7%}                   /* FDV */
 #ltab th:nth-child(14){width:7%}                   /* MC */
+/* Token cell degrades cleanly as the column narrows: the sparkline + symbol keep
+   their slots, and only the NAME ellipsis-truncates (so the symbol — the key id —
+   is never the thing that gets cut). min-width:0 lets the flex children shrink. */
+#ltab td.tok a{min-width:0;overflow:hidden}
+#ltab td.tok .thumb{flex:0 0 auto}
+#ltab td.tok .lname{flex:1 1 auto;min-width:0;display:flex;align-items:baseline;gap:5px;overflow:hidden}
+#ltab td.tok .lnm{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ltab td.tok .sym{flex:0 0 auto}
+#ltab td.tok .lbuys{flex:0 0 auto}
 /* ── responsive: de-chunk the layout in two tiers ────────────────────────
    pills wrap as whole chips (never break their text); the dense 14-col list
    sheds low-priority columns at each tier so the essentials always fit with NO
@@ -2549,6 +2558,11 @@ EXTRA_CSS = """
   #ltab th:nth-child(8){width:13%}                 /* Price / 24h */
   #ltab th:nth-child(10){width:13%}                /* OI (BN+BYB) */
   #ltab th:nth-child(11){width:12%}                /* Funding */
+  /* token cell: smaller sparkline + drop the in-cell buy badges (the v1/v2/v4
+     columns now carry that), so the name+symbol stay legible in a tight column */
+  #ltab td.tok a{gap:7px}
+  #ltab td.tok .thumb{width:44px;height:22px}
+  #ltab td.tok .lbuys{display:none}
 }
 @media(max-width:640px){
   header{padding:12px 14px}
