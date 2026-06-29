@@ -72,6 +72,16 @@ ALERT_SCORE_WATCH = 35.0
 SCORE_WATCH_COOLDOWN_S = 24 * 3600
 SCORE_WATCH_FILE = OUTDIR / "score_watch.json"
 
+# Buy-signal play-by-play on the +50% pump odds (pump_score). When a coin's +50%
+# chance crosses ALERT_BUY_ODDS we ping Telegram, then ping again on each NEW HIGH
+# while it stays above, and once when it drops back under (re-arming a later
+# re-cross). Per-coin state in BUY_WATCH_FILE. Logs ONE journal fire (strat
+# "buy15") on the first crossing (see _log_fires) so the Buy Signals journal can
+# score it 72h later. Hourly cadence (the model only re-scores each closed hour).
+ALERT_BUY_ODDS = 15.0
+BUY_WATCH_FILE = OUTDIR / "buy_watch.json"
+BUY_LINK_BASE = "https://ahmedhailane0.github.io/listinglabs/scams/"
+
 # Smooth intraday close candles per perp, for the Manipulated detail-page price
 # chart (CMC-style 24h/1W). 5m (last ~24h) + 1h (last ~12d); the daily history
 # fills the longer ranges at build time. Written hourly by this box; committed
@@ -592,6 +602,87 @@ def _alert_score_watch(recs: dict) -> int:
     return sent
 
 
+def _alert_buy_climb(recs: dict) -> int:
+    """Buy-signal play-by-play on the +50% pump odds (pump_score). For each coin:
+    a 🚀 ping the first time it crosses ALERT_BUY_ODDS, a 📈 ping on each NEW HIGH
+    while it stays above, and a 🔻 'signal off' when it drops back under (which
+    re-arms a later re-cross). Per-coin state in BUY_WATCH_FILE. Hourly cadence;
+    no-op without Telegram; never raises."""
+    if not _tg or not _tg.enabled():
+        return 0
+    try:
+        state = json.loads(BUY_WATCH_FILE.read_text(encoding="utf-8")) \
+            if BUY_WATCH_FILE.exists() else {}
+        if not isinstance(state, dict):
+            state = {}
+    except Exception:
+        state = {}
+    now = _now()
+    sent, changed = 0, False
+    for sym, r in recs.items():
+        score = r.get("pump_score")
+        if score is None:
+            continue
+        st = state.get(sym) or {}
+        armed = bool(st.get("armed"))
+        last = st.get("last") or 0.0
+        kind = None
+        if score >= ALERT_BUY_ODDS:
+            if not armed:
+                kind = "buy"                      # first crossing
+            elif score > last + 0.05:             # a new high (epsilon vs float noise)
+                kind = "climb"
+        elif armed:
+            kind = "off"                          # dropped back under the line
+        if kind is None:
+            continue
+        try:
+            px = r.get("mark_price")
+            name = (r.get("market") or {}).get("name") or sym
+            ladder = (f"+50% {_pump_pct(score)} · +25% {_pump_pct(r.get('pump_score_25'))}"
+                      f" · +10% {_pump_pct(r.get('pump_score_10'))}")
+            link = BUY_LINK_BASE + f"{sym.lower()}.html"
+            if kind == "buy":
+                msg = "\n".join([
+                    f"\U0001F680 <b>BUY SIGNAL — {_esc(sym)}</b> ({_esc(name)})",
+                    f"+50% pump chance just crossed {ALERT_BUY_ODDS:.0f}% → now {_pump_pct(score)}",
+                    f"odds  {ladder}",
+                    (f"Price ~ ${_fmt_px(px)}" if px else "Price n/a"),
+                    link,
+                    "Research signal, not financial advice.",
+                ])
+            elif kind == "climb":
+                msg = "\n".join([
+                    f"\U0001F4C8 <b>{_esc(sym)}</b> +50% chance now {_pump_pct(score)} "
+                    f"↑ from {_pump_pct(last)}",
+                    f"odds  {ladder}",
+                    (f"Price ~ ${_fmt_px(px)}" if px else ""),
+                ])
+            else:  # off
+                msg = (f"\U0001F53B <b>{_esc(sym)}</b> buy signal off — "
+                       f"+50% chance back under {ALERT_BUY_ODDS:.0f}% (now {_pump_pct(score)})")
+            if _tg.send(msg):
+                if kind == "off":
+                    state[sym] = {"armed": False, "last": 0.0, "t": now}
+                else:
+                    state[sym] = {"armed": True, "last": score, "t": now}
+                sent += 1
+                changed = True
+                time.sleep(0.5)
+        except Exception as ex:
+            print(f"  buy-climb {sym} failed: {ex}")
+    if changed:
+        try:
+            BUY_WATCH_FILE.write_text(
+                json.dumps(state, ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8")
+        except Exception as ex:
+            print(f"  buy_watch: state write failed ({ex})")
+    if sent:
+        print(f"  telegram: sent {sent} buy-climb ping(s)")
+    return sent
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
@@ -663,6 +754,33 @@ def _log_fires(recs: dict) -> int:
                 entry["alerted_utc"] = now
             log.append(entry)
             added += 1
+        # Buy-signal journal fire: ONE per coin per 72h, logged the first time the
+        # +50% odds (pump_score) cross ALERT_BUY_ODDS. Separate from the discrete
+        # setups above — this is the "Buy Signals" track. The play-by-play Telegram
+        # pings (_alert_buy_climb) are notifications and do NOT add journal rows;
+        # grade_fires scores this exactly like any other fire (strat-agnostic).
+        ps = r.get("pump_score")
+        th = r.get("as_of") or sig.get("as_of")
+        if ps is not None and ps >= ALERT_BUY_ODDS and th:
+            key = f"{sym}|buy15|{th}"
+            if key not in seen and (th - last_fire.get((sym, "buy15"), 0)
+                                    >= FIRE_REFRACTORY_H * 3600):
+                seen.add(key)
+                last_fire[(sym, "buy15")] = th
+                px = r.get("mark_price")
+                log.append({
+                    "sym": sym, "strat": "buy15", "t": th, "logged_utc": now,
+                    "entry_price": px,
+                    "stop": (px * 0.85 if px else None), "position": "research",
+                    "tp1": (px * 1.25 if px else None), "tp2": (px * 1.50 if px else None),
+                    "time_stop_h": 72,
+                    "oi_combined": r.get("oi_combined"), "oi_bn": r.get("oi_bn"),
+                    "funding": r.get("funding"), "fdv": r.get("fdv"),
+                    "pump_score": ps, "pump_score_25": r.get("pump_score_25"),
+                    "pump_score_10": r.get("pump_score_10"),
+                    "alerted": False, "outcome": None,
+                })
+                added += 1
     try:
         FIRES_LOG.write_text(
             json.dumps(log[-FIRES_LOG_MAX:], ensure_ascii=False, separators=(",", ":")),
@@ -903,6 +1021,9 @@ def main(argv: list[str]) -> int:
     # Second net: ping standout pump-scores with no fired setup (runs before
     # mark_price is stripped below, so the price is still available).
     _alert_score_watch(recs)
+    # Buy-signal play-by-play: ping when the +50% odds cross 15% and on each new
+    # high while above (the owner's "watch it climb" feed). Same pre-strip spot.
+    _alert_buy_climb(recs)
 
     # ── Per-token intraday candle files (smooth detail-page price chart) ──────
     PRICE_CANDLES_DIR.mkdir(parents=True, exist_ok=True)

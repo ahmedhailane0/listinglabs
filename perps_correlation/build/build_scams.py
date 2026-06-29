@@ -78,10 +78,13 @@ PNL_STAKE = 100
 LIVE_ORIGIN = "https://45-32-102-44.sslip.io"
 LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
 STRATS = ("v1", "v2", "v3", "v4")
-STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4"}
+STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4",
+              "buy15": "Buy signal"}
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
                "v2": "Ignition (OI-confirmed coil-break)", "v3": "Washout reversal",
-               "v4": "Coiled accumulation (pre-pump build)"}
+               "v4": "Coiled accumulation (pre-pump build)",
+               "buy15": "Pump odds crossed 15%"}
+BUY_ODDS_GATE = 15.0   # the +50% pump_score that flags a coin as a "buy signal"
 
 
 def _load_screener() -> None:
@@ -2037,12 +2040,13 @@ _JOURNAL_TABS_JS = """
 
 def scams_subnav(active: str) -> str:
     """Sub-tabs under the Manipulated top tab — Screener / AI Track Record / Pump
-    Odds. All three pages live in scams/; the Manipulated TOP tab stays active for
+    Odds / Buy Signals. All live in scams/; the Manipulated TOP tab stays active for
     all of them (these pages call site_nav("scams")). `active` ∈ {screener, journal,
-    pumpodds}."""
+    pumpodds, buy}."""
     tabs = [("screener", "index.html", "Screener"),
             ("journal", "journal.html", "AI Track Record"),
-            ("pumpodds", "pumpodds.html", "Pump Odds")]
+            ("pumpodds", "pumpodds.html", "Pump Odds"),
+            ("buy", "buysignals.html", "Buy Signals")]
     parts = []
     for key, href, text in tabs:
         cls = ' class="active"' if key == active else ""
@@ -2424,6 +2428,119 @@ for its detail.</p></header>
             f'<body>{body}</body></html>')
 
 
+def _buy_signals_page(recs) -> str:
+    """Buy Signals sub-tab: the live "buy now" list (coins whose +50% pump chance is
+    over 15% right now) + a plain-English JOURNAL of every past buy call and whether
+    it actually pumped (graded 72h later). Built for a non-expert: storytelling, not a
+    wall of numbers."""
+    built = {r["symbol"].upper() for r in recs}
+    g = BUY_ODDS_GATE
+
+    # ── Buy now: coins currently over the line, by +50% odds ──
+    over = sorted((r for r in recs if (_sig(r["symbol"]).get("pump_score") or 0) >= g),
+                  key=lambda r: -(_sig(r["symbol"]).get("pump_score") or 0))
+    if over:
+        head = "".join(f"<th>{c}</th>" for c in ("#", "Token", "+50%", "+25%", "+10%"))
+        buy_now = (f'<div class="listwrap"><table class="list" id="otab"><thead><tr>{head}'
+                   f'</tr></thead><tbody>{"".join(_odds_row(r) for r in over)}</tbody></table></div>'
+                   f'{_ODDS_SORT_JS}')
+    else:
+        buy_now = ('<p class="jnote">No coins are over the 15% line right now. When one '
+                   'crosses, it shows up here and pings your Telegram.</p>')
+
+    # ── Journal: buy15 fires, graded 72h later ──
+    fires = [e for e in _load_fires() if e.get("strat") == "buy15"]
+    closed = [e for e in fires if e.get("outcome")]
+    open_ = [e for e in fires if not e.get("outcome")]
+    _key = lambda e: e.get("t") or e.get("logged_utc") or 0
+    closed.sort(key=_key, reverse=True)
+    open_.sort(key=_key, reverse=True)
+
+    def _o(e, k):
+        return (e.get("outcome") or {}).get(k)
+
+    def _signed(v):
+        return f"{v*100:+.1f}%" if v is not None else "—"
+
+    def _tok(sym):
+        s = (sym or "").upper()
+        return (f'<a href="{s.lower()}.html">{html.escape(s)}</a>'
+                if s in built else html.escape(s))
+
+    n = len(closed)
+    hits = sum(1 for e in closed if _o(e, "pump"))
+    pnls = [_real_pnl(e) for e in closed if _real_pnl(e) is not None]
+    avg_pnl = sum(pnls) / len(pnls) if pnls else None
+    hit_rate = (hits / n * 100) if n else None
+    pnl_cls = "good" if (avg_pnl or 0) > 0 else ("bad" if avg_pnl is not None else "")
+    scorecard = (
+        '<div class="jcards">'
+        f'<div class="jstat"><span class="jstat-v">{n}</span>'
+        '<span class="jstat-l">buy calls graded</span></div>'
+        f'<div class="jstat {"good" if hits else ""}"><span class="jstat-v">'
+        f'{hits}/{n if n else "—"}</span><span class="jstat-l">actually pumped +50%</span></div>'
+        f'<div class="jstat"><span class="jstat-v">{f"{hit_rate:.0f}%" if hit_rate is not None else "—"}</span>'
+        '<span class="jstat-l">hit rate</span></div>'
+        f'<div class="jstat {pnl_cls}"><span class="jstat-v">{_signed(avg_pnl)}</span>'
+        '<span class="jstat-l">avg result / call (net)</span></div>'
+        '</div>')
+
+    # storytelling table
+    rows = []
+    for e in closed:
+        sym = e.get("sym")
+        mfe, pumped = _o(e, "mfe"), _o(e, "pump")
+        story = (f'<span class="jhit">🟢 Pumped — peaked {_signed(mfe)}</span>' if pumped
+                 else f'<span class="jmiss">🔴 No pump — peaked {_signed(mfe)}</span>')
+        rows.append(
+            f'<tr><td>{_dt_hour(e.get("t"))}</td>'
+            f'<td class="jt">{_tok(sym)}</td>'
+            f'<td>{_pump_pct(e.get("pump_score"))} chance of +50%</td>'
+            f'<td>{story}</td>'
+            f'<td class="{"good" if (_real_pnl(e) or 0) > 0 else "bad"}">{_signed(_real_pnl(e))}</td></tr>')
+    for e in open_:
+        rows.append(
+            f'<tr><td>{_dt_hour(e.get("t"))}</td>'
+            f'<td class="jt">{_tok(e.get("sym"))}</td>'
+            f'<td>{_pump_pct(e.get("pump_score"))} chance of +50%</td>'
+            f'<td colspan="2" class="jwatch">⏳ watching — graded 72h after the flag</td></tr>')
+    if rows:
+        journal = (
+            f'{scorecard}'
+            '<div class="tablewrap"><table class="jtable"><thead><tr>'
+            '<th>Flagged (UTC)</th><th>Token</th>'
+            '<th title="the model\'s +50% chance when it flagged the coin">Predicted</th>'
+            '<th>What happened (72h)</th><th title="realistic P&amp;L, net of fees + slippage">Result</th>'
+            f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
+    else:
+        journal = ('<p class="jnote">No buy calls logged yet. The moment a coin\'s +50% '
+                   'chance crosses 15%, it gets logged here and graded 72h later — the '
+                   'scoreboard fills in over the next few days.</p>')
+
+    body = f"""
+<header><h1>Manipulated</h1>
+{site_nav("scams")}
+{scams_subnav("buy")}
+<p class="sub">Buy Signals — when the model's chance of a <b>+50% pump within 72h</b> crosses
+<b>15%</b>, the coin is flagged here and you get a Telegram ping (and another each time the
+score climbs). Every call is then checked 72h later on the real price. Historically coins at
+≥15% pumped about <b>1 in 4 times (~5× the average)</b> — an edge, not a sure thing. Research
+only, not financial advice.</p></header>
+<section class="card span"><h3>Buy now <span class="asof">coins over 15% right now</span></h3>
+{buy_now}</section>
+<section class="card span"><h3>Track record <span class="asof">did the buy calls actually pump?</span></h3>
+{journal}</section>
+{THEME_JS}"""
+    desc = ("Buy Signals — coins whose model +50% pump chance crossed 15%, with a live "
+            "list and a graded track record of how those calls performed.")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta("Buy Signals — Manipulated", desc)}'
+            f'<title>Buy Signals — Manipulated</title>'
+            f'<link rel="stylesheet" href="style.css"></head>'
+            f'<body>{body}</body></html>')
+
+
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
@@ -2435,6 +2552,10 @@ EXTRA_CSS = """
 .jstat-l{font-size:12px;color:var(--text-4)}
 .jstat.good .jstat-v{color:#1a8a4f}
 .jstat.bad .jstat-v{color:#c0392b}
+/* Buy Signals journal: result cell colors + the "watching" (ungraded) note */
+.jtable td.good{color:var(--pos);font-weight:600}
+.jtable td.bad{color:var(--neg);font-weight:600}
+.jtable td.jwatch{color:var(--text-3)}
 .jby{list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:6px}
 .jby li{font-size:13px;color:var(--text-2)}
 .jby li b{color:var(--text-1)}
@@ -3032,6 +3153,7 @@ def main():
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
     (SITE / "journal.html").write_text(_journal_page(recs), encoding="utf-8")
     (SITE / "pumpodds.html").write_text(_pump_odds_page(recs), encoding="utf-8")
+    (SITE / "buysignals.html").write_text(_buy_signals_page(recs), encoding="utf-8")
     for r in recs:
         page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
