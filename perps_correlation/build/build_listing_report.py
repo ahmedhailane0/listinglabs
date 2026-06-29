@@ -1073,6 +1073,8 @@ header { padding: 20px 32px; background: var(--header-bg);
          box-shadow: var(--shadow-md); position: relative; z-index: 5; }
 header h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -.015em; }
 header p { margin: 5px 0 0; opacity: .82; font-size: 13px; }
+/* keep descriptive prose at a readable measure instead of sprawling edge-to-edge */
+.sub, header p.lead, .prose { max-width: 82ch; }
 ::selection { background: rgba(31,111,178,.28); }
 :focus-visible { outline: none; box-shadow: var(--ring); border-radius: var(--radius-sm); }
 /* live BWEnews listing-signal strip */

@@ -235,7 +235,8 @@ section{padding:18px 28px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;te
 .topnav a:hover{opacity:1;text-decoration:none;background:rgba(255,255,255,.1)}.topnav a.active{opacity:1;background:var(--header-fg);color:var(--header-bg);border-color:var(--header-fg);font-weight:600}
 .theme-toggle{margin-left:auto;font-size:15px;line-height:1;cursor:pointer;background:rgba(255,255,255,.1);color:var(--header-fg);border:1px solid rgba(255,255,255,.35);border-radius:999px;width:30px;height:30px;padding:0;flex:0 0 auto}
 .theme-toggle:hover{background:rgba(255,255,255,.2)}
-.findings{background:var(--bg-card);border-bottom:1px solid var(--border)}.findings ul{margin:8px 0;padding-left:18px}.findings li{margin:4px 0}
+.findings{background:var(--bg-card);border-bottom:1px solid var(--border)}.findings ul{margin:8px 0;padding-left:18px}.findings li{margin:4px 0;max-width:96ch}
+.findings p,.findings .sub,.cav{max-width:96ch}
 .ref{color:var(--pos);font-weight:600;font-size:12px}.amb{color:var(--amber);font-weight:600;font-size:12px}
 .cav{color:var(--text-4);font-size:12px;font-style:italic}.findings .sub{color:var(--text-2);font-size:13px;margin:2px 0 6px}
 .findings h3{margin:12px 0 4px;color:var(--primary)}
