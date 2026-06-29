@@ -685,6 +685,71 @@ def _alert_buy_climb(recs: dict) -> int:
     return sent
 
 
+def _alert_targets(recs: dict) -> int:
+    """Instant heads-up: ping the moment an OPEN buy-signal (buy15) fire reaches
+    +25% or +50% above its entry — so you hear about a hit right away instead of
+    waiting for the 72h grade. Each tier pings once (de-dup stored on the fire as
+    `tp_alerted`). The final graded WIN/LOSS (net P&L) still comes at 72h via
+    _send_results. Hourly cadence; no-op without Telegram; never raises."""
+    if not _tg or not _tg.enabled():
+        return 0
+    try:
+        log = json.loads(FIRES_LOG.read_text(encoding="utf-8")) if FIRES_LOG.exists() else []
+        if not isinstance(log, list):
+            return 0
+    except Exception:
+        return 0
+    now = _now()
+    sent, changed = 0, False
+    for e in log:
+        if e.get("strat") != "buy15" or e.get("outcome"):
+            continue                              # only OPEN buy-signal fires
+        t0 = e.get("t") or 0
+        if not t0 or now - t0 > 72 * 3600:
+            continue                              # past the 72h window — grader covers it
+        entry = e.get("entry_price")
+        rec = recs.get(e.get("sym"))
+        cur = rec.get("mark_price") if rec else None
+        if not entry or not cur:
+            continue
+        gain = cur / entry - 1
+        done = set(e.get("tp_alerted") or [])
+        if gain >= 0.50 and "tp2" not in done:
+            tier = ("tp2", "+50%", "\U0001F3AF\U0001F3AF")
+        elif gain >= 0.25 and "tp1" not in done:
+            tier = ("tp1", "+25%", "\U0001F3AF")
+        else:
+            continue
+        try:
+            sym = e.get("sym")
+            name = (rec.get("market") or {}).get("name") or sym
+            msg = "\n".join([
+                f"{tier[2]} <b>TARGET HIT — {_esc(sym)}</b> ({_esc(name)})  {tier[1]}",
+                f"Buy-signal entry ~ ${_fmt_px(entry)} → now ${_fmt_px(cur)} ({gain*100:+.0f}%)",
+                "Final win/loss (net P&L) grades at 72h.",
+            ])
+            if _tg.send(msg):
+                done.add(tier[0])
+                if tier[0] == "tp2":
+                    done.add("tp1")               # +50% implies +25%
+                e["tp_alerted"] = sorted(done)
+                sent += 1
+                changed = True
+                time.sleep(0.5)
+        except Exception as ex:
+            print(f"  target-alert {e.get('sym')} failed: {ex}")
+    if changed:
+        try:
+            FIRES_LOG.write_text(
+                json.dumps(log[-FIRES_LOG_MAX:], ensure_ascii=False, separators=(",", ":")),
+                encoding="utf-8")
+        except Exception as ex:
+            print(f"  fires_log: target-alert write failed ({ex})")
+    if sent:
+        print(f"  telegram: sent {sent} target-hit ping(s)")
+    return sent
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
@@ -1029,6 +1094,9 @@ def main(argv: list[str]) -> int:
     # Buy-signal play-by-play: ping when the +50% odds cross 15% and on each new
     # high while above (the owner's "watch it climb" feed). Same pre-strip spot.
     _alert_buy_climb(recs)
+    # Instant target-hit heads-up: ping the moment an open buy-signal reaches
+    # +25%/+50% (don't wait for the 72h grade). Needs live mark_price (pre-strip).
+    _alert_targets(recs)
 
     # ── Per-token intraday candle files (smooth detail-page price chart) ──────
     PRICE_CANDLES_DIR.mkdir(parents=True, exist_ok=True)
