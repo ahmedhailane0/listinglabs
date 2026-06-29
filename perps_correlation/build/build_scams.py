@@ -2441,8 +2441,9 @@ def _buy_signals_page(recs) -> str:
                   key=lambda r: -(_sig(r["symbol"]).get("pump_score") or 0))
     if over:
         head = "".join(f"<th>{c}</th>" for c in ("#", "Token", "+50%", "+25%", "+10%"))
-        buy_now = (f'<div class="listwrap"><table class="list" id="otab"><thead><tr>{head}'
-                   f'</tr></thead><tbody>{"".join(_odds_row(r) for r in over)}</tbody></table></div>'
+        buy_now = (f'<div class="listwrap buynow-scroll"><table class="list" id="otab">'
+                   f'<thead><tr>{head}</tr></thead>'
+                   f'<tbody>{"".join(_odds_row(r) for r in over)}</tbody></table></div>'
                    f'{_ODDS_SORT_JS}')
     else:
         buy_now = ('<p class="jnote">No coins are over the 15% line right now. When one '
@@ -2768,6 +2769,11 @@ EXTRA_CSS = """
 #otab td.tok a{display:flex;align-items:baseline;gap:5px;min-width:0;overflow:hidden}
 #otab td.tok .lnm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media(max-width:520px){#otab{min-width:0;width:100%}}
+/* "Buy now" list scrolls INSIDE its own box (page stays put), with the column
+   header pinned so you can scroll through every coin. */
+.buynow-scroll{max-height:340px;overflow:auto;
+  border:1px solid var(--border);border-radius:10px}
+.buynow-scroll thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead)}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
