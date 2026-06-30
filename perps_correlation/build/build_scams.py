@@ -2221,7 +2221,7 @@ def _journal_page(recs) -> str:
                 f'<td>{_outcome_story(o)}</td>'
                 f'<td class="jnum">{_jpct(_real_pnl(e))}</td></tr>')
         closed_tbl = (
-            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<div class="tablewrap jscroll"><table class="jtable" id="jclosed"><thead><tr>'
             '<th>When</th><th>Token</th>'
             '<th title="the pattern the AI spotted">Why it bought</th>'
             '<th title="entry reference price (Binance mark at the signal)">Bought at</th>'
@@ -2259,7 +2259,7 @@ def _journal_page(recs) -> str:
                 f'<td><span class="jpending">⏳ watching</span></td></tr>')
         open_tbl = (
             '<h3>Open trades <span class="asof">bought · waiting for the 72h grade</span></h3>'
-            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<div class="tablewrap jscroll"><table class="jtable" id="jopen"><thead><tr>'
             '<th>When</th><th>Token</th><th>Why it bought</th><th>Bought at</th>'
             '<th>Grades on</th><th>Status</th>'
             '</tr></thead><tbody>' + "".join(orows) + '</tbody></table></div>')
@@ -2313,7 +2313,7 @@ def _journal_page(recs) -> str:
         mover_table = (
             '<section class="card span" id="movers">'
             '<h3>Mover trades <span class="asof">graded on real price 24h after entry</span></h3>'
-            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<div class="tablewrap jscroll"><table class="jtable" id="jmover"><thead><tr>'
             '<th>When</th><th>Token</th><th>Why it bought</th><th>Bought at</th>'
             '<th title="reached +10% within 12h">+10% ≤12h</th>'
             '<th title="reached +10% within 24h">+10% ≤24h</th>'
@@ -2817,16 +2817,32 @@ EXTRA_CSS = """
 .buynow-scroll{max-height:340px;overflow:auto;
   border:1px solid var(--border);border-radius:10px}
 .buynow-scroll thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead)}
-/* AI Journal trade tables scroll inside their own box, header pinned. A comfy
-   min-width keeps the 9 columns readable — the box scrolls sideways if narrower. */
+/* AI Journal trade tables scroll inside their own box, header pinned. DETERMINISTIC
+   responsive table: table-layout:fixed (columns never hog/cram) + per-table widths
+   below + a comfy min-width so on a narrow screen the box scrolls SIDEWAYS instead
+   of squishing. (The Screener #ltab uses the same fixed-width approach.) */
 .jscroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:10px}
-.jscroll .jtable{min-width:820px}
+.jscroll .jtable{table-layout:fixed;min-width:920px}
 .jscroll .jtable thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead);
-  white-space:normal;overflow:visible;vertical-align:bottom;line-height:1.2}
-.jscroll .jtable td{white-space:nowrap}
-/* the "why it bought" cell wraps at spaces (never mid-word); the reason is muted */
-.jscroll .jtable td.jwhycell{white-space:normal;word-break:normal;overflow-wrap:normal;min-width:150px}
+  white-space:normal;vertical-align:bottom;line-height:1.2}
+.jscroll .jtable td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* the "why it bought" cell wraps at spaces (never mid-word); chip stays one line */
+.jscroll .jtable td.jwhycell{white-space:normal;word-break:normal;overflow-wrap:normal}
+.jscroll .jtable td.jwhycell .jset{white-space:nowrap}
 .jwhy{color:var(--text-3);font-size:12px}
+/* per-table column widths (sum 100%) — fixed layout distributes by these */
+#jclosed th:nth-child(1){width:12%}#jclosed th:nth-child(2){width:9%}
+#jclosed th:nth-child(3){width:18%}#jclosed th:nth-child(4){width:11%}
+#jclosed th:nth-child(5){width:11%}#jclosed th:nth-child(6){width:8%}
+#jclosed th:nth-child(7){width:8%}#jclosed th:nth-child(8){width:13%}
+#jclosed th:nth-child(9){width:10%}
+#jopen th:nth-child(1){width:16%}#jopen th:nth-child(2){width:12%}
+#jopen th:nth-child(3){width:26%}#jopen th:nth-child(4){width:16%}
+#jopen th:nth-child(5){width:18%}#jopen th:nth-child(6){width:12%}
+#jmover th:nth-child(1){width:13%}#jmover th:nth-child(2){width:10%}
+#jmover th:nth-child(3){width:19%}#jmover th:nth-child(4){width:12%}
+#jmover th:nth-child(5){width:9%}#jmover th:nth-child(6){width:9%}
+#jmover th:nth-child(7){width:16%}#jmover th:nth-child(8){width:12%}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
