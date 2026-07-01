@@ -75,10 +75,10 @@ def ema(values: list[float], n: int) -> list[float]:
     return out
 
 # ── thresholds (named so the page can quote them) ─────────────────────────────
-V1_OI_3H = 0.08          # >= +8% OI over 3h (retuned 2026-06-29: OOS lift 1.43->1.80x)
-V1_PRICE_3H_MAX = 0.12   # <= +12% price over 3h (retuned 2026-06-29: allows more early move)
-V1_RATIO = 1.0           # oi%3h / price%3h >= 1 (retuned 2026-06-29 from 2.0; OI need only match price)
-V1_FUNDING_MAX = 0.0005  # v1 only: per-interval funding < 0.05% (unchanged; optimizer funding knob was dead)
+V1_OI_3H = 0.05          # >= +5% OI over 3h (retuned 2026-07-01: OOS test lift 1.39->1.64x)
+V1_PRICE_3H_MAX = 0.05   # <= +5% price over 3h (retuned 2026-07-01: tighter early-move window)
+V1_RATIO = 2.0           # oi%3h / price%3h >= 2 (retuned 2026-07-01 from 1.0; OI must again dominate)
+V1_FUNDING_MAX = 0.002   # v1 only: per-interval funding < 0.2% (retuned 2026-07-01 from 0.05%)
 # Buy v2 — IGNITION: an OI-confirmed coil-break. The catch-at-break setup for
 # pumps that SKIP the quiet-accumulation tell v1/v4 hunt for (VELVET +122% on
 # 2026-06-26: OI flat through a 3-day coil, then price + OI + volume exploded
