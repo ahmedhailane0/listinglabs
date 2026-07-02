@@ -71,7 +71,7 @@ LOGGED_STRATS = ("v1", "v4", "v2", "probe", "dump", "bear_trap", "spike_retrace"
 # collapse each cluster to one sample) and their Telegram pings are skipped —
 # market beta, not a coin story. Probe is the main offender (it once flagged
 # 46/141 coins across a 72h window).
-BREADTH_MAX = 10
+BREADTH_MAX = 7
 
 # Score-watch ping: a SECOND net, independent of any fired setup. When the model
 # flags a coin as a standout (pump_score >= this) we ping even if no v1/v4/probe

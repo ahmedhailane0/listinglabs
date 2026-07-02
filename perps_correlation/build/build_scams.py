@@ -1789,6 +1789,33 @@ def _load_fires() -> list:
         return []
 
 
+def _episodes(fires, hours=72, breadth_max=7):
+    """Honest fire counting for the Models page (same rules the graders use):
+    one row per (sym, setup) per 72h (collapses pre-refractory hourly re-fires),
+    then market-wide clusters (> breadth_max coins, same setup, same hour = one
+    market event) keep a single representative sample."""
+    out, last = [], {}
+    for e in sorted(fires, key=lambda e: (e.get("t") or 0, str(e.get("sym")))):
+        k = (e.get("sym"), e.get("strat"))
+        t = e.get("t") or 0
+        if t - last.get(k, -10 ** 18) >= hours * 3600:
+            out.append(e)
+            last[k] = t
+    csize = {}
+    for e in out:
+        ck = (e.get("strat"), e.get("t"))
+        csize[ck] = csize.get(ck, 0) + 1
+    kept, seen = [], set()
+    for e in out:
+        ck = (e.get("strat"), e.get("t"))
+        if csize[ck] > breadth_max:
+            if ck in seen:
+                continue
+            seen.add(ck)
+        kept.append(e)
+    return kept
+
+
 def _dt_day(ts) -> str:
     import datetime as _dt
     return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%Y-%m-%d %H:%M")
@@ -2052,13 +2079,14 @@ _JOURNAL_TABS_JS = """
 
 def scams_subnav(active: str) -> str:
     """Sub-tabs under the Manipulated top tab — Screener / AI Track Record / Pump
-    Odds / Buy Signals. All live in scams/; the Manipulated TOP tab stays active for
-    all of them (these pages call site_nav("scams")). `active` ∈ {screener, journal,
-    pumpodds, buy}."""
+    Odds / Buy Signals / Models. All live in scams/; the Manipulated TOP tab stays
+    active for all of them (these pages call site_nav("scams")). `active` ∈
+    {screener, journal, pumpodds, buy, models}."""
     tabs = [("screener", "index.html", "Screener"),
             ("journal", "journal.html", "AI Journal"),
             ("pumpodds", "pumpodds.html", "Pump Odds"),
-            ("buy", "buysignals.html", "Buy Signals")]
+            ("buy", "buysignals.html", "Buy Signals"),
+            ("models", "models.html", "Models")]
     parts = []
     for key, href, text in tabs:
         cls = ' class="active"' if key == active else ""
@@ -2386,6 +2414,240 @@ early evidence.</p></header>
             f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
 
 
+def _models_page(recs) -> str:
+    """The MODELS report: every model/setup/loop the AI runs — what it is, how it
+    earned its place (backtest), how it's doing live (from the public fire ledger,
+    counted the honest way), plus the CHECK-BACK CALENDAR: what evidence lands
+    next, when, and where to look for it. Rebuilt every ~20 min by CI, so the
+    dates/counts stay current. Shows only production defaults + public ledger
+    data — never the tuner's private recommendations."""
+    import datetime as _dt
+    import statistics as _st
+    now = int(_dt.datetime.now(_dt.timezone.utc).timestamp())
+    H72 = 72 * 3600
+    fires = _load_fires()
+    eps = _episodes(fires)
+
+    def _stats(sid):
+        es = [e for e in eps if e.get("strat") == sid]
+        g = [e for e in es if e.get("outcome")]
+        wins = sum(1 for e in g if (e["outcome"] or {}).get("pump"))
+        pnls = [e["outcome"].get("pnl_real") for e in g
+                if (e.get("outcome") or {}).get("pnl_real") is not None]
+        pend = [e for e in es if not e.get("outcome")]
+        nxt = min((e["t"] + H72 for e in pend if e.get("t")), default=None)
+        return {"eps": len(es), "graded": len(g), "wins": wins,
+                "hit": (wins / len(g)) if g else None,
+                "exp": _st.mean(pnls) if pnls else None,
+                "pending": len(pend), "next_grade": max(nxt, now) if nxt else None}
+
+    def _rate(sid, days=14):
+        n = sum(1 for e in eps if e.get("strat") == sid
+                and (e.get("t") or 0) >= now - days * 86400)
+        return n / days
+
+    def _d(ts):
+        return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%b %d")
+
+    def _eta(need, have, per_day):
+        """'when will `need` graded fires exist' — accrual at the current fire
+        rate + the 72h grading lag. An estimate, labelled as such on the page."""
+        if have >= need:
+            return "any day now"
+        if per_day <= 0.05:
+            return "rate too low to estimate"
+        return "≈ " + _d(now + int((need - have) / per_day * 86400) + H72)
+
+    _ts = lambda *a: int(_dt.datetime(*a, tzinfo=_dt.timezone.utc).timestamp())
+    V1_PROMO = _ts(2026, 7, 1, 14)      # v1 re-tune promoted to production
+    V2_FREEZE = _ts(2026, 6, 28, 4)     # v2's challenger frozen (forward clock)
+    PA_SHIP = _ts(2026, 7, 2, 15)       # dump journaling + bear_trap/spike_retrace live
+
+    # ── the roster (static facts; live numbers joined from the ledger) ──────
+    #    id, name, group, status, what it reads / detects, backtest cred, alerts?
+    ROSTER = [
+        ("v1", "Buy v1 — accumulation breakout", "alert",
+         "OI climbing 4 bars & +5%/3h while price lags (OI/price ≥ 2) and funding is calm",
+         "walk-forward OOS lift ~1.6×", "alerts (gate ≥7)"),
+        ("v2", "Buy v2 — Ignition", "alert",
+         "a tight multi-day coil breaking on ≥5× volume WHILE OI surges — the OI-confirmed breakout",
+         "walk-forward OOS lift ~2.5–2.8×, 4/4 folds", "alerts (gate ≥7)"),
+        ("v4", "Buy v4 — coiled accumulation", "alert",
+         "OI building ≥40% under a flat, tight price for ~3 days — quiet loading before the vertical",
+         "walk-forward OOS lift ~4.2×, 4/4 folds", "alerts (gate ≥7)"),
+        ("probe", "Probe day", "alert",
+         "12h volume burst ≥3× baseline breaking the top of a tight coil — the pre-vertical test",
+         "~2.5× per-hour · 4/4 folds (now loop-tuned)", "alerts (gate ≥7)"),
+        ("buy15", "Buy signal — odds ≥15%", "alert",
+         "PumpFinder's +50% odds crossing 15% — the model itself calling a standout",
+         "gate ≥7 validated ~2.75× on OOS predictions", "alerts (play-by-play)"),
+        ("dump", "Dump — distribution (SHORT)", "earn",
+         "after a ≥40% markup: price stalls, funding hot, OI still elevated — operator distributing",
+         "~6.2× lift to a −20%/72h drop (vs ~10.7% base)", "journal-only"),
+        ("bear_trap", "Bear trap", "earn",
+         "a ≥15% flush below the 2-day close, fully reclaimed, no new low in 12h — the dip got bought back",
+         "4.6× per-hour / ~2.9× per-episode", "journal-only"),
+        ("spike_retrace", "Spike & retrace", "earn",
+         "a +30% spike sold back down ≥15% while holding the pre-spike level, funding negative",
+         "~2.9× (thin sample — 12 episodes)", "journal-only"),
+    ]
+    GROUPS = {"alert": "Alerting setups — proven enough to ping Telegram",
+              "earn": "Earning their way in — journaled &amp; graded, never alerted (yet)"}
+
+    def _row(sid, name, reads, cred, alerts):
+        st = _stats(sid)
+        if st["graded"]:
+            live = (f'{st["wins"]}/{st["graded"]} pumped ({st["hit"]*100:.0f}%)')
+            expn = st["exp"]
+            exp = (f'<span class="{"pos" if expn >= 0 else "neg"}">{expn*100:+.1f}%</span>'
+                   if expn is not None else "—")
+        else:
+            live, exp = '<i>no graded fires yet</i>', "—"
+        pend = (f'{st["pending"]} open · next grades {_d(st["next_grade"])}'
+                if st["pending"] else "—")
+        return (f'<tr><td class="mname">{name}<div class="mreads">{reads}</div></td>'
+                f'<td data-s="{st["eps"]}">{st["eps"] or "—"}</td><td>{live}</td><td>{exp}</td>'
+                f'<td>{pend}</td><td class="mcred">{cred}</td><td>{alerts}</td></tr>')
+
+    tables = ""
+    for gid, gtitle in GROUPS.items():
+        rows = "".join(_row(sid, nm, rd, cr, al)
+                       for sid, nm, g, rd, cr, al in ROSTER if g == gid)
+        tables += (f'<section class="card span"><h3>{gtitle}</h3>'
+                   f'<div class="tablewrap"><table class="mtable"><thead><tr>'
+                   f'<th>model / what it reads</th><th>fires*</th><th>live +50% record</th>'
+                   f'<th>exp/trade</th><th>maturing</th><th>how it earned its place</th>'
+                   f'<th>alerts?</th></tr></thead><tbody>{rows}</tbody></table></div></section>')
+
+    # ── the check-back calendar ──────────────────────────────────────────────
+    b15 = [e for e in fires if e.get("strat") == "buy15" and e.get("t")]
+    b15_first = (min(e["t"] for e in b15) + H72) if b15 else None
+    v1_have = sum(1 for e in eps if e.get("strat") == "v1" and (e.get("t") or 0) >= V1_PROMO)
+    v2_have = sum(1 for e in eps if e.get("strat") == "v2" and (e.get("t") or 0) >= V2_FREEZE
+                  and e.get("outcome"))
+    pa_first = {}
+    for sid in ("dump", "bear_trap", "spike_retrace"):
+        f1 = [e["t"] for e in fires if e.get("strat") == sid and e.get("t") and e["t"] >= PA_SHIP]
+        pa_first[sid] = (min(f1) + H72) if f1 else None
+
+    sched = []          # (sort_ts, when, what, where, look_for)
+    if b15_first:
+        sched.append((b15_first, ("landed — check now" if b15_first <= now else _d(b15_first)),
+                      "First <b>Buy-signal</b> grades — does the ≥15% odds call pick winners?",
+                      '<a href="buysignals.html">Buy Signals</a>',
+                      "hit-rate meaningfully above the ~5% base; read n first"))
+    for sid, label in (("dump", "Dump (short)"), ("bear_trap", "Bear trap"),
+                       ("spike_retrace", "Spike &amp; retrace")):
+        t1 = pa_first[sid]
+        sched.append((t1 or (now + 5 * 86400),
+                      ("landed — check now" if t1 and t1 <= now else (_d(t1) if t1 else "≈ first fire + 72h")),
+                      f"First live grades for <b>{label}</b> (journaling since Jul 02)",
+                      "this page (table above)",
+                      "dump: drops on >2× the 10.7% base · longs: ≥2× the ~5% pump base"))
+    sched.append((now + max(0, int((15 - v1_have) / max(_rate("v1"), 0.3) * 86400)) + H72,
+                  _eta(15, v1_have, _rate("v1")),
+                  f"<b>v1 re-tune verdict</b> — ~15 fresh episodes since the Jul 01 promotion ({v1_have}/15 so far)",
+                  "ask for an <i>RL status</i> (box report; summary lands here too)",
+                  "hit-rate back above ~10% (lift ≥1.5×); else pause v1 alerts"))
+    sched.append((now + max(0, int((25 - v2_have) / max(_rate("v2"), 0.3) * 86400)) + H72,
+                  _eta(25, v2_have, _rate("v2")),
+                  f"<b>v2 challenger decision</b> — 25 matured forward fires ({v2_have}/25), frozen Jun 28",
+                  "ask for an <i>RL status</i> — the loop flags READY-TO-PROMOTE itself",
+                  "challenger forward lift ≥1.5× AND beating the champion"))
+    sched.append((now + int(25 / max(_rate("probe"), 0.5) * 86400) + H72,
+                  _eta(25, 0, _rate("probe")),
+                  "<b>Probe tuning verdict</b> — its challenger pair starts Jul 03; probe hits ~12% live but "
+                  "loses ≈−2.5%/trade (late entries), so watch expectancy, not just hits",
+                  "ask for an <i>RL status</i>",
+                  "a challenger that fixes expectancy — or probe stays confirmation-only"))
+    sched.append((_ts(2026, 9, 1), "≈ Sep 2026",
+                  "<b>Multi-week horizon factors</b> — the hourly training series (accruing since Jun 23) "
+                  "gets deep enough to test the manipulation-article theses beyond 72h",
+                  "ask for an <i>RL status</i>", "months of hourly data → longer-horizon labels"))
+    sched.sort(key=lambda r: r[0])
+    sched_rows = "".join(
+        f'<tr class="{"due" if ts <= now else ""}"><td class="swhen">{when}</td><td>{what}</td>'
+        f'<td>{where}</td><td class="slook">{look}</td></tr>'
+        for ts, when, what, where, look in sched)
+
+    # ── timeline (the story so far) ──────────────────────────────────────────
+    TIMELINE = [
+        ("Jun 20", "The box starts journaling every live setup fire — the forward ledger "
+                   "(the out-of-sample truth everything below is judged on) begins."),
+        ("Jun 22", "Reinforcement loop built: replay 30 days of hourly OI/price/funding, define a "
+                   "hard pump (+50% within 72h), and walk-forward tune each Buy setup — promote only "
+                   "what holds on unseen data."),
+        ("Jun 23", "Loop moves to the always-on box (nightly 04:30 UTC). First pump-probability "
+                   "score (logistic). The permanent hourly training series starts accruing. "
+                   "Overfitting guards added: purged splits, a trials-aware promotion floor."),
+        ("Jun 24", "Probe (pre-vertical volume break) + Dump (distribution short) detectors built "
+                   "from the manipulation research."),
+        ("Jun 26", "First human promotion — tuned v1 + v4 thresholds go to production."),
+        ("Jun 27", "v2 reborn as <b>Ignition</b> (OI-confirmed coil-break; caught VELVET +178%). "
+                   "Probe joins the alerts. Champion-vs-challenger forward tracking per setup."),
+        ("Jun 29", "Pump model upgraded to gradient-boosted trees (top-decile ~4× OOS) with a "
+                   "+50/+25/+10% odds ladder. Buy-signal journal (odds ≥15%) starts. Nightly "
+                   "calibration audit — is a &ldquo;14%&rdquo; really 14%?"),
+        ("Jul 01", "v1 re-tuned and promoted (OOS 1.39→1.64×)."),
+        ("Jul 02", "Hygiene + expansion: episode-dedup fixes v4's live stats (its &ldquo;decay&rdquo; was "
+                   "double-counting), dump gets short-side grading, probe joins the nightly tuner, "
+                   "live expectancy lands in the reports, <b>bear trap</b> + <b>spike &amp; retrace</b> ship "
+                   "(the strongest backtests yet), and a market-breadth gate stops market-wide bursts "
+                   "from masquerading as N independent signals."),
+    ]
+    tl = "".join(f'<li><span class="tld">{d}</span><div>{txt}</div></li>' for d, txt in TIMELINE)
+
+    body = f"""
+<header><h1>The Models</h1>
+{site_nav("scams")}
+{scams_subnav("models")}
+<p class="sub">One page for the whole machine: every model the AI runs, how each earned its place,
+how it's doing on <b>live, out-of-sample fires</b> — and the <b>check-back calendar</b>: what
+evidence lands next, when, and where to look. Counts use honest rules (one fire per coin per 72h;
+a market-wide burst counts once). Rebuilt every ~20 minutes. Research signals, not financial advice.</p></header>
+<main>
+<section class="card span goal"><h3>The goal</h3>
+<p class="jnote">Predict which coins will pump — with <b>honest, calibrated odds</b>, <b>early</b>
+(before the move) — and prove it on live results, not just backtests. The nightly loop only
+<i>recommends</i>; production thresholds change only when a human promotes them.</p>
+<div class="rhythm"><span>⏱ hourly :17 — box screens 139 coins, logs fires, pings alerts</span>
+<span>📊 ~60s — live prices/OI on the detail pages</span>
+<span>🌙 04:30 UTC nightly — re-tune + calibration audit</span>
+<span>⚖️ 72h — every fire graded on real price</span></div></section>
+<section class="card span"><h3>📅 Check-back calendar <span class="asof">computed from the live
+ledger each rebuild — dates are estimates at current fire rates</span></h3>
+<div class="tablewrap"><table class="mtable sched"><thead><tr><th>when</th><th>what lands</th>
+<th>where to look</th><th>what good looks like</th></tr></thead><tbody>{sched_rows}</tbody></table></div>
+<p class="jnote">The two pump-model heads not shown above (+25% / +10% odds) live on
+<a href="pumpodds.html">Pump Odds</a>; every fired setup shows on its coin's detail page cards.</p></section>
+<section class="card span"><h3>Probability scorers — PumpFinder</h3>
+<p class="jnote">A gradient-boosted model refit nightly on ~30 days of hourly OI / price / funding /
+volume state, exported to plain JSON and scored dependency-free on the box. Three heads:
+<b>+50%</b> (the headline <i>Pump %</i> — top-decile ~4× the base rate), <b>+25%</b> (~3.1×) and
+<b>+10%</b> (~1.9×), shown per-coin on <a href="pumpodds.html">Pump Odds</a> and the
+<a href="index.html">Screener</a>. Its odds gate the Telegram pings (score ≥7) and its ≥15%
+crossing drives the <a href="buysignals.html">Buy Signals</a> journal. Scores read low because
+hard pumps are rare — <b>rank with them, don't read them as coin-flips</b>. A nightly audit checks
+the odds stay honest (calibration error) and that each setup's live edge isn't decaying.
+<i>Retired: the original logistic scorer (kept as the &ldquo;Old %&rdquo; comparison column) and
+Buy v3 (never fired).</i></p></section>
+{tables}
+<p class="jnote">*fires = deduped episodes (one per coin per 72h, market-wide bursts count once).
+exp/trade = the tiered exit (half at +25%, rest at +50%, 72h time-stop) net of fees+slippage —
+dump is a short covering at −20%. Full trade-by-trade detail: <a href="journal.html">AI Journal</a>.</p>
+<section class="card span"><h3>How we got here</h3><ul class="mline">{tl}</ul></section>
+</main>
+{THEME_JS}"""
+    desc = ("Every model the ListingLabs AI runs — pump-probability scorers, Buy setups, "
+            "experimental detectors — with live out-of-sample records and the check-back "
+            "calendar for what evidence lands next.")
+    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
+            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
+            f'{page_meta("Models — Manipulated — ListingLabs", desc)}'
+            f'<title>Models — Manipulated</title>'
+            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
+
+
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
@@ -2594,6 +2856,24 @@ only, not financial advice.</p></header>
 EXTRA_CSS = """
 .fdv{font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;gap:6px}
 .links.note{color:var(--text-4);font-style:italic}
+/* ── Models report (models.html) ── */
+.goal .rhythm{display:flex;flex-wrap:wrap;gap:8px 22px;margin-top:10px;font-size:12.5px;color:var(--text-2)}
+.mtable{width:100%;min-width:880px;border-collapse:collapse;font-size:12.5px}
+.mtable th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--text-4);padding:6px 10px;border-bottom:1px solid var(--border)}
+.mtable td{padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-2)}
+.mtable tr:last-child td{border-bottom:none}
+.mname{font-weight:650;color:var(--text);min-width:210px}
+.mreads{font-weight:400;font-size:11.5px;color:var(--text-4);margin-top:3px;line-height:1.45}
+.mcred{font-size:11.5px;color:var(--text-3)}
+.sched .swhen{font-weight:650;color:var(--text);white-space:nowrap}
+.sched .slook{font-size:11.5px;color:var(--text-3)}
+.sched tr.due .swhen{color:var(--pos)}
+.sched tr.due td{background:color-mix(in srgb,var(--pos) 5%,transparent)}
+.mline{list-style:none;margin:6px 0 0;padding:0}
+.mline li{display:flex;gap:14px;padding:9px 0;border-bottom:1px dashed var(--border);font-size:12.5px;color:var(--text-2);line-height:1.55}
+.mline li:last-child{border-bottom:none}
+.mline .tld{flex:0 0 52px;font-weight:700;color:var(--text-3);font-size:11.5px;padding-top:1px}
+.mtable .pos{color:var(--pos)}.mtable .neg{color:var(--neg)}
 /* ── AI Track Record (journal.html) ── */
 .jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
 .jstat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
@@ -3240,6 +3520,7 @@ def main():
     (SITE / "journal.html").write_text(_journal_page(recs), encoding="utf-8")
     (SITE / "pumpodds.html").write_text(_pump_odds_page(recs), encoding="utf-8")
     (SITE / "buysignals.html").write_text(_buy_signals_page(recs), encoding="utf-8")
+    (SITE / "models.html").write_text(_models_page(recs), encoding="utf-8")
     for r in recs:
         page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
