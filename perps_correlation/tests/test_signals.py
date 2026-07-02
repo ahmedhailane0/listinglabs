@@ -217,6 +217,65 @@ def test_dump_blocked_by_cold_funding():
     assert out["dump"]["conditions"]["funding_hot>=0.05%"] is False
 
 
+# ── Bear trap (price-action factor) ──────────────────────────────────────────
+def _trap_series(flush_low=8.0):
+    n = 50                          # t-48 = index 1
+    oi = [100.0] * n
+    closes = [10.0] * n
+    lows = [9.95] * n
+    for i in range(19, 30):         # the flush, well inside [t-48 .. t-12]
+        lows[i] = flush_low
+    highs = [10.05] * n
+    return build(oi, closes, highs, lows)
+
+
+def test_bear_trap_fires():
+    oi, kl, ts = _trap_series(flush_low=8.0)      # -20% flush, fully reclaimed
+    out = evaluate(oi, kl, current_funding=0.0)
+    assert out["bear_trap"]["fired"] is True, out["bear_trap"]["conditions"]
+    assert out["bear_trap"]["t"] == ts[-1]
+    assert abs(out["bear_trap"]["stop"] - 8.0) < 1e-9     # stop = the flush low
+
+
+def test_bear_trap_blocked_shallow_flush():
+    oi, kl, _ = _trap_series(flush_low=9.0)       # only -10% — not a real flush
+    out = evaluate(oi, kl, current_funding=0.0)
+    assert out["bear_trap"]["fired"] is False
+    assert out["bear_trap"]["conditions"]["flushed>=15%"] is False
+
+
+def test_bear_trap_insufficient_short():
+    oi, kl, _ = build([100.0] * 10, [10.0] * 10)
+    out = evaluate(oi, kl, current_funding=0.0)
+    assert out["bear_trap"]["insufficient"] is True
+
+
+# ── Spike & retrace (price-action factor) ─────────────────────────────────────
+def _spike_series():
+    n = 30                          # t-24 = index 5, close 10
+    oi = [100.0] * n
+    closes = [10.0] * (n - 1) + [11.0]            # holds above pre-spike, retraced
+    highs = [10.01] * n
+    highs[20] = 14.0                              # the +40% spike, inside last 24h
+    highs[-1] = 11.01
+    lows = [9.99] * n
+    return build(oi, closes, highs, lows)
+
+
+def test_spike_retrace_fires():
+    oi, kl, ts = _spike_series()
+    out = evaluate(oi, kl, current_funding=-0.0001)      # shorts crowding
+    assert out["spike_retrace"]["fired"] is True, out["spike_retrace"]["conditions"]
+    assert out["spike_retrace"]["t"] == ts[-1]
+
+
+def test_spike_retrace_blocked_positive_funding():
+    oi, kl, _ = _spike_series()
+    out = evaluate(oi, kl, current_funding=0.0001)       # no short crowd = no fuel
+    assert out["spike_retrace"]["fired"] is False
+    assert out["spike_retrace"]["conditions"]["funding_negative"] is False
+
+
 if __name__ == "__main__":
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_") and callable(v)]
     passed = 0

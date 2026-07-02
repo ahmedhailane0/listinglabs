@@ -126,6 +126,24 @@ DUMP_RUNUP = 0.40        # ran >= +40% (a markup happened)
 DUMP_STALL_H = 12        # then stalled/rolled over in the last N hours
 DUMP_STALL_MAX = 0.05    # last-Nh change <= +5% (momentum gone)
 DUMP_FUNDING = 0.0005    # funding hot (>= 0.05%/interval = crowded longs)
+# Bear trap — the shakeout-and-reclaim (Dimension-01 price-action factor): price
+# flushed >=15% below the 2-day-ago close somewhere in the window, has RECLAIMED
+# nearly all of it, and has printed no new low in the last 12h — weak hands were
+# flushed and the dip got bought back = defended price. The strongest long factor
+# in the 2026-06 price-action study (~4.65x lift to +50%/72h over 207k coin-hours).
+# Pure price (no OI/volume/funding).
+TRAP_WINDOW_H = 48       # the lookback window the flush must sit in
+TRAP_RECENT_H = 12       # the reclaim tail: no new low in the last N hours
+TRAP_DIP = 0.15          # flushed >= 15% below the window-start close
+TRAP_RECLAIM = 0.97      # close back to >= 97% of the window-start close
+# Spike & retrace (price-action factor): a >=+30% spike within the last day that
+# has retraced hard (close <= 85% of the spike high) but still holds above the
+# pre-spike level, with funding NEGATIVE — shorts crowd the retrace and become
+# the fuel for the next leg. ~2.26x lift to +50%/72h in the same study.
+SPIKE_WINDOW_H = 24      # the spike must have happened within the last day
+SPIKE_MIN = 0.30         # spiked >= +30% above the day-ago close
+SPIKE_RETRACE = 0.85     # now retraced to <= 85% of the spike high
+SPIKE_FUND_MAX = 0.0     # per-interval funding strictly negative
 
 
 def _dominance_ratio(oi_pct: float, price_pct: float) -> float:
@@ -369,6 +387,51 @@ def _eval_dump(oi_m, c_m, h_m, t, funding):
             "metrics": {"runup_48h": runup, "stall_12h": stall, "funding": funding}}
 
 
+def _eval_bear_trap(c_m, l_m, t):
+    """Bear trap: dip low in [t-TRAP_WINDOW_H .. t-TRAP_RECENT_H] flushed
+    >= TRAP_DIP below the window-start close, the current close has reclaimed
+    >= TRAP_RECLAIM of that start, and the last TRAP_RECENT_H hours printed no
+    new low (the flush is over, the reclaim is holding)."""
+    W, R = TRAP_WINDOW_H, TRAP_RECENT_H
+    c0, cW = c_m.get(t), c_m.get(t - W * HOUR)
+    dip_lows = [l_m.get(t - k * HOUR) for k in range(R, W + 1)]
+    recent_lows = [l_m.get(t - k * HOUR) for k in range(R)]
+    if c0 is None or not cW or any(x is None for x in dip_lows + recent_lows):
+        return {"insufficient": True}
+    dip_lo = min(dip_lows)
+    cond = {
+        "flushed>=15%": dip_lo <= (1 - TRAP_DIP) * cW,
+        "reclaimed>=97%": c0 >= TRAP_RECLAIM * cW,
+        "no_new_low_12h": min(recent_lows) > dip_lo,
+    }
+    return {"fired": all(cond.values()), "conditions": cond,
+            "stop": dip_lo, "position": "5-10%",
+            "metrics": {"dip": 1 - dip_lo / cW, "reclaim": c0 / cW}}
+
+
+def _eval_spike_retrace(c_m, h_m, t, funding):
+    """Spike & retrace: a >= SPIKE_MIN spike above the day-ago close within the
+    last SPIKE_WINDOW_H hours, now retraced to <= SPIKE_RETRACE of the spike high
+    but still above the pre-spike close, with funding negative (shorts crowding
+    the retrace = squeeze fuel)."""
+    W = SPIKE_WINDOW_H
+    c0, cW = c_m.get(t), c_m.get(t - W * HOUR)
+    highs = [h_m.get(t - k * HOUR) for k in range(W)]
+    if c0 is None or not cW or funding is None or any(h is None for h in highs):
+        return {"insufficient": True}
+    spike = max(highs)
+    cond = {
+        "spiked>=30%": spike >= (1 + SPIKE_MIN) * cW,
+        "retraced<=85%_of_spike": c0 <= SPIKE_RETRACE * spike,
+        "holds_above_prespike": c0 > cW,
+        "funding_negative": funding < SPIKE_FUND_MAX,
+    }
+    return {"fired": all(cond.values()), "conditions": cond,
+            "stop": cW, "position": "5-10%",   # losing the pre-spike level kills it
+            "metrics": {"spike": spike / cW - 1, "retrace": (c0 / spike) if spike else 0.0,
+                        "funding": funding}}
+
+
 def evaluate(oi, klines, funding=None, current_funding=None,
              funding_interval_h=8.0, lookback_h=72):
     """Run v1/v2/v3 over the trailing `lookback_h` hours; return, per strategy, the
@@ -382,7 +445,8 @@ def evaluate(oi, klines, funding=None, current_funding=None,
     if not oi_m or not c_m:
         return {"as_of": None, "v1": _empty(True), "v2": _empty(True),
                 "v3": _empty(True), "v4": _empty(True),
-                "probe": _empty(True), "dump": _empty(True)}
+                "probe": _empty(True), "dump": _empty(True),
+                "bear_trap": _empty(True), "spike_retrace": _empty(True)}
     t0 = min(max(oi_m), max(c_m))                 # latest hour present in BOTH series
     t0 = (t0 // HOUR) * HOUR
 
@@ -394,6 +458,9 @@ def evaluate(oi, klines, funding=None, current_funding=None,
         "v4": lambda tt, f: _eval_v4(oi_m, c_m, h_m, l_m, tt, f),
         "probe": lambda tt, f: _eval_probe(c_m, h_m, l_m, v_m, tt),   # #7
         "dump": lambda tt, f: _eval_dump(oi_m, c_m, h_m, tt, f),      # #6 (short)
+        # Dimension-01 price-action factors (2026-07-02) — pure price(+funding):
+        "bear_trap": lambda tt, f: _eval_bear_trap(c_m, l_m, tt),
+        "spike_retrace": lambda tt, f: _eval_spike_retrace(c_m, h_m, tt, f),
     }
     for name, run in runners.items():
         latest = None                              # latest-hour result, for display when no fire

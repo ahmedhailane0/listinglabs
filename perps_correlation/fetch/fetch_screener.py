@@ -59,6 +59,10 @@ SPARK_POINTS = 120
 # sends — fail-open, never mute a real fire just because the score is missing.
 # Tune in one place here.
 ALERT_MIN_PUMP = 7.0
+# Only forward-proven setups may ping Telegram; everything else in the fire-log
+# (dump short, bear_trap / spike_retrace price-action longs) is journal-only
+# until its live ledger earns promotion.
+ALERT_STRATS = {"v1", "v4", "v2", "probe"}
 
 # Score-watch ping: a SECOND net, independent of any fired setup. When the model
 # flags a coin as a standout (pump_score >= this) we ping even if no v1/v4/probe
@@ -786,13 +790,16 @@ def _log_fires(recs: dict) -> int:
         # 2026-06-27) and `probe` are the BREAKOUT setups that catch pumps which
         # skip the accumulation tell entirely (e.g. VELVET +122% on 2026-06-26,
         # which v1/v4 missed): v2 = OI-confirmed coil-break, probe = pure
-        # price/volume coil-break (the no-OI-needed fallback). All edge setups
-        # (v1, v4, v2, probe) go into the fire-log + Telegram, sharing the
-        # ALERT_MIN_PUMP gate in _alert_buy. `dump` is a SHORT — journal-only:
-        # logged so grade_fires can build its forward ledger, but never alerted
-        # and never rendered as a buy (the site journals filter to explicit
-        # strat allowlists).
-        for strat in ("v1", "v4", "v2", "probe", "dump"):
+        # price/volume coil-break (the no-OI-needed fallback). The proven setups
+        # (ALERT_STRATS) go into the fire-log + Telegram, sharing the
+        # ALERT_MIN_PUMP gate in _alert_buy. The rest are JOURNAL-ONLY: logged so
+        # grade_fires can build their forward ledger, but never alerted and never
+        # rendered as buys (the site journals filter to explicit strat
+        # allowlists) — `dump` is a SHORT, and the price-action longs
+        # (bear_trap / spike_retrace, added 2026-07-02) must earn alerting on
+        # live fires first.
+        for strat in ("v1", "v4", "v2", "probe", "dump",
+                      "bear_trap", "spike_retrace"):
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
@@ -823,7 +830,7 @@ def _log_fires(recs: dict) -> int:
                 # short: the long tiered targets don't apply — cover at -20%
                 entry["side"] = "short"
                 entry["tp1"], entry["tp2"] = None, (px * 0.80 if px else None)
-            elif _alert_buy(entry, r):
+            elif strat in ALERT_STRATS and _alert_buy(entry, r):
                 entry["alerted"] = True
                 entry["alerted_utc"] = now
             log.append(entry)

@@ -1430,6 +1430,11 @@ def _signals_section(sym, rec=None) -> str:
                   "probe", "2.5× lift to a +50% pump"),
         "dump": ("🔻 Distribution — short", "crowded longs rolling over after a markup",
                  "dump", "6.2× lift to a −20% drop"),
+        # Dimension-01 price-action factors (2026-07-02) — journal-only, no alerts.
+        "bear_trap": ("🪤 Bear trap", "a ≥15% flush fully reclaimed — the dip got bought back",
+                      "beartrap", "4.6× lift to a +50% pump"),
+        "spike_retrace": ("🌊 Spike & retrace", "a +30% spike sold back down while shorts crowd in",
+                          "spikeret", "2.9× lift to a +50% pump"),
     }
     for k, (nm, ttl, css, cred) in EXTRA.items():
         d = s.get(k) or {}
@@ -1458,7 +1463,8 @@ def _signals_section(sym, rec=None) -> str:
             f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
             f'<p class="note">Buy v1–v4 are mechanical long setups on open interest, price '
-            f'and funding. <b>Probe</b> (long confirmation) and <b>Distribution</b> (a short) '
+            f'and funding. <b>Probe</b> (long confirmation), <b>Distribution</b> (a short) '
+            f'and the price-action factors <b>Bear trap</b> / <b>Spike &amp; retrace</b> '
             f'are newer, backtest-validated detectors — experimental, not yet alert-wired. '
             f'Research signals, not financial advice.</p></section>')
 
@@ -3022,11 +3028,16 @@ td.sig .buy{margin:1px 3px 1px 0}
 .buycard{border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;background:var(--bg-subtle);transition:border-color .16s var(--ease)}
 .buycard.fired{border-color:var(--pos);background:var(--fired-bg);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--pos) 22%,transparent)}
 .buy.probe{background:#7d4ec9}.buy.dump{background:#c0392b}
+.buy.beartrap{background:#1e8e64}.buy.spikeret{background:#c47f17}
 .xcard{border-style:dashed}
 .xcard.dump{border-color:#c0392b55}
 .xcard.dump.fired{border-color:#c0392b;background:rgba(192,57,43,.06)}
+.xcard.beartrap.fired{border-color:#1e8e64;background:rgba(30,142,100,.07)}
+.xcard.spikeret.fired{border-color:#c47f17;background:rgba(196,127,23,.07)}
 .bc-cred{font-size:11px;color:#9c6ade;margin:-2px 0 8px}
 .xcard.dump .bc-cred{color:#c0392b}
+.xcard.beartrap .bc-cred{color:#1e8e64}
+.xcard.spikeret .bc-cred{color:#c47f17}
 .bc-cred i{color:var(--text-4);font-style:italic}
 .bc-head{font-weight:700;font-size:13px;color:var(--text);display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
 .bc-head span{font-weight:400;font-size:11.5px;color:var(--text-4)}
