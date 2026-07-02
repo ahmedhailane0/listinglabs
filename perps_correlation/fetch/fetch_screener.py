@@ -788,8 +788,11 @@ def _log_fires(recs: dict) -> int:
         # which v1/v4 missed): v2 = OI-confirmed coil-break, probe = pure
         # price/volume coil-break (the no-OI-needed fallback). All edge setups
         # (v1, v4, v2, probe) go into the fire-log + Telegram, sharing the
-        # ALERT_MIN_PUMP gate in _alert_buy. `dump` is a SHORT — not alert-wired.
-        for strat in ("v1", "v4", "v2", "probe"):
+        # ALERT_MIN_PUMP gate in _alert_buy. `dump` is a SHORT — journal-only:
+        # logged so grade_fires can build its forward ledger, but never alerted
+        # and never rendered as a buy (the site journals filter to explicit
+        # strat allowlists).
+        for strat in ("v1", "v4", "v2", "probe", "dump"):
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
@@ -816,7 +819,11 @@ def _log_fires(recs: dict) -> int:
                 "alerted": False,
                 "outcome": None,            # graded later by tools/grade_fires.py
             }
-            if _alert_buy(entry, r):
+            if strat == "dump":
+                # short: the long tiered targets don't apply — cover at -20%
+                entry["side"] = "short"
+                entry["tp1"], entry["tp2"] = None, (px * 0.80 if px else None)
+            elif _alert_buy(entry, r):
                 entry["alerted"] = True
                 entry["alerted_utc"] = now
             log.append(entry)
