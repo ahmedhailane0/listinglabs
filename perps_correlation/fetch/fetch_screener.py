@@ -63,6 +63,15 @@ ALERT_MIN_PUMP = 7.0
 # (dump short, bear_trap / spike_retrace price-action longs) is journal-only
 # until its live ledger earns promotion.
 ALERT_STRATS = {"v1", "v4", "v2", "probe"}
+# Every detector that goes into the fire-log (order = log order).
+LOGGED_STRATS = ("v1", "v4", "v2", "probe", "dump", "bear_trap", "spike_retrace")
+# Breadth gate: when MORE than this many coins fire the SAME setup in the SAME
+# hour, that's one market-wide event (BTC move / broad volume burst), not N
+# independent coin setups. Those fires are tagged market_wide (the graders
+# collapse each cluster to one sample) and their Telegram pings are skipped —
+# market beta, not a coin story. Probe is the main offender (it once flagged
+# 46/141 coins across a 72h window).
+BREADTH_MAX = 10
 
 # Score-watch ping: a SECOND net, independent of any fired setup. When the model
 # flags a coin as a standout (pump_score >= this) we ping even if no v1/v4/probe
@@ -783,6 +792,15 @@ def _log_fires(recs: dict) -> int:
             last_fire[k] = ft
     now = _now()
     added = 0
+    # breadth per (setup, fire-hour) across the whole universe, for the gate below
+    breadth: dict[tuple, int] = {}
+    for r in recs.values():
+        sig = r.get("signals") or {}
+        for strat in LOGGED_STRATS:
+            d = sig.get(strat) or {}
+            if d.get("fired") and d.get("t"):
+                k = (strat, d["t"])
+                breadth[k] = breadth.get(k, 0) + 1
     for sym, r in recs.items():
         sig = r.get("signals") or {}
         # v3 never fires. v1/v4 are the accumulation setups (quiet OI build under a
@@ -798,8 +816,7 @@ def _log_fires(recs: dict) -> int:
         # allowlists) — `dump` is a SHORT, and the price-action longs
         # (bear_trap / spike_retrace, added 2026-07-02) must earn alerting on
         # live fires first.
-        for strat in ("v1", "v4", "v2", "probe", "dump",
-                      "bear_trap", "spike_retrace"):
+        for strat in LOGGED_STRATS:
             d = sig.get(strat) or {}
             if not d.get("fired"):
                 continue
@@ -826,10 +843,16 @@ def _log_fires(recs: dict) -> int:
                 "alerted": False,
                 "outcome": None,            # graded later by tools/grade_fires.py
             }
+            wide = breadth.get((strat, ft), 0) > BREADTH_MAX
+            if wide:
+                entry["market_wide"] = True
             if strat == "dump":
                 # short: the long tiered targets don't apply — cover at -20%
                 entry["side"] = "short"
                 entry["tp1"], entry["tp2"] = None, (px * 0.80 if px else None)
+            elif strat in ALERT_STRATS and wide:
+                print(f"  telegram: skip {sym} {strat} — market-wide "
+                      f"({breadth[(strat, ft)]} coins fired the same hour)")
             elif strat in ALERT_STRATS and _alert_buy(entry, r):
                 entry["alerted"] = True
                 entry["alerted_utc"] = now
