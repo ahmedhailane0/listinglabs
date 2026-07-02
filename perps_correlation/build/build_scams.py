@@ -2414,6 +2414,130 @@ early evidence.</p></header>
             f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
 
 
+# v1/v2/v4 match _winrate_chart's COL (journal.html) so a setup looks the same
+# color on both pages; the rest are pulled from _DONUT_COLORS for consistency.
+_MODEL_COLORS = {
+    "v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a",
+    "probe": "#9c6ade", "buy15": "#d98c5f",
+    "dump": "#c0392b", "bear_trap": "#6aa84f", "spike_retrace": "#7f8c9a",
+}
+
+
+def _maturity_scatter(pts) -> str:
+    """Model-maturity scatter: X = graded episode count, Y = live hit-rate — 'how
+    much do I trust this number yet', NOT a backtest-vs-live comparison. One dot
+    per setup with >=1 graded episode (setups with none simply don't appear yet).
+    Static SVG, <title>-per-shape hover (the _donut technique, no JS)."""
+    pts = [p for p in pts if p[3] >= 1]
+    if not pts:
+        return ""
+    W, H, L, R, T, B = 760, 300, 54, 24, 20, 40
+    pw, ph = W - L - R, H - T - B
+    xmax = max(p[3] for p in pts) * 1.15 or 1.0
+    # hit-rates on this site cluster low (honest odds, not coin-flips) — a fixed
+    # 0-100 axis would cram every real dot into the bottom-fifth of the chart.
+    ymax = max(20.0, max(p[4] for p in pts) * 1.25)
+
+    grid = []
+    for frac in (0, 0.5, 1.0):
+        y = T + (1 - frac) * ph
+        cls = "msc-grid msc-base" if frac == 0 else "msc-grid"
+        grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="{cls}"/>')
+        grid.append(f'<text x="{L-8}" y="{y+3:.1f}" class="msc-axis" text-anchor="end">'
+                    f'{ymax*frac:.0f}%</text>')
+    for frac in (0, 0.5, 1.0):
+        x = L + frac * pw
+        grid.append(f'<line x1="{x:.1f}" y1="{T}" x2="{x:.1f}" y2="{T+ph}" class="msc-grid"/>')
+        grid.append(f'<text x="{x:.1f}" y="{T+ph+16}" class="msc-axis" text-anchor="middle">'
+                    f'{xmax*frac:.0f}</text>')
+    grid.append(f'<text x="{L+pw/2:.1f}" y="{H-6}" class="msc-axis" text-anchor="middle">'
+                f'graded episodes (sample size) →</text>')
+
+    dots, legend = [], []
+    for sid, name, color, graded, hit in pts:
+        cx = L + (graded / xmax) * pw
+        cy = T + (1 - hit / ymax) * ph
+        dots.append(f'<circle class="msc-dot" r="6.5" cx="{cx:.1f}" cy="{cy:.1f}" '
+                    f'fill="{color}"><title>{html.escape(name)} — {graded} graded, '
+                    f'{hit:.0f}% hit-rate</title></circle>')
+        dots.append(f'<text class="msc-lbl" x="{cx+9:.1f}" y="{cy-8:.1f}">{sid}</text>')
+        legend.append(f'<span class="msc-leg"><i style="background:{color}"></i>'
+                      f'{html.escape(name)}</span>')
+
+    svg = (f'<svg class="msc-svg" viewBox="0 0 {W} {H}" role="img" '
+           f'aria-label="model maturity: sample size vs live hit-rate">'
+           + "".join(grid) + "".join(dots) + '</svg>')
+    return (f'<section class="card span"><h3>Model maturity <span class="asof">sample size vs '
+            f'live hit-rate</span></h3>{svg}<div class="msc-legend">{"".join(legend)}</div>'
+            f'<p class="jnote">How much do we trust this number yet — X is how many graded fires '
+            f'back it, Y is its live +50% hit-rate. This is <b>not</b> a backtest-vs-live '
+            f'comparison. Setups with 0 graded fires don\'t appear yet; they show up once they '
+            f'clear their first grade.</p></section>')
+
+
+def _equity_grid(curves) -> str:
+    """Per-model equity curves: one small multiple per setup, X = trade order
+    (not calendar time — sparse irregular fire gaps would make a time axis messy
+    in a small box), Y = simple running SUM of realized P&L (not compounded —
+    matches the plain-mean 'exp/trade' shown elsewhere on this page)."""
+    curves = [c for c in curves if c[3]]
+    if not curves:
+        return ""
+    minis = []
+    for sid, name, color, pts in curves:
+        W, H, L, R, T, B = 240, 120, 8, 8, 10, 18
+        pw, ph = W - L - R, H - T - B
+        cum, running = [], 0.0
+        for _t, pnl in pts:
+            running += pnl
+            cum.append(running)
+        lo, hi = min(cum + [0.0]), max(cum + [0.0])
+        span = (hi - lo) or 1.0
+        pad = span * 0.1
+        lo, hi = lo - pad, hi + pad
+        span = hi - lo
+
+        def _xy(i, v):
+            x = L + (i / (len(cum) - 1) * pw if len(cum) > 1 else pw / 2)
+            y = T + (1 - (v - lo) / span) * ph
+            return x, y
+
+        zy = T + (1 - (0.0 - lo) / span) * ph
+        zero_line = f'<line x1="{L}" y1="{zy:.1f}" x2="{W-R}" y2="{zy:.1f}" class="eq-zero"/>'
+
+        if len(cum) == 1:
+            x, y = _xy(0, cum[0])
+            path = (f'<circle class="eq-pt" r="2.8" cx="{x:.1f}" cy="{y:.1f}" fill="{color}">'
+                    f'<title>{html.escape(name)} #1 — pnl {pts[0][1]*100:+.1f}%, '
+                    f'cum {cum[0]*100:+.1f}%</title></circle>')
+        else:
+            coords = [_xy(i, v) for i, v in enumerate(cum)]
+            poly = " ".join(f"{x:.1f},{y:.1f}" for x, y in coords)
+            pts_svg = "".join(
+                f'<circle class="eq-pt" r="2.2" cx="{x:.1f}" cy="{y:.1f}" stroke="{color}"><title>'
+                f'{html.escape(name)} #{i+1} — pnl {pts[i][1]*100:+.1f}%, '
+                f'cum {cum[i]*100:+.1f}%</title></circle>'
+                for i, (x, y) in enumerate(coords))
+            path = (f'<polyline class="eq-line" points="{poly}" stroke="{color}" fill="none"/>'
+                    + pts_svg)
+
+        final = cum[-1]
+        sub_cls = "pos" if final >= 0 else "neg"
+        svg = (f'<svg class="eq-svg" viewBox="0 0 {W} {H}" role="img" '
+               f'aria-label="{html.escape(name)} equity curve">{zero_line}{path}</svg>')
+        minis.append(f'<figure class="eq-mini"><figcaption><i style="background:{color}"></i>'
+                     f'{html.escape(name)}<span class="eq-sub">{len(pts)} graded · '
+                     f'<span class="{sub_cls}">{final*100:+.1f}%</span></span></figcaption>{svg}'
+                     f'</figure>')
+
+    return (f'<section class="card span"><h3>Per-model equity curves <span class="asof">trade '
+            f'order, not calendar time</span></h3><div class="eq-grid">{"".join(minis)}</div>'
+            f'<p class="jnote">Each line is the running SUM of that setup\'s realized P&amp;L, '
+            f'one point per graded trade in fire order (X is trade #, not date — Y is a plain '
+            f'running total, not a compounded account). Hover a point for that trade\'s result.'
+            f'</p></section>')
+
+
 def _models_page(recs) -> str:
     """The MODELS report: every model/setup/loop the AI runs — what it is, how it
     earned its place (backtest), how it's doing live (from the public fire ledger,
@@ -2440,6 +2564,12 @@ def _models_page(recs) -> str:
                 "hit": (wins / len(g)) if g else None,
                 "exp": _st.mean(pnls) if pnls else None,
                 "pending": len(pend), "next_grade": max(nxt, now) if nxt else None}
+
+    def _curve(sid):
+        es = sorted((e for e in eps if e.get("strat") == sid and e.get("outcome")
+                     and (e["outcome"] or {}).get("pnl_real") is not None),
+                    key=lambda e: e.get("t") or 0)
+        return [(e.get("t"), e["outcome"]["pnl_real"]) for e in es]
 
     def _rate(sid, days=14):
         n = sum(1 for e in eps if e.get("strat") == sid
@@ -2518,6 +2648,16 @@ def _models_page(recs) -> str:
                    f'<th>model / what it reads</th><th>fires*</th><th>live +50% record</th>'
                    f'<th>exp/trade</th><th>maturing</th><th>how it earned its place</th>'
                    f'<th>alerts?</th></tr></thead><tbody>{rows}</tbody></table></div></section>')
+
+    # ── maturity scatter + per-model equity curves ──────────────────────────
+    _msc_pts, _eq_curves = [], []
+    for sid, name, _g, _rd, _cr, _al in ROSTER:
+        st = _stats(sid)
+        if st["graded"] >= 1:
+            _msc_pts.append((sid, name, _MODEL_COLORS[sid], st["graded"], st["hit"] * 100))
+            _eq_curves.append((sid, name, _MODEL_COLORS[sid], _curve(sid)))
+    maturity_section = _maturity_scatter(_msc_pts)
+    equity_section = _equity_grid(_eq_curves)
 
     # ── the check-back calendar ──────────────────────────────────────────────
     b15 = [e for e in fires if e.get("strat") == "buy15" and e.get("t")]
@@ -2635,6 +2775,8 @@ Buy v3 (never fired).</i></p></section>
 <p class="jnote">*fires = deduped episodes (one per coin per 72h, market-wide bursts count once).
 exp/trade = the tiered exit (half at +25%, rest at +50%, 72h time-stop) net of fees+slippage —
 dump is a short covering at −20%. Full trade-by-trade detail: <a href="journal.html">AI Journal</a>.</p>
+{maturity_section}
+{equity_section}
 <section class="card span"><h3>How we got here</h3><ul class="mline">{tl}</ul></section>
 </main>
 {THEME_JS}"""
@@ -2874,6 +3016,27 @@ EXTRA_CSS = """
 .mline li:last-child{border-bottom:none}
 .mline .tld{flex:0 0 52px;font-weight:700;color:var(--text-3);font-size:11.5px;padding-top:1px}
 .mtable .pos{color:var(--pos)}.mtable .neg{color:var(--neg)}
+.msc-svg{width:100%;height:auto;max-height:300px;margin-top:4px}
+.msc-grid{stroke:var(--border);stroke-width:1}
+.msc-grid.msc-base{stroke:var(--text-4)}
+.msc-axis{font-size:10px;fill:var(--text-4)}
+.msc-dot{stroke:var(--bg-subtle);stroke-width:1.5;cursor:pointer}
+.msc-dot:hover{stroke:var(--text);r:8}
+.msc-lbl{font-size:10.5px;fill:var(--text-2);font-weight:650}
+.msc-legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;font-size:11.5px;color:var(--text-2)}
+.msc-leg{display:inline-flex;align-items:center;gap:5px}
+.msc-leg i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-top:6px}
+.eq-mini{margin:0;background:var(--bg-subtle);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.eq-mini figcaption{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:var(--text);margin-bottom:4px}
+.eq-mini figcaption i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
+.eq-sub{margin-left:auto;font-weight:500;font-size:11px;color:var(--text-3)}
+.eq-sub .pos{color:var(--pos)}.eq-sub .neg{color:var(--neg)}
+.eq-svg{width:100%;height:auto;display:block}
+.eq-zero{stroke:var(--border);stroke-width:1;stroke-dasharray:3 3}
+.eq-line{stroke-width:1.8}
+.eq-pt{fill:var(--bg-subtle);stroke-width:1.4;cursor:pointer}
+.eq-pt:hover{r:4}
 /* ── AI Track Record (journal.html) ── */
 .jcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:6px 0 4px}
 .jstat{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;
