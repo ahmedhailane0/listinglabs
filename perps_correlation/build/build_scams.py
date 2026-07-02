@@ -11,6 +11,7 @@ embedded, never shown as raw URLs.
 """
 from __future__ import annotations
 
+import hashlib
 import html
 import json
 import math
@@ -1541,7 +1542,7 @@ def _detail(rec, platforms) -> str:
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta(title, desc, connect_extra=LIVE_ORIGIN)}'
             f'<title>{name} ({html.escape(sym)}) — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css">'
+            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}">'
             f'<script src="../report/lightweight-charts.standalone.production.js"></script>'
             f'</head><body>{body}</body></html>')
 
@@ -2411,7 +2412,7 @@ early evidence.</p></header>
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("AI Journal — Manipulated — ListingLabs", desc)}'
             f'<title>AI Journal — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
+            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head><body>{body}</body></html>')
 
 
 # v1/v2/v4 match _winrate_chart's COL (journal.html) so a setup looks the same
@@ -2787,7 +2788,7 @@ dump is a short covering at −20%. Full trade-by-trade detail: <a href="journal
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("Models — Manipulated — ListingLabs", desc)}'
             f'<title>Models — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css"></head><body>{body}</body></html>')
+            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head><body>{body}</body></html>')
 
 
 def _index(recs) -> str:
@@ -2819,7 +2820,7 @@ def _index(recs) -> str:
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("Manipulated — ListingLabs", desc, connect_extra=LIVE_ORIGIN)}'
-            f'<title>Manipulated</title><link rel="stylesheet" href="style.css"></head>'
+            f'<title>Manipulated</title><link rel="stylesheet" href="style.css?v={_CSS_VER}"></head>'
             f'<body>{body}</body></html>')
 
 
@@ -2877,7 +2878,7 @@ for its detail.</p></header>
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("Pump Odds — Manipulated", desc)}'
             f'<title>Pump Odds — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css"></head>'
+            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head>'
             f'<body>{body}</body></html>')
 
 
@@ -2991,7 +2992,7 @@ only, not financial advice.</p></header>
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
             f'{page_meta("Buy Signals — Manipulated", desc)}'
             f'<title>Buy Signals — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css"></head>'
+            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head>'
             f'<body>{body}</body></html>')
 
 
@@ -3494,6 +3495,15 @@ td.sig .buy{margin:1px 3px 1px 0}
 .binance-btn{display:inline-block;margin-top:14px;padding:9px 16px;border-radius:8px;background:#f3ba2f;color:#3a2c00;font-weight:700;font-size:13px;text-decoration:none}
 .binance-btn:hover{background:#e0a91d}
 """
+
+# style.css is served with Cache-Control: max-age=600 (GitHub Pages default) and
+# every page links it with a bare "style.css" — so a browser that visited within
+# 10min of a CSS-changing deploy keeps rendering NEW html against OLD cached CSS
+# (this actually happened to the Models charts on ship day). A content-hash query
+# param makes the URL itself change whenever the CSS changes, forcing an
+# immediate re-fetch, while leaving cache-busting inert on the ~20-min data-only
+# rebuilds where the CSS text is byte-identical.
+_CSS_VER = hashlib.md5((RCSS + EXTRA_CSS).encode("utf-8")).hexdigest()[:8]
 
 JS = """
 <script>
