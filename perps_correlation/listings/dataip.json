@@ -1,0 +1,32 @@
+{
+  "token": "DATAIP",
+  "name": "DATA Network",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-02T07:00:00Z",
+  "window_end_utc": "2026-07-03T11:30:27Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-07-02T08:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1782979200000, contract on BSC)."
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-07-03T05:30:27Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined DATAIPUSDT and DATAIPUSDC Perpetual Contracts (2026-07-03) 币安重要公告: 币安合约将上线 USDⓈ 保证金 DA\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16314",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0xa37eded373c5cdf88644db7c6b89f222e756afb2",
+  "gecko_pool": "0x6690fec1b8a15699c0097e4ce3e844785384b127d23d9808b257d3e44ca3fd73",
+  "fdv_usd": 321600888.42751944,
+  "fdv_source": "Binance Alpha listings API, 2026-07-03 (current, not at-listing)",
+  "mcap_usd": 111311650.29334958,
+  "circulating_supply": 356515684.0,
+  "total_supply": 1030042771.0,
+  "cmc_slug": null
+}
