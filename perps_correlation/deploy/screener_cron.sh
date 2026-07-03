@@ -26,6 +26,10 @@ fi
 # 3) Commit the compact outputs + the forward fire-log + any new holder files.
 git -C "$REPO" add cache/screener/screener.json cache/screener/market.json
 git -C "$REPO" add cache/screener/fires_log.json 2>/dev/null || true
+# screener_daemon.py's heartbeat (real-time websocket alerter, its own systemd
+# service) — the daemon itself has no push access, so this hourly commit is
+# how CI's box-down watchdog (check_box_health.py _check_daemon) ever sees it.
+git -C "$REPO" add cache/screener/daemon/heartbeat.json 2>/dev/null || true
 git -C "$REPO" add cache/screener/hourly/ 2>/dev/null || true
 git -C "$REPO" add cache/scam_holders/ 2>/dev/null || true
 git -C "$REPO" add cache/price_candles/ 2>/dev/null || true

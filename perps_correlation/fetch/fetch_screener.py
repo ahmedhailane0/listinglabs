@@ -121,6 +121,14 @@ FIRE_REFRACTORY_H = 72        # one fire per (sym, setup) per 72h — collapses 
                               # that fires on several consecutive bars for one event
                               # into a single trade/alert (matches the 72h time-stop).
 
+# Local hand-off from fetch/screener_daemon.py (real-time websocket alerter, runs
+# as its own systemd service on the box — NOT git-tracked, not committed). It
+# appends a line per NEW live fire it Telegram-alerted; _log_fires folds those
+# into the real ledger below so the daemon's dedup key is present BEFORE this
+# hour's own scan runs, which makes the cron's independent re-derivation of the
+# same fire a no-op (no duplicate log row, no duplicate Telegram send).
+DAEMON_FIRES_LIVE = OUTDIR / "daemon" / "fires_live.jsonl"
+
 # Optional pump-probability scorer (LOCAL/BOX-only module + model; absent in CI,
 # so this no-ops there). When present, writes a 0-100 `pump_score` per coin.
 try:
@@ -763,6 +771,43 @@ def _alert_targets(recs: dict) -> int:
     return sent
 
 
+def _merge_daemon_fires(log: list) -> int:
+    """Fold cache/screener/daemon/fires_live.jsonl (screener_daemon.py's
+    real-time fires, already Telegram-alerted) into `log` in place, then clear
+    the hand-off file. Must run BEFORE the caller builds its `seen` set so a
+    fire the daemon already alerted doesn't get independently re-detected and
+    re-alerted by this hour's own scan. Never raises."""
+    if not DAEMON_FIRES_LIVE.exists():
+        return 0
+    try:
+        lines = DAEMON_FIRES_LIVE.read_text(encoding="utf-8").splitlines()
+    except Exception:
+        return 0
+    seen = {f"{e.get('sym')}|{e.get('strat')}|{e.get('t')}" for e in log}
+    added = 0
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            e = json.loads(line)
+        except Exception:
+            continue
+        key = f"{e.get('sym')}|{e.get('strat')}|{e.get('t')}"
+        if key in seen:
+            continue
+        seen.add(key)
+        log.append(e)
+        added += 1
+    try:
+        DAEMON_FIRES_LIVE.unlink()
+    except Exception as ex:
+        print(f"  daemon fires: hand-off cleanup failed ({ex})")
+    if added:
+        print(f"  daemon fires: merged {added} real-time fire(s)")
+    return added
+
+
 def _log_fires(recs: dict) -> int:
     """Append every NEW (sym, setup, fire-hour) to the forward fire-log, keyed by
     sym|strat|t so a fire that persists across hourly runs is recorded ONCE.
@@ -777,6 +822,7 @@ def _log_fires(recs: dict) -> int:
             log = []
     except Exception:
         log = []
+    _merge_daemon_fires(log)
     seen = {f"{e.get('sym')}|{e.get('strat')}|{e.get('t')}" for e in log}
     # Per-(sym,strat) last fire time, for the refractory below. A breakout setup can
     # fire on several consecutive hourly bars for ONE event (e.g. v2 ignition fires

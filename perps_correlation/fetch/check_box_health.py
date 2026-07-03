@@ -32,6 +32,16 @@ STATE = CACHE / "box_health.json"
 # DOWN/RECOVERED pair. Tunable via env.
 STALE_H = float(os.environ.get("BOX_STALE_HOURS", "3"))
 
+# ── screener_daemon.py (real-time websocket alerter) heartbeat ──────────────
+# Independent of the box-down check above: the box itself can be alive (still
+# committing hourly) while the daemon process crashed. heartbeat.json is only
+# committed as part of screener_cron.sh's HOURLY push (the daemon has no push
+# access of its own), so this can only be as fresh as that cadence — NOT a
+# true near-real-time check. Default tolerates one missed hourly commit + the
+# usual CI poll lag without false-alarming. See fetch/screener_daemon.py.
+DAEMON_HEARTBEAT = CACHE / "screener" / "daemon" / "heartbeat.json"
+DAEMON_STALE_H = float(os.environ.get("DAEMON_STALE_HOURS", "2.5"))
+
 
 def _now() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
@@ -53,6 +63,52 @@ def _load_state() -> dict:
         return json.loads(STATE.read_text(encoding="utf-8"))
     except Exception:
         return {"state": "ok"}
+
+
+def _daemon_heartbeat_age_h() -> float | None:
+    try:
+        hb = json.loads(DAEMON_HEARTBEAT.read_text(encoding="utf-8"))
+        ts = hb.get("ts")
+        if not ts:
+            return None
+        return (_now() - dt.datetime.fromtimestamp(ts, dt.timezone.utc)).total_seconds() / 3600
+    except Exception:
+        return None
+
+
+def _check_daemon(state: dict) -> dict:
+    """Own DOWN/RECOVERED pair for screener_daemon.py, tracked under `daemon_*`
+    keys in the same box_health.json (distinct from the box-down `state` key
+    above). No-ops (leaves state untouched) until heartbeat.json first exists —
+    e.g. before the daemon is deployed — so it never false-alarms on a fleet
+    that hasn't set it up yet."""
+    age_h = _daemon_heartbeat_age_h()
+    if age_h is None:
+        print("daemon-health: no heartbeat.json yet; skipping (not deployed, or stale read)")
+        return state
+    prev = state.get("daemon_state", "ok")
+    now_state = "down" if age_h > DAEMON_STALE_H else "ok"
+    print(f"daemon-health: heartbeat age {age_h:.1f}h (threshold {DAEMON_STALE_H}h) "
+          f"-> {now_state} (was {prev})")
+    sent: bool | None = None
+    if now_state == "down" and prev == "ok":
+        sent = tg.send(
+            f"\U0001F7E0 <b>REAL-TIME DAEMON DOWN</b> — screener_daemon.py's heartbeat "
+            f"is {age_h:.1f}h stale. The hourly cron still covers v1/v4/v2/probe fires "
+            f"(just up to ~an hour later) — this only affects the FASTER live alerting.\n"
+            f"Check: <code>ssh box</code> · <code>systemctl status screener-daemon</code> · "
+            f"<code>journalctl -u screener-daemon -n 50</code>")
+    elif now_state == "ok" and prev == "down":
+        sent = tg.send("✅ <b>REAL-TIME DAEMON RECOVERED</b> — live alerting resumed.")
+    if now_state != prev and sent is False:
+        # transition happened but the ping didn't go out — hold state, retry next run
+        print("daemon-health: transition but Telegram unconfigured/failed — state held")
+        return state
+    state["daemon_state"] = now_state
+    state["daemon_age_h_at_check"] = round(age_h, 2)
+    if now_state != prev:
+        state["daemon_since"] = _now().strftime("%Y-%m-%dT%H:%M:%SZ")
+    return state
 
 
 def main() -> int:
@@ -97,6 +153,8 @@ def main() -> int:
         else:
             new["since"] = _now().strftime("%Y-%m-%dT%H:%M:%SZ")
             print(f"box-health: ALERT sent ({prev} -> {now_state})")
+
+    new = _check_daemon(new)
 
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(new, indent=1), encoding="utf-8")
