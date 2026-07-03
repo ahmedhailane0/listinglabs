@@ -60,6 +60,12 @@
       "iso_time_utc": "2026-07-03T03:00:02Z",
       "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 메타플렉스(MPLX), 넥서스(NEX) 신규 거래지원 안내 (BTC, USDT 마켓) Upbit 上新: [交易] MetaPlex (MPLX), Nexus (NEX) 新增交易支持公告 (BTC, USDT 市场) NEX \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16311",
       "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-07-03T03:46:17Z",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [市场新增] MetaPlex (MPLX), Nexus (NEX) 韩元市场新增 NEX MarketCap: 110.6M MPLX MarketCap: 10.8M (Auto match could \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16313",
+      "source": "bwenews"
     }
   ],
   "not_listed": [
@@ -69,8 +75,7 @@
     "Bybit spot",
     "Bitget perp",
     "Gate.io spot+perp",
-    "Kraken spot+futures",
-    "Bithumb"
+    "Kraken spot+futures"
   ],
   "reprobe_2026-05-27": "Re-probed all allowlist spot + perp/futures venues over the full week. New since launch day: KuCoin Futures (2026-05-21 03:30). Binance/OKX/Bitget perps + Gate/Kraken derivatives + binance/okx/bybit/kraken/gate spot symbols still don't exist. Bybit perp 1h probe (08:00) matches the existing 07:57 event. Wide-window 1m probes for kucoin/bitget spot hit ~1000-candle caps (artifact timestamps 05-26); true times confirmed via coarser granularity."
 }
