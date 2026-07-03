@@ -2,10 +2,17 @@
 Description=ListingLabs real-time screener alert daemon (fetch/screener_daemon.py)
 After=network-online.target
 Wants=network-online.target
+# Websocket reconnect logic has its own backoff; this is the outer safety net
+# for a hard crash (e.g. an unhandled exception outside the reconnect loops).
+StartLimitIntervalSec=600
+StartLimitBurst=20
 
 [Service]
 Type=simple
 WorkingDirectory=/root/listinglabs/perps_correlation
+# Unbuffered stdout so `journalctl -u screener-daemon -f` shows [daemon] lines
+# live instead of only on buffer-flush/exit.
+Environment=PYTHONUNBUFFERED=1
 # Secrets are sourced from the box-local env file (not in the repo). The
 # leading "-" makes it optional so the daemon still runs (DRY_RUN-equivalent,
 # no-op sends) if the file is ever missing.
@@ -19,10 +26,6 @@ Environment=DRY_RUN=1
 ExecStart=/usr/bin/python3 /root/listinglabs/perps_correlation/fetch/screener_daemon.py
 Restart=always
 RestartSec=10
-# Websocket reconnect logic has its own backoff; this is the outer safety net
-# for a hard crash (e.g. an unhandled exception outside the reconnect loops).
-StartLimitIntervalSec=600
-StartLimitBurst=20
 
 [Install]
 WantedBy=multi-user.target
