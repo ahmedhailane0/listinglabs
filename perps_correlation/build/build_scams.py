@@ -3139,8 +3139,9 @@ EXTRA_CSS = """
 .jrow>.card.span{margin-top:0;flex:1 1 360px;min-width:0}
 .jrow>.wc-card{flex:1 1 360px;max-width:460px}
 @media(max-width:760px){.jrow>.wc-card{max-width:none}}
-.pnl-card{flex:0 0 340px;align-self:flex-start;background:#0f1620;border:1px solid #1e2a38;
-  border-radius:14px;padding:15px 18px 12px;color:#e6ebf1;box-shadow:0 3px 16px rgba(0,0,0,.20)}
+.pnl-card{flex:0 0 340px;display:flex;flex-direction:column;background:#0f1620;
+  border:1px solid #1e2a38;border-radius:14px;padding:15px 18px 12px;color:#e6ebf1;
+  box-shadow:0 3px 16px rgba(0,0,0,.20)}
 .pnl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
 .pnl-ttl{display:flex;align-items:center;gap:7px;font-size:13px;color:#9aa7b4;font-weight:600;white-space:nowrap}
 .pnl-dot{width:8px;height:8px;border-radius:50%;background:#3a4654;flex:none}
@@ -3155,7 +3156,7 @@ EXTRA_CSS = """
 .pnl-card.pos .pnl-val{color:#2fd480}
 .pnl-card.neg .pnl-val{color:#ff6b5e}
 .pnl-sub{font-size:12px;color:#7f8c9a;margin-top:3px}
-.pnl-chart{width:100%;height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
+.pnl-chart{width:100%;flex:1 1 auto;min-height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
 .pnl-val{transition:color .08s}
 @media(max-width:640px){.pnl-card{flex:1 1 100%}}
 /* deterministic column widths (11 cols: #, Token, Pump, Old, Price/24h,
