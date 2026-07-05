@@ -20,8 +20,10 @@ EnvironmentFile=-/root/.config/listinglabs/telegram.env
 # Start in DRY_RUN (writes fires_live.jsonl + heartbeat.json, computes real
 # fires, but suppresses the Telegram send). Validate with
 # tools/compare_daemon_fires.py against a few hours of the hourly ledger,
-# THEN flip live: `systemctl edit screener-daemon` -> remove/blank this line
-# (or set DRY_RUN=0) -> `systemctl daemon-reload && systemctl restart screener-daemon`.
+# THEN flip live by REMOVING/COMMENTING the Environment=DRY_RUN line below, then
+# `systemctl daemon-reload && systemctl restart screener-daemon`. Do NOT "set
+# DRY_RUN=0": the daemon reads it as bool(os.environ.get("DRY_RUN")), so ANY
+# non-empty value (including "0") stays dry-run — the var must be absent/empty.
 Environment=DRY_RUN=1
 ExecStart=/usr/bin/python3 /root/listinglabs/perps_correlation/fetch/screener_daemon.py
 Restart=always
