@@ -91,7 +91,11 @@ SCORE_WATCH_FILE = OUTDIR / "score_watch.json"
 # re-cross). Per-coin state in BUY_WATCH_FILE. Logs ONE journal fire (strat
 # "buy15") on the first crossing (see _log_fires) so the Buy Signals journal can
 # score it 72h later. Hourly cadence (the model only re-scores each closed hour).
-ALERT_BUY_ODDS = 15.0
+# Raised 15->20 on 2026-07-05: graded live fires showed the 15-20% score band was
+# the sole source of the journal's net loss (-$47 of -$33 total across 25 trades,
+# mostly clean stop-outs with no real move), while 20%+ was ~breakeven/positive
+# (still a thin sample, ~9 trades) — see memory trade_journal_pnl_card.md.
+ALERT_BUY_ODDS = 20.0
 BUY_WATCH_FILE = OUTDIR / "buy_watch.json"
 BUY_LINK_BASE = "https://ahmedhailane0.github.io/listinglabs/scams/"
 
