@@ -321,7 +321,8 @@ def _append_fires_live(entry: dict) -> None:
 def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
     """One pass over every symbol: assemble live-updated buffers, re-run
     lib.signals.evaluate(), and alert any brand-new ALERT_STRATS fire on the
-    CURRENT (still-forming) hour. Returns True iff anything fired this tick."""
+    current (still-forming) OR just-closed hour. Returns True iff anything fired
+    this tick."""
     now_hour = (int(time.time()) // 3600) * 3600
     candidates = []   # (sym, strat, d, st)
     for sym, st in state.items():
@@ -345,9 +346,20 @@ def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
             continue
         for strat in fs.ALERT_STRATS:
             d = sig.get(strat) or {}
-            if not d.get("fired") or d.get("t") != now_hour:
+            ft = d.get("t")
+            # Accept a fire on the currently-forming hour OR the just-closed hour.
+            # Volume/breakout setups (v2 Ignition needs a full hour's >=5x volume)
+            # only satisfy once the hour's volume is complete — i.e. right as it
+            # closes, by which point now_hour has advanced. A strict ==now_hour gate
+            # therefore missed every such fire (0 daemon fires in 2 days vs 8 from
+            # the hourly scan; fixed 2026-07-05). One hour of slack keeps it
+            # "instant" (<=~1min after close); the (sym,strat) refractory below
+            # still guarantees a single alert per fire, and using ft (not now_hour)
+            # as the dedup key/timestamp keeps it identical to the hourly cron's
+            # key so _merge_daemon_fires never double-logs or double-alerts.
+            if not d.get("fired") or ft is None or ft < now_hour - 3600:
                 continue
-            if now_hour - last_fire.get((sym, strat), 0) < fs.FIRE_REFRACTORY_H * 3600:
+            if ft - last_fire.get((sym, strat), 0) < fs.FIRE_REFRACTORY_H * 3600:
                 continue
             candidates.append((sym, strat, d, st))
 
@@ -359,7 +371,8 @@ def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
         breadth[strat] = breadth.get(strat, 0) + 1
 
     for sym, strat, d, st in candidates:
-        last_fire[(sym, strat)] = now_hour
+        ft = d.get("t") or now_hour           # fire hour (current or just-closed)
+        last_fire[(sym, strat)] = ft
         px = st.mark_price or (st.cur_candle or {}).get("c")
         pump = None
         try:
@@ -369,7 +382,7 @@ def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
         except Exception:
             pump = None
         entry = {
-            "sym": sym, "strat": strat, "t": now_hour, "logged_utc": fs._now(),
+            "sym": sym, "strat": strat, "t": ft, "logged_utc": fs._now(),
             "entry_price": px, "stop": d.get("stop"), "position": d.get("position"),
             "tp1": (px * 1.25 if px else None), "tp2": (px * 1.50 if px else None),
             "time_stop_h": 72,
