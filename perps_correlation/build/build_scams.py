@@ -2599,7 +2599,7 @@ def _models_page(recs) -> str:
     ROSTER = [
         ("v1", "Buy v1 — accumulation breakout", "alert",
          "OI climbing 4 bars & +5%/3h while price lags (OI/price ≥ 2) and funding is calm",
-         "walk-forward OOS lift ~1.6×", "alerts (gate ≥7)"),
+         "walk-forward OOS lift ~1.9×, 4/4 folds (funding tightened to 0.1% 2026-07-05)", "alerts (gate ≥7)"),
         ("v2", "Buy v2 — Ignition", "alert",
          "a tight multi-day coil breaking on ≥5× volume WHILE OI surges — the OI-confirmed breakout",
          "walk-forward OOS lift ~2.5–2.8×, 4/4 folds", "alerts (gate ≥7)"),
@@ -2737,6 +2737,9 @@ def _models_page(recs) -> str:
                    "live expectancy lands in the reports, <b>bear trap</b> + <b>spike &amp; retrace</b> ship "
                    "(the strongest backtests yet), and a market-breadth gate stops market-wide bursts "
                    "from masquerading as N independent signals."),
+        ("Jul 05", "v1 challenger promoted (funding filter tightened 0.2%→0.1%): holds all four "
+                   "walk-forward folds &gt;1× and repairs v1&rsquo;s weak fold. A manual promotion — "
+                   "ahead of the auto-promote gate — so the forward ledger now judges the call."),
     ]
     tl = "".join(f'<li><span class="tld">{d}</span><div>{txt}</div></li>' for d, txt in TIMELINE)
 
