@@ -2606,9 +2606,11 @@ def _models_page(recs) -> str:
         ("v4", "Buy v4 — coiled accumulation", "alert",
          "OI building ≥40% under a flat, tight price for ~3 days — quiet loading before the vertical",
          "walk-forward OOS lift ~4.2×, 4/4 folds", "alerts (gate ≥7)"),
-        ("probe", "Probe day", "alert",
+        ("probe", "Probe day", "earn",
          "12h volume burst ≥3× baseline breaking the top of a tight coil — the pre-vertical test",
-         "~2.5× per-hour · 4/4 folds (now loop-tuned)", "alerts (gate ≥7)"),
+         "backtest ~2.5× per-hour, but live ledger came in a net loser (59 graded, 30% win, "
+         "−$68 @ $100/trade) — demoted to journal-only 2026-07-05; earns alerts back if its "
+         "high-score edge holds", "journal-only"),
         ("buy15", "Buy signal — odds ≥15%", "alert",
          "PumpFinder's +50% odds crossing 15% — the model itself calling a standout",
          "gate ≥7 validated ~2.75× on OOS predictions", "alerts (play-by-play)"),

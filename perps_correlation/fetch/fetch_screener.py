@@ -60,9 +60,15 @@ SPARK_POINTS = 120
 # Tune in one place here.
 ALERT_MIN_PUMP = 7.0
 # Only forward-proven setups may ping Telegram; everything else in the fire-log
-# (dump short, bear_trap / spike_retrace price-action longs) is journal-only
-# until its live ledger earns promotion.
-ALERT_STRATS = {"v1", "v4", "v2", "probe"}
+# (dump short, bear_trap / spike_retrace price-action longs, and now probe) is
+# journal-only until its live ledger earns promotion.
+# probe DEMOTED to journal-only on 2026-07-05: its live ledger was a net loser
+# across its whole alertable population — 59 graded fires, 30.5% win, -$67.67
+# cumulative @ $100/trade, and EVERY pump-score band below 30 is negative
+# (0-5 -$46, 5-10 -$55, 10-15 -$28, 15-20 -$15). Only the 30+ band is positive
+# (+$86) but on just 3 fires — too thin to keep alerting on. Still logged +
+# graded below, so it earns alerts back if that high-score edge holds up.
+ALERT_STRATS = {"v1", "v4", "v2"}
 # Every detector that goes into the fire-log (order = log order).
 LOGGED_STRATS = ("v1", "v4", "v2", "probe", "dump", "bear_trap", "spike_retrace")
 # Breadth gate: when MORE than this many coins fire the SAME setup in the SAME
@@ -855,17 +861,17 @@ def _log_fires(recs: dict) -> int:
         sig = r.get("signals") or {}
         # v3 never fires. v1/v4 are the accumulation setups (quiet OI build under a
         # flat price). v2 (IGNITION, replaced the old coincident EMA-cross v2 on
-        # 2026-06-27) and `probe` are the BREAKOUT setups that catch pumps which
-        # skip the accumulation tell entirely (e.g. VELVET +122% on 2026-06-26,
-        # which v1/v4 missed): v2 = OI-confirmed coil-break, probe = pure
-        # price/volume coil-break (the no-OI-needed fallback). The proven setups
-        # (ALERT_STRATS) go into the fire-log + Telegram, sharing the
-        # ALERT_MIN_PUMP gate in _alert_buy. The rest are JOURNAL-ONLY: logged so
-        # grade_fires can build their forward ledger, but never alerted and never
-        # rendered as buys (the site journals filter to explicit strat
-        # allowlists) — `dump` is a SHORT, and the price-action longs
-        # (bear_trap / spike_retrace, added 2026-07-02) must earn alerting on
-        # live fires first.
+        # 2026-06-27) is the BREAKOUT setup that catches pumps which skip the
+        # accumulation tell entirely (e.g. VELVET +122% on 2026-06-26, which v1/v4
+        # missed) via an OI-confirmed coil-break. The proven setups (ALERT_STRATS)
+        # go into the fire-log + Telegram, sharing the ALERT_MIN_PUMP gate in
+        # _alert_buy. The rest are JOURNAL-ONLY: logged so grade_fires can build
+        # their forward ledger, but never alerted and never rendered as buys (the
+        # site journals filter to explicit strat allowlists) — `dump` is a SHORT,
+        # the price-action longs (bear_trap / spike_retrace, added 2026-07-02)
+        # must earn alerting on live fires first, and `probe` (pure price/volume
+        # coil-break) was demoted here on 2026-07-05 after its live ledger came in
+        # a net loser (see the ALERT_STRATS note above).
         for strat in LOGGED_STRATS:
             d = sig.get(strat) or {}
             if not d.get("fired"):
