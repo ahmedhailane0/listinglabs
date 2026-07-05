@@ -84,14 +84,16 @@ STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4",
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
                "v2": "Ignition (OI-confirmed coil-break)", "v3": "Washout reversal",
                "v4": "Coiled accumulation (pre-pump build)",
-               "buy15": "Pump odds crossed 15%"}
+               "buy15": "Pump odds crossed 20%"}
 # plain-English "why the AI bought" — for the AI Journal table (non-expert friendly)
 STRAT_WHY = {"v1": "quiet OI build",
              "v2": "coil breakout on volume",
              "v3": "washout reversal",
              "v4": "quiet accumulation",
-             "buy15": "odds crossed 15%"}
-BUY_ODDS_GATE = 15.0   # the +50% pump_score that flags a coin as a "buy signal"
+             "buy15": "odds crossed 20%"}
+BUY_ODDS_GATE = 20.0   # the +50% pump_score that flags a coin as a "buy signal".
+                       # KEEP IN SYNC with fetch_screener.ALERT_BUY_ODDS (the box's
+                       # actual fire/alert threshold) — raised 15->20 on 2026-07-04.
 
 
 def _load_screener() -> None:
@@ -2611,8 +2613,8 @@ def _models_page(recs) -> str:
          "backtest ~2.5× per-hour, but live ledger came in a net loser (59 graded, 30% win, "
          "−$68 @ $100/trade) — demoted to journal-only 2026-07-05; earns alerts back if its "
          "high-score edge holds", "journal-only"),
-        ("buy15", "Buy signal — odds ≥15%", "alert",
-         "PumpFinder's +50% odds crossing 15% — the model itself calling a standout",
+        ("buy15", "Buy signal — odds ≥20%", "alert",
+         "PumpFinder's +50% odds crossing 20% — the model itself calling a standout",
          "gate ≥7 validated ~2.75× on OOS predictions", "alerts (play-by-play)"),
         ("dump", "Dump — distribution (SHORT)", "earn",
          "after a ≥40% markup: price stalls, funding hot, OI still elevated — operator distributing",
@@ -2676,7 +2678,7 @@ def _models_page(recs) -> str:
     sched = []          # (sort_ts, when, what, where, look_for)
     if b15_first:
         sched.append((b15_first, ("landed — check now" if b15_first <= now else _d(b15_first)),
-                      "First <b>Buy-signal</b> grades — does the ≥15% odds call pick winners?",
+                      "First <b>Buy-signal</b> grades — does the ≥20% odds call pick winners?",
                       '<a href="buysignals.html">Buy Signals</a>',
                       "hit-rate meaningfully above the ~5% base; read n first"))
     for sid, label in (("dump", "Dump (short)"), ("bear_trap", "Bear trap"),
@@ -2771,7 +2773,7 @@ ledger each rebuild — dates are estimates at current fire rates</span></h3>
 volume state, exported to plain JSON and scored dependency-free on the box. Three heads:
 <b>+50%</b> (the headline <i>Pump %</i> — top-decile ~4× the base rate), <b>+25%</b> (~3.1×) and
 <b>+10%</b> (~1.9×), shown per-coin on <a href="pumpodds.html">Pump Odds</a> and the
-<a href="index.html">Screener</a>. Its odds gate the Telegram pings (score ≥7) and its ≥15%
+<a href="index.html">Screener</a>. Its odds gate the Telegram pings (score ≥7) and its ≥20%
 crossing drives the <a href="buysignals.html">Buy Signals</a> journal. Scores read low because
 hard pumps are rare — <b>rank with them, don't read them as coin-flips</b>. A nightly audit checks
 the odds stay honest (calibration error) and that each setup's live edge isn't decaying.
@@ -2889,7 +2891,7 @@ for its detail.</p></header>
 
 def _buy_signals_page(recs) -> str:
     """Buy Signals sub-tab: the live "buy now" list (coins whose +50% pump chance is
-    over 15% right now) + a plain-English JOURNAL of every past buy call and whether
+    over 20% right now) + a plain-English JOURNAL of every past buy call and whether
     it actually pumped (graded 72h later). Built for a non-expert: storytelling, not a
     wall of numbers."""
     built = {r["symbol"].upper() for r in recs}
@@ -2905,7 +2907,7 @@ def _buy_signals_page(recs) -> str:
                    f'<tbody>{"".join(_odds_row(r) for r in over)}</tbody></table></div>'
                    f'{_ODDS_SORT_JS}')
     else:
-        buy_now = ('<p class="jnote">No coins are over the 15% line right now. When one '
+        buy_now = ('<p class="jnote">No coins are over the 20% line right now. When one '
                    'crosses, it shows up here and pings your Telegram.</p>')
 
     # ── Journal: buy15 fires, graded 72h later ──
@@ -2974,7 +2976,7 @@ def _buy_signals_page(recs) -> str:
             f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
     else:
         journal = ('<p class="jnote">No buy calls logged yet. The moment a coin\'s +50% '
-                   'chance crosses 15%, it gets logged here and graded 72h later — the '
+                   'chance crosses 20%, it gets logged here and graded 72h later — the '
                    'scoreboard fills in over the next few days.</p>')
 
     body = f"""
@@ -2982,16 +2984,16 @@ def _buy_signals_page(recs) -> str:
 {site_nav("scams")}
 {scams_subnav("buy")}
 <p class="sub">Buy Signals — when the model's chance of a <b>+50% pump within 72h</b> crosses
-<b>15%</b>, the coin is flagged here and you get a Telegram ping (and another each time the
-score climbs). Every call is then checked 72h later on the real price. Historically coins at
-≥15% pumped about <b>1 in 4 times (~5× the average)</b> — an edge, not a sure thing. Research
+<b>20%</b>, the coin is flagged here and you get a Telegram ping (and another each time the
+score climbs). Every call is then checked 72h later on the real price. Historically coins over
+this line pumped about <b>1 in 4 times (~5× the average)</b> — an edge, not a sure thing. Research
 only, not financial advice.</p></header>
-<section class="card span"><h3>Buy now <span class="asof">coins over 15% right now</span></h3>
+<section class="card span"><h3>Buy now <span class="asof">coins over 20% right now</span></h3>
 {buy_now}</section>
 <section class="card span"><h3>Track record <span class="asof">did the buy calls actually pump?</span></h3>
 {journal}</section>
 {THEME_JS}"""
-    desc = ("Buy Signals — coins whose model +50% pump chance crossed 15%, with a live "
+    desc = ("Buy Signals — coins whose model +50% pump chance crossed 20%, with a live "
             "list and a graded track record of how those calls performed.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
