@@ -64,8 +64,8 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 # the outcome it scored 72h later (grade_fires). Public-safe — it exposes the calls
 # and results, NOT the tuned thresholds (the edge). Rendered into journal.html.
 FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
-# Only the setups the trained model currently trades — v2/v3 were dropped (no edge),
-# so featuring them would misrepresent "what the AI thinks is a good trade".
+# Only the setups the trained model currently trades — v3 was dropped (never fired),
+# so featuring it would misrepresent "what the AI thinks is a good trade".
 JOURNAL_SETUPS = ("v1", "v2", "v4")
 # Hypothetical equal stake per paper trade, so the PnL card can show a $ figure
 # (Polymarket-style) while staying honest — the model risks NO real capital. The
@@ -438,19 +438,18 @@ def _funding_str(rec):
 
 
 COND_KEY_MAP = {
-    "oi_3up": "oi3up", "oi_3h>=8%": "oi3h8", "oi_3h>=5%": "oi3h5",
-    "price_3h<=8%": "px3h8", "breaks_6h_high": "brk6h",
+    "oi_3up": "oi3up", "oi_3h>=5%": "oi3h5",
+    "price_3h<=5%": "px3h8", "breaks_6h_high": "brk6h",
     # v2 — ignition (OI-confirmed coil-break)
     "tight_coil<=45%": "coiltt", "vol_ignition>=5x": "volign",
     "oi_surge>=15%": "oisrg", "breaks_coil_high": "brkcoil", "funding_cold": "fundcold",
-    "oi/price>=1.5": "oipx15", "oi/price>=2.0": "oipx20", "oi/price>=1.0": "oipx10",
+    "oi/price>=2.0": "oipx20",
     "funding<0.1%": "fund01", "funding<0.05%": "fund005", "|funding_8h|<=0.02%": "fund002",
     "oi_dd>=15%": "oidd15", "price_dd<=10%": "pxdd10",
     "price/oi_dd<=0.5": "pxoidd", "oi_rebuild>=8%": "oireb8",
     "breaks_postwashout_high": "brkwash",
     # v4 — coiled accumulation
-    "oi_build_48h>=40%": "oibld48", "price_flat_48h<=15%": "pxflat48",
-    "coiling_range<=30%": "coil30", "oi_leads_price>=2x": "oilead2",
+    "oi_leads_price>=2x": "oilead2",
     "oi_build_72h>=40%": "oibld72", "price_flat_72h<=25%": "pxflat72",
     "coiling_range<=45%": "coil45",
     "funding_squeeze_or_trend": "fundsqz",
@@ -1571,16 +1570,16 @@ def _filter_bar() -> str:
   </div>
   <div class="fp-grid">
     <fieldset class="fp-group"><legend>OI momentum</legend>
-      """ + _cb("oi3up", "OI rising 3 candles") + _cb("oi3h8", "OI 3h ≥8%") + _cb("oi3h5", "OI 3h ≥5%") + """
+      """ + _cb("oi3up", "OI rising 3 candles") + _cb("oi3h5", "OI 3h ≥5%") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Price action</legend>
-      """ + _cb("px3h8", "Price 3h ≤8%") + _cb("brk6h", "Breaks 6h high") + """
+      """ + _cb("px3h8", "Price 3h ≤5%") + _cb("brk6h", "Breaks 6h high") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Ignition (v2)</legend>
       """ + _cb("coiltt", "Tight coil ≤45%") + _cb("volign", "Volume ≥5×") + _cb("oisrg", "OI surge ≥15%") + _cb("brkcoil", "Breaks coil high") + _cb("fundcold", "Funding cold") + """
     </fieldset>
     <fieldset class="fp-group"><legend>OI / price ratio</legend>
-      """ + _cb("oipx15", "OI/price ≥1.5") + _cb("oipx10", "OI/price ≥1.0") + """
+      """ + _cb("oipx20", "OI/price ≥2×") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Funding</legend>
       """ + _cb("fund01", "Funding &lt;0.1%") + _cb("fund002", "|Funding 8h| ≤0.02%") + """
@@ -1589,7 +1588,7 @@ def _filter_bar() -> str:
       """ + _cb("oidd15", "OI drawdown ≥15%") + _cb("pxdd10", "Price dd ≤10%") + _cb("pxoidd", "Price/OI dd ≤0.5") + _cb("oireb8", "OI rebuild ≥8%") + _cb("brkwash", "Breaks washout high") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Coiled accumulation (v4)</legend>
-      """ + _cb("oibld48", "OI +40% (48h)") + _cb("pxflat48", "Price flat ≤15% (48h)") + _cb("coil30", "Coiling range ≤30%") + _cb("oilead2", "OI leads price ≥2×") + _cb("fundsqz", "Funding squeeze/trend") + """
+      """ + _cb("oibld72", "OI +40% (72h)") + _cb("pxflat72", "Price flat ≤25% (72h)") + _cb("coil45", "Coiling range ≤45%") + _cb("oilead2", "OI leads price ≥2×") + _cb("fundsqz", "Funding squeeze/trend") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Funding level</legend>
       """ + _cb("fundneg", "Funding &lt;0 (squeeze)") + _cb("fundn01", "Funding ≤ −0.1%") + _cb("fundn03", "Funding ≤ −0.3%") + """
@@ -1744,8 +1743,8 @@ SETUP_PANEL = """
       badge = firing right now. Research signals, not financial advice.</p>
     <div class="sm-grid">
       <div class="sm-setup"><h3><span class="buy v4 mini">Buy v4</span> Coiled accumulation <em>· earliest</em></h3>
-        <p>Open interest building <b>+40% over ~2 days</b> while price stays
-          <b>flat (±15%)</b> and tight — the quiet loading. Fires <b>days before</b>
+        <p>Open interest building <b>+40% over ~3 days</b> while price stays
+          <b>flat (±25%)</b> and tight — the quiet loading. Fires <b>days before</b>
           the vertical, so it's the earliest (and noisiest) read.</p>
         <ul><li><b>Squeeze</b> flavour — funding is negative (shorts trapped = fuel).</li>
         <li><b>Trend</b> flavour — funding calm/slightly positive with an EMA20&gt;EMA60 uptrend.</li></ul>
@@ -3525,10 +3524,10 @@ const cbs=[...panel.querySelectorAll('input[data-k]')];
 // from the box's fired flags each poll — so a preset still matches the live
 // header counts even though it filters on the per-condition checkboxes.
 const PRESETS={
-  v1:['oi3up','oi3h8','px3h8','brk6h','fund01','oipx15'],
+  v1:['oi3up','oi3h5','px3h8','brk6h','fund01','oipx20'],
   v2:['coiltt','volign','oisrg','brkcoil','fundcold'],   // Ignition (OI-confirmed coil-break)
   v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash'],
-  v4:['oibld48','pxflat48','coil30','oilead2','fundsqz']};
+  v4:['oibld72','pxflat72','coil45','oilead2','fundsqz']};
 window.__PRESETS=PRESETS;   // shared with LIVE_JS for the live data-cond rewrite
 const pres=[...document.querySelectorAll('.fp-pre')];
 const NUM_KEYS=new Set(['oi5m','oi10m','fdvlt150','fdvgte150','oifdv8','oifdv15','oimc25','oimc50','oivol3','fundneg','fundn01','fundn03']);

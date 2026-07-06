@@ -20,8 +20,8 @@ fabricate one.
 The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
 
   Buy v1 — accumulation breakout
-    1 OI[0]>OI[1]>OI[2]>OI[3]      2 OI up >=8% over 3h      3 price up <=8% over 3h
-    4 C[0] > max(H[1..6])          5 funding < 0.1%          6 oi%3h / price%3h >= 1.5
+    1 OI[0]>OI[1]>OI[2]>OI[3]      2 OI up >=5% over 3h      3 price up <=5% over 3h
+    4 C[0] > max(H[1..6])          5 funding < 0.1%          6 oi%3h / price%3h >= 2
     -> size 5-10%, stop = the 6h breakout level max(H[1..6]).
 
   Buy v2 — IGNITION (OI-confirmed coil-break; the catch-at-break for "cold" pumps)
@@ -41,10 +41,10 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     -> size 5-10%, stop = the washout low.
 
   Buy v4 — coiled accumulation (the pre-pump build; fires DAYS before the vertical)
-    1 OI[0] >= +40% vs OI[48]      2 |price move over 48h| <= 15%
-    3 48h high/low range <= 30%    4 oi%48h / price%48h >= 2  (OI leads price)
+    1 OI[0] >= +40% vs OI[72]      2 |price move over 72h| <= 25%
+    3 72h high/low range <= 45%    4 oi%72h / price%72h >= 2  (OI leads price)
     5 funding <= 0 (SQUEEZE)  OR  funding <= 0.05% with EMA20>EMA60 (TREND)
-    -> size 5-10%, stop = the 48h coil low.
+    -> size 5-10%, stop = the 72h coil low.
 
   probe — probe day (#7, LONG confirmation; the pre-vertical test, after v4's coil)
     1 last-12h volume >= 3x the trailing 48h baseline   2 close breaks the coil high
@@ -203,9 +203,9 @@ def _eval_v1(oi_m, c_m, h_m, t, funding):
     cond = {
         "oi_3up": up,
         "oi_3h>=5%": oi_pct >= V1_OI_3H,
-        "price_3h<=8%": price_pct <= V1_PRICE_3H_MAX,
+        "price_3h<=5%": price_pct <= V1_PRICE_3H_MAX,
         "breaks_6h_high": c0 > six_high,
-        "funding<0.05%": funding < V1_FUNDING_MAX,
+        "funding<0.1%": funding < V1_FUNDING_MAX,
         "oi/price>=2.0": _dominance_ratio(oi_pct, price_pct) >= V1_RATIO,
     }
     return {"fired": all(cond.values()), "conditions": cond,
@@ -291,7 +291,7 @@ def _eval_v3(oi_m, c_m, h_m, l_m, t, funding, interval_h):
 
 
 def _eval_v4(oi_m, c_m, h_m, l_m, t, funding):
-    """Coiled accumulation: open interest building over ~2 days while price stays
+    """Coiled accumulation: open interest building over ~3 days while price stays
     flat and tight — the quiet loading that preceded every pump in the study, days
     before the vertical. Two flavours: SQUEEZE (funding <= 0) and TREND (calm/+
     funding with an EMA20>EMA60 uptrend). Stop = the coil low."""
