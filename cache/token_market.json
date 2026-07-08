@@ -1,920 +1,920 @@
 {
-  "fetched_utc": "2026-07-08T19:35:20Z",
+  "fetched_utc": "2026-07-08T20:57:01Z",
   "source": "CoinMarketCap web data-api (cryptocurrency/detail statistics)",
   "note": "CURRENT/live FDV/MC/supply snapshot",
   "tokens": {
     "2Z": {
-      "price": 0.07278938319968885,
-      "fdv_usd": 727893832.0,
-      "mcap_usd": 252682338.65,
+      "price": 0.07182637598164861,
+      "fdv_usd": 718263759.82,
+      "mcap_usd": 249339338.54,
       "circulating_supply": 3471417500.0,
       "total_supply": 9998295702.9,
       "max_supply": 10000000000.0,
       "date_launched": "2025-09-30T00:00:00.000Z",
       "slug": "doublezero",
-      "fetched_utc": "2026-07-08T19:33:02Z"
+      "fetched_utc": "2026-07-08T20:54:41Z"
     },
     "AERO": {
-      "price": 0.5305933490802867,
-      "fdv_usd": 1024605848.39,
-      "mcap_usd": 509511774.89,
-      "circulating_supply": 960267926.0283549,
+      "price": 0.5291123668284863,
+      "fdv_usd": 1021745987.67,
+      "mcap_usd": 508086928.91,
+      "circulating_supply": 960262811.3852679,
       "total_supply": 1931056712.573534,
       "max_supply": null,
       "date_launched": null,
       "slug": "aerodrome-finance",
-      "fetched_utc": "2026-07-08T19:33:03Z"
+      "fetched_utc": "2026-07-08T20:54:42Z"
     },
     "ALLO": {
-      "price": 0.4082154068958743,
-      "fdv_usd": 408215406.9,
-      "mcap_usd": 81847189.08,
+      "price": 0.413348607525433,
+      "fdv_usd": 413348607.53,
+      "mcap_usd": 82876395.81,
       "circulating_supply": 200500000.0,
       "total_supply": 785499999.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-11-10T00:00:00.000Z",
       "slug": "allora",
-      "fetched_utc": "2026-07-08T19:33:05Z"
+      "fetched_utc": "2026-07-08T20:54:44Z"
     },
     "ASTER": {
-      "price": 0.6208445388772043,
-      "fdv_usd": 4966756311.02,
-      "mcap_usd": 1674901421.19,
+      "price": 0.6210066479515991,
+      "fdv_usd": 4968053183.61,
+      "mcap_usd": 1675338755.66,
       "circulating_supply": 2697779099.764817,
       "total_supply": 7819281694.985042,
       "max_supply": 8000000000.0,
       "date_launched": "2025-09-17T00:00:00.000Z",
       "slug": "aster",
-      "fetched_utc": "2026-07-08T19:33:08Z"
+      "fetched_utc": "2026-07-08T20:54:47Z"
     },
     "ATH": {
-      "price": 0.004181747699651128,
-      "fdv_usd": 175633403.39,
-      "mcap_usd": 84173415.03,
+      "price": 0.004165411907103238,
+      "fdv_usd": 174947300.1,
+      "mcap_usd": 83844595.71,
       "circulating_supply": 20128764593.0,
       "total_supply": 42000000000.0,
       "max_supply": 42000000000.0,
       "date_launched": "2024-03-20T00:00:00.000Z",
       "slug": "aethir",
-      "fetched_utc": "2026-07-08T19:33:10Z"
+      "fetched_utc": "2026-07-08T20:54:49Z"
     },
     "AVNT": {
-      "price": 0.09463274173478664,
-      "fdv_usd": 94632741.73,
-      "mcap_usd": 31145401.29,
+      "price": 0.09433175522015053,
+      "fdv_usd": 94331755.22,
+      "mcap_usd": 31046341.01,
       "circulating_supply": 329118661.44136137,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2023-06-18T00:00:00.000Z",
       "slug": "avantis",
-      "fetched_utc": "2026-07-08T19:33:12Z"
+      "fetched_utc": "2026-07-08T20:54:51Z"
     },
     "B3": {
-      "price": 0.000472923990471026,
-      "fdv_usd": 47292399.05,
-      "mcap_usd": 21958609.67,
+      "price": 0.0004729399440230788,
+      "fdv_usd": 47293994.4,
+      "mcap_usd": 21959350.42,
       "circulating_supply": 46431583333.0,
       "total_supply": 100000000000.0,
       "max_supply": 100000000000.0,
       "date_launched": "2025-02-09T00:00:00.000Z",
       "slug": "b3",
-      "fetched_utc": "2026-07-08T19:33:14Z"
+      "fetched_utc": "2026-07-08T20:54:52Z"
     },
     "BARD": {
-      "price": 0.1272085258066557,
-      "fdv_usd": 127208525.81,
-      "mcap_usd": 42336587.5,
+      "price": 0.12653422484196336,
+      "fdv_usd": 126534224.84,
+      "mcap_usd": 42112171.71,
       "circulating_supply": 332812500.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-09-18T00:00:00.000Z",
       "slug": "lombard",
-      "fetched_utc": "2026-07-08T19:33:15Z"
+      "fetched_utc": "2026-07-08T20:54:54Z"
     },
     "BIGTIME": {
-      "price": 0.0071355883129193935,
-      "fdv_usd": 35677941.56,
-      "mcap_usd": 18219209.93,
+      "price": 0.007137197807942825,
+      "fdv_usd": 35685989.04,
+      "mcap_usd": 18223319.43,
       "circulating_supply": 2553287707.9493065,
       "total_supply": 5000000000.0,
       "max_supply": 5000000000.0,
       "date_launched": "2023-10-10T00:00:00.000Z",
       "slug": "big-time",
-      "fetched_utc": "2026-07-08T19:33:17Z"
+      "fetched_utc": "2026-07-08T20:54:56Z"
     },
     "BILL": {
-      "price": 0.038564462933810315,
-      "fdv_usd": 385644629.34,
-      "mcap_usd": 93642014.63,
+      "price": 0.03847413418104773,
+      "fdv_usd": 384741341.81,
+      "mcap_usd": 93422678.86,
       "circulating_supply": 2428194444.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2026-05-04T00:00:00.000Z",
       "slug": "billions-network",
-      "fetched_utc": "2026-07-08T19:33:18Z"
+      "fetched_utc": "2026-07-08T20:54:57Z"
     },
     "BIRB": {
-      "price": 0.06074549512688183,
-      "fdv_usd": 60745495.13,
-      "mcap_usd": 17312466.11,
+      "price": 0.060176481746696056,
+      "fdv_usd": 60176481.75,
+      "mcap_usd": 17150297.3,
       "circulating_supply": 285000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-01-28T00:00:00.000Z",
       "slug": "moonbirds",
-      "fetched_utc": "2026-07-08T19:33:20Z"
+      "fetched_utc": "2026-07-08T20:54:59Z"
     },
     "BREV": {
-      "price": 0.07419402860327917,
-      "fdv_usd": 74194028.6,
-      "mcap_usd": 18548507.15,
+      "price": 0.07368554331710413,
+      "fdv_usd": 73685543.32,
+      "mcap_usd": 18421385.83,
       "circulating_supply": 250000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-01-06T00:00:00.000Z",
       "slug": "brevis",
-      "fetched_utc": "2026-07-08T19:33:22Z"
+      "fetched_utc": "2026-07-08T20:55:01Z"
     },
     "CFG": {
-      "price": 0.1877807916067397,
-      "fdv_usd": 130914096.62,
-      "mcap_usd": 108379352.5,
+      "price": 0.18715154352415647,
+      "fdv_usd": 130475407.21,
+      "mcap_usd": 108016176.37,
       "circulating_supply": 577158886.0,
       "total_supply": 697164473.0,
       "max_supply": null,
       "date_launched": "2025-05-20T00:00:00.000Z",
       "slug": "centrifuge",
-      "fetched_utc": "2026-07-08T19:33:27Z"
+      "fetched_utc": "2026-07-08T20:55:06Z"
     },
     "CHIP": {
-      "price": 0.03241700042990194,
-      "fdv_usd": 324170004.3,
-      "mcap_usd": 64834000.86,
+      "price": 0.032166797645143734,
+      "fdv_usd": 321667976.45,
+      "mcap_usd": 64333595.29,
       "circulating_supply": 2000000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": null,
       "slug": "usd-ai",
-      "fetched_utc": "2026-07-08T19:33:28Z"
+      "fetched_utc": "2026-07-08T20:55:08Z"
     },
     "CTR": {
-      "price": 0.008572729415337403,
-      "fdv_usd": 85727294.15,
-      "mcap_usd": 12859094.12,
+      "price": 0.008596193017529332,
+      "fdv_usd": 85961930.18,
+      "mcap_usd": 12894289.53,
       "circulating_supply": 1500000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2026-05-26T00:00:00.000Z",
       "slug": "citrea",
-      "fetched_utc": "2026-07-08T19:33:30Z"
+      "fetched_utc": "2026-07-08T20:55:09Z"
     },
     "DOOD": {
-      "price": 0.0014350407938843587,
-      "fdv_usd": 14350407.94,
-      "mcap_usd": 11193318.19,
+      "price": 0.0014290419753725065,
+      "fdv_usd": 14290419.75,
+      "mcap_usd": 11146527.41,
       "circulating_supply": 7800000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": null,
       "slug": "doodles",
-      "fetched_utc": "2026-07-08T19:33:32Z"
+      "fetched_utc": "2026-07-08T20:55:11Z"
     },
     "DRIFT": {
-      "price": 0.014411188202325599,
-      "fdv_usd": 14411188.2,
-      "mcap_usd": 8812669.63,
+      "price": 0.01436569189301344,
+      "fdv_usd": 14365691.89,
+      "mcap_usd": 8784847.92,
       "circulating_supply": 611515824.085346,
       "total_supply": 1000000000.0,
       "max_supply": null,
       "date_launched": "2022-11-04T00:00:00.000Z",
       "slug": "drift",
-      "fetched_utc": "2026-07-08T19:33:33Z"
+      "fetched_utc": "2026-07-08T20:55:13Z"
     },
     "EDGE": {
-      "price": 0.41467799612545814,
-      "fdv_usd": 414677996.13,
-      "mcap_usd": 145137298.64,
+      "price": 0.4040925867789436,
+      "fdv_usd": 404092586.78,
+      "mcap_usd": 141432405.37,
       "circulating_supply": 350000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2024-08-02T00:00:00.000Z",
       "slug": "edgex",
-      "fetched_utc": "2026-07-08T19:33:35Z"
+      "fetched_utc": "2026-07-08T20:55:14Z"
     },
     "ELSA": {
-      "price": 0.04851015322972793,
-      "fdv_usd": 48510153.23,
-      "mcap_usd": 12401458.36,
+      "price": 0.04826263095240035,
+      "fdv_usd": 48262630.95,
+      "mcap_usd": 12338180.12,
       "circulating_supply": 255646654.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-01-20T00:00:00.000Z",
       "slug": "heyelsa",
-      "fetched_utc": "2026-07-08T19:33:36Z"
+      "fetched_utc": "2026-07-08T20:55:16Z"
     },
     "ERA": {
-      "price": 0.07813336808690914,
-      "fdv_usd": 78133368.09,
-      "mcap_usd": 11602805.16,
+      "price": 0.07816815278555016,
+      "fdv_usd": 78168152.79,
+      "mcap_usd": 11607970.69,
       "circulating_supply": 148500000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-07-15T00:00:00.000Z",
       "slug": "caldera",
-      "fetched_utc": "2026-07-08T19:33:38Z"
+      "fetched_utc": "2026-07-08T20:55:18Z"
     },
     "ESP": {
-      "price": 0.06426876531900534,
-      "fdv_usd": 230724867.5,
-      "mcap_usd": 33455105.79,
+      "price": 0.0646097213705341,
+      "fdv_usd": 231948899.72,
+      "mcap_usd": 33632590.46,
       "circulating_supply": 520550000.0,
       "total_supply": 3590000000.0,
       "max_supply": null,
       "date_launched": "2026-02-09T00:00:00.000Z",
       "slug": "espresso",
-      "fetched_utc": "2026-07-08T19:33:40Z"
+      "fetched_utc": "2026-07-08T20:55:19Z"
     },
     "EUL": {
-      "price": 0.968108446411787,
-      "fdv_usd": 26315915.98,
-      "mcap_usd": 23161174.05,
+      "price": 0.9666229448477637,
+      "fdv_usd": 26275535.86,
+      "mcap_usd": 23125634.68,
       "circulating_supply": 23924152.43484801,
       "total_supply": 27182818.28459045,
       "max_supply": 27182818.28459045,
       "date_launched": "2021-12-30T00:00:00.000Z",
       "slug": "euler-finance",
-      "fetched_utc": "2026-07-08T19:33:41Z"
+      "fetched_utc": "2026-07-08T20:55:21Z"
     },
     "FLOCK": {
-      "price": 0.03146549168526731,
-      "fdv_usd": 31465491.69,
-      "mcap_usd": 12945647.23,
+      "price": 0.0314262271142468,
+      "fdv_usd": 31426227.11,
+      "mcap_usd": 12929492.85,
       "circulating_supply": 411423643.2762677,
       "total_supply": 411899164.0462677,
       "max_supply": 1000000000.0,
       "date_launched": "2024-12-31T00:00:00.000Z",
       "slug": "flock-io",
-      "fetched_utc": "2026-07-08T19:33:43Z"
+      "fetched_utc": "2026-07-08T20:55:23Z"
     },
     "FLUID": {
-      "price": 1.0691379370737282,
-      "fdv_usd": 106913793.71,
-      "mcap_usd": 84137944.83,
+      "price": 1.0699205942506422,
+      "fdv_usd": 106992059.43,
+      "mcap_usd": 84199537.6,
       "circulating_supply": 78696996.82034639,
       "total_supply": 100000000.0,
       "max_supply": null,
       "date_launched": null,
       "slug": "instadapp",
-      "fetched_utc": "2026-07-08T19:33:45Z"
+      "fetched_utc": "2026-07-08T20:55:24Z"
     },
     "G": {
-      "price": 8.039081498057398e-06,
-      "fdv_usd": 707439.17,
+      "price": 6.741864224926709e-06,
+      "fdv_usd": 593284.05,
       "mcap_usd": null,
       "circulating_supply": null,
       "total_supply": 87998037734.11479,
       "max_supply": 88000000000.0,
       "date_launched": "2022-02-21T00:00:00.000Z",
       "slug": "giants-protocol",
-      "fetched_utc": "2026-07-08T19:33:46Z"
+      "fetched_utc": "2026-07-08T20:55:26Z"
     },
     "GWEI": {
-      "price": 0.09380509758052294,
-      "fdv_usd": 938050975.81,
-      "mcap_usd": 164158920.77,
+      "price": 0.09085747320075738,
+      "fdv_usd": 908574732.01,
+      "mcap_usd": 159000578.1,
       "circulating_supply": 1750000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2026-01-21T00:00:00.000Z",
       "slug": "eth-gas",
-      "fetched_utc": "2026-07-08T19:33:48Z"
+      "fetched_utc": "2026-07-08T20:55:28Z"
     },
     "HOME": {
-      "price": 0.015729504102270243,
-      "fdv_usd": 157295041.02,
-      "mcap_usd": 61106133.92,
+      "price": 0.01523671860965578,
+      "fdv_usd": 152367186.1,
+      "mcap_usd": 59191755.94,
       "circulating_supply": 3884809942.01,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-06-09T00:00:00.000Z",
       "slug": "defi-app",
-      "fetched_utc": "2026-07-08T19:33:49Z"
+      "fetched_utc": "2026-07-08T20:55:29Z"
     },
     "HYPER": {
-      "price": 0.0666208997661531,
-      "fdv_usd": 66620899.77,
-      "mcap_usd": 22529457.31,
+      "price": 0.06608020156136454,
+      "fdv_usd": 66080201.56,
+      "mcap_usd": 22346607.23,
       "circulating_supply": 338174017.3333334,
       "total_supply": 808000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-04-22T00:00:00.000Z",
       "slug": "hyperlane",
-      "fetched_utc": "2026-07-08T19:33:51Z"
+      "fetched_utc": "2026-07-08T20:55:31Z"
     },
     "IP": {
-      "price": 0.2819291967614923,
-      "fdv_usd": 290462009.16,
-      "mcap_usd": 100575058.53,
-      "circulating_supply": 356738712.0,
-      "total_supply": 1030265799.0,
+      "price": 0.281824768692188,
+      "fdv_usd": 290355206.5,
+      "mcap_usd": 100538591.0,
+      "circulating_supply": 356741501.0,
+      "total_supply": 1030268588.0,
       "max_supply": null,
       "date_launched": "2025-02-12T00:00:00.000Z",
       "slug": "story-protocol",
-      "fetched_utc": "2026-07-08T19:33:53Z"
+      "fetched_utc": "2026-07-08T20:55:33Z"
     },
     "IRYS": {
-      "price": 0.013755771325761805,
-      "fdv_usd": 137557713.26,
-      "mcap_usd": 35308494.89,
+      "price": 0.013795810538600997,
+      "fdv_usd": 137958105.39,
+      "mcap_usd": 35411268.07,
       "circulating_supply": 2566813162.0,
       "total_supply": 10000000000.0,
       "max_supply": null,
       "date_launched": "2025-11-25T00:00:00.000Z",
       "slug": "irys",
-      "fetched_utc": "2026-07-08T19:33:54Z"
+      "fetched_utc": "2026-07-08T20:55:34Z"
     },
     "KAT": {
-      "price": 0.004568713865865867,
-      "fdv_usd": 45687138.66,
-      "mcap_usd": 10699927.87,
+      "price": 0.004568569045463466,
+      "fdv_usd": 45685690.45,
+      "mcap_usd": 10699588.7,
       "circulating_supply": 2342000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-06-26T00:00:00.000Z",
       "slug": "katana-network",
-      "fetched_utc": "2026-07-08T19:33:56Z"
+      "fetched_utc": "2026-07-08T20:55:36Z"
     },
     "KITE": {
-      "price": 0.11449830172632079,
-      "fdv_usd": 1144983017.26,
-      "mcap_usd": 206096943.11,
+      "price": 0.11494552542205748,
+      "fdv_usd": 1149455254.22,
+      "mcap_usd": 206901945.76,
       "circulating_supply": 1800000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-11-02T00:00:00.000Z",
       "slug": "kite",
-      "fetched_utc": "2026-07-08T19:33:58Z"
+      "fetched_utc": "2026-07-08T20:55:38Z"
     },
     "KMNO": {
-      "price": 0.02086746623175433,
-      "fdv_usd": 208674662.32,
-      "mcap_usd": 104751828.04,
+      "price": 0.02082894512481539,
+      "fdv_usd": 208289451.25,
+      "mcap_usd": 104558457.35,
       "circulating_supply": 5019863306.5,
-      "total_supply": 9999957431.421701,
+      "total_supply": 9999957431.417305,
       "max_supply": 10000000000.0,
       "date_launched": "2024-04-30T00:00:00.000Z",
       "slug": "kamino-finance",
-      "fetched_utc": "2026-07-08T19:33:59Z"
+      "fetched_utc": "2026-07-08T20:55:40Z"
     },
     "LA": {
-      "price": 0.05755485381806626,
-      "fdv_usd": 57554853.82,
-      "mcap_usd": 11108086.79,
+      "price": 0.05763910972832885,
+      "fdv_usd": 57639109.73,
+      "mcap_usd": 11124348.18,
       "circulating_supply": 193000000.0,
       "total_supply": 1000000000.0,
       "max_supply": null,
       "date_launched": "2025-05-31T00:00:00.000Z",
       "slug": "lagrange",
-      "fetched_utc": "2026-07-08T19:34:01Z"
+      "fetched_utc": "2026-07-08T20:55:41Z"
     },
     "LINEA": {
-      "price": 0.002363140177388126,
-      "fdv_usd": 170169700.54,
-      "mcap_usd": 52731284.58,
+      "price": 0.0023614066177277556,
+      "fdv_usd": 170044866.93,
+      "mcap_usd": 52692601.81,
       "circulating_supply": 22314073912.967896,
       "total_supply": 69738353567.4962,
       "max_supply": 72009990000.0,
       "date_launched": "2025-09-10T00:00:00.000Z",
       "slug": "linea",
-      "fetched_utc": "2026-07-08T19:34:02Z"
+      "fetched_utc": "2026-07-08T20:55:43Z"
     },
     "MET": {
-      "price": 0.15183874153395108,
-      "fdv_usd": 151838741.53,
-      "mcap_usd": 80613773.37,
+      "price": 0.15219589088199972,
+      "fdv_usd": 152195890.88,
+      "mcap_usd": 80803390.04,
       "circulating_supply": 530917027.85491,
       "total_supply": 997734147.327468,
       "max_supply": 1000000000.0,
       "date_launched": "2025-10-23T00:00:00.000Z",
       "slug": "meteora",
-      "fetched_utc": "2026-07-08T19:34:04Z"
+      "fetched_utc": "2026-07-08T20:55:45Z"
     },
     "MOG": {
-      "price": 1.0333318412799234e-07,
-      "fdv_usd": 43471237.23,
-      "mcap_usd": 40358586.12,
+      "price": 1.0352319740978479e-07,
+      "fdv_usd": 43551173.92,
+      "mcap_usd": 40432799.14,
       "circulating_supply": 390567526433216.7,
       "total_supply": 390567526433216.7,
       "max_supply": 420690000000000.0,
       "date_launched": "2023-07-19T00:00:00.000Z",
       "slug": "mog-coin",
-      "fetched_utc": "2026-07-08T19:34:06Z"
+      "fetched_utc": "2026-07-08T20:55:47Z"
     },
     "MOODENG": {
-      "price": 0.03934885757373735,
-      "fdv_usd": 38954259.01,
-      "mcap_usd": 38954259.01,
+      "price": 0.0392009480849308,
+      "fdv_usd": 38807832.79,
+      "mcap_usd": 38807832.79,
       "circulating_supply": 989971791.17,
       "total_supply": 989971791.17,
       "max_supply": 989971791.17,
       "date_launched": null,
       "slug": "moo-deng-solana",
-      "fetched_utc": "2026-07-08T19:34:07Z"
+      "fetched_utc": "2026-07-08T20:55:48Z"
     },
     "MORPHO": {
-      "price": 2.064542033871647,
-      "fdv_usd": 2064542033.87,
-      "mcap_usd": 1064398364.42,
-      "circulating_supply": 515561488.6759795,
+      "price": 2.0459410544786327,
+      "fdv_usd": 2045941054.48,
+      "mcap_usd": 1054817047.67,
+      "circulating_supply": 515565707.7027629,
       "total_supply": 999999999.8010328,
       "max_supply": 1000000000.0,
       "date_launched": "2024-11-21T00:00:00.000Z",
       "slug": "morpho",
-      "fetched_utc": "2026-07-08T19:34:09Z"
+      "fetched_utc": "2026-07-08T20:55:50Z"
     },
     "NEWT": {
-      "price": 0.045943284333564226,
-      "fdv_usd": 45943284.33,
-      "mcap_usd": 13490593.83,
+      "price": 0.045997673202482665,
+      "fdv_usd": 45997673.2,
+      "mcap_usd": 13506564.35,
       "circulating_supply": 293635816.877249,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-06-22T00:00:00.000Z",
       "slug": "newton-protocol",
-      "fetched_utc": "2026-07-08T19:34:11Z"
+      "fetched_utc": "2026-07-08T20:55:51Z"
     },
     "NEX": {
-      "price": 2.671664410024494e-06,
-      "fdv_usd": 267166441.0,
-      "mcap_usd": 160299864.6,
+      "price": 2.6365420123947623e-06,
+      "fdv_usd": 263654201.24,
+      "mcap_usd": 158192520.74,
       "circulating_supply": 60000000000000.0,
       "total_supply": 100000000000000.0,
       "max_supply": 100000000000000.0,
       "date_launched": "2026-05-20T00:00:00.000Z",
       "slug": "nexus-labs",
-      "fetched_utc": "2026-07-08T19:34:12Z"
+      "fetched_utc": "2026-07-08T20:55:53Z"
     },
     "ONDO": {
-      "price": 0.3149535181260902,
-      "fdv_usd": 3149535181.26,
-      "mcap_usd": 1533612818.19,
+      "price": 0.3144147470293399,
+      "fdv_usd": 3144147470.29,
+      "mcap_usd": 1530989363.58,
       "circulating_supply": 4869330647.0,
       "total_supply": 10000000000.0,
       "max_supply": null,
       "date_launched": "2021-03-09T00:00:00.000Z",
       "slug": "ondo-finance",
-      "fetched_utc": "2026-07-08T19:34:16Z"
+      "fetched_utc": "2026-07-08T20:55:56Z"
     },
     "OPG": {
-      "price": 0.11867685434686664,
-      "fdv_usd": 118676854.35,
-      "mcap_usd": 24410345.44,
+      "price": 0.11930062083393625,
+      "fdv_usd": 119300620.83,
+      "mcap_usd": 24538646.41,
       "circulating_supply": 205687499.71,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-04-20T00:00:00.000Z",
       "slug": "opengradient",
-      "fetched_utc": "2026-07-08T19:34:17Z"
+      "fetched_utc": "2026-07-08T20:55:58Z"
     },
     "PEPE": {
-      "price": 2.5920936538087376e-06,
-      "fdv_usd": 1072537001.61,
-      "mcap_usd": 1072537001.61,
+      "price": 2.583804565918764e-06,
+      "fdv_usd": 1069107205.22,
+      "mcap_usd": 1069107205.22,
       "circulating_supply": 413772473088271.1,
       "total_supply": 413772473088271.1,
       "max_supply": 413772473088271.1,
       "date_launched": "2023-04-14T00:00:00.000Z",
       "slug": "pepe",
-      "fetched_utc": "2026-07-08T19:34:19Z"
+      "fetched_utc": "2026-07-08T20:56:00Z"
     },
     "PLUME": {
-      "price": 0.00982497594654993,
-      "fdv_usd": 98249759.47,
-      "mcap_usd": 58653080.72,
+      "price": 0.009787518198415944,
+      "fdv_usd": 97875181.98,
+      "mcap_usd": 58429465.68,
       "circulating_supply": 5969793823.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-01-20T00:00:00.000Z",
       "slug": "plume",
-      "fetched_utc": "2026-07-08T19:34:21Z"
+      "fetched_utc": "2026-07-08T20:56:01Z"
     },
     "POPCAT": {
-      "price": 0.04496347622173445,
-      "fdv_usd": 44063002.62,
-      "mcap_usd": 44061345.29,
+      "price": 0.044906124228898926,
+      "fdv_usd": 44006799.2,
+      "mcap_usd": 44005143.99,
       "circulating_supply": 979936361.5577596,
       "total_supply": 979936361.5577596,
       "max_supply": 979973220.96,
       "date_launched": "2023-12-12T00:00:00.000Z",
       "slug": "popcat-sol",
-      "fetched_utc": "2026-07-08T19:34:22Z"
+      "fetched_utc": "2026-07-08T20:56:03Z"
     },
     "PRL": {
-      "price": 0.17450122574782215,
-      "fdv_usd": 174501225.75,
-      "mcap_usd": 30537714.51,
+      "price": 0.17392255452972696,
+      "fdv_usd": 173922554.53,
+      "mcap_usd": 30436447.04,
       "circulating_supply": 175000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-03-25T00:00:00.000Z",
       "slug": "perle",
-      "fetched_utc": "2026-07-08T19:34:24Z"
+      "fetched_utc": "2026-07-08T20:56:05Z"
     },
     "PROMPT": {
-      "price": 0.019980130986653015,
-      "fdv_usd": 19980130.99,
-      "mcap_usd": 9238295.98,
+      "price": 0.019914242451995773,
+      "fdv_usd": 19914242.45,
+      "mcap_usd": 9207830.83,
       "circulating_supply": 462374145.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-04-10T00:00:00.000Z",
       "slug": "wayfinder",
-      "fetched_utc": "2026-07-08T19:34:25Z"
+      "fetched_utc": "2026-07-08T20:56:06Z"
     },
     "PROVE": {
-      "price": 0.2025707658317827,
-      "fdv_usd": 202570765.83,
-      "mcap_usd": 39501299.34,
+      "price": 0.20185744807356493,
+      "fdv_usd": 201857448.07,
+      "mcap_usd": 39362202.37,
       "circulating_supply": 195000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-01-20T00:00:00.000Z",
       "slug": "succinct",
-      "fetched_utc": "2026-07-08T19:34:27Z"
+      "fetched_utc": "2026-07-08T20:56:08Z"
     },
     "PUMP": {
-      "price": 0.0015148691617497304,
-      "fdv_usd": 1514869161.75,
-      "mcap_usd": 610197425.05,
-      "circulating_supply": 402805364621.63,
-      "total_supply": 851067168292.8527,
+      "price": 0.0014910547562681604,
+      "fdv_usd": 1491054756.27,
+      "mcap_usd": 600573922.44,
+      "circulating_supply": 402784619351.2047,
+      "total_supply": 851046423022.4272,
       "max_supply": 1000000000000.0,
       "date_launched": "2025-07-14T00:00:00.000Z",
       "slug": "pump-fun",
-      "fetched_utc": "2026-07-08T19:34:29Z"
+      "fetched_utc": "2026-07-08T20:56:10Z"
     },
     "QAIT": {
-      "price": 0.0073076045909591155,
-      "fdv_usd": 73076045.91,
-      "mcap_usd": 3653802.3,
+      "price": 0.007305935908587439,
+      "fdv_usd": 73059359.09,
+      "mcap_usd": 3652967.95,
       "circulating_supply": 500000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2026-05-27T00:00:00.000Z",
       "slug": "qait",
-      "fetched_utc": "2026-07-08T19:34:30Z"
+      "fetched_utc": "2026-07-08T20:56:11Z"
     },
     "RECALL": {
-      "price": 0.03200922981362368,
-      "fdv_usd": 32009229.81,
-      "mcap_usd": 10342744.78,
+      "price": 0.032087969026766874,
+      "fdv_usd": 32087969.03,
+      "mcap_usd": 10368186.81,
       "circulating_supply": 323117577.14714,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-10-15T00:00:00.000Z",
       "slug": "recall-network",
-      "fetched_utc": "2026-07-08T19:34:34Z"
+      "fetched_utc": "2026-07-08T20:56:14Z"
     },
     "ROBO": {
-      "price": 0.012641977770408814,
-      "fdv_usd": 126419777.7,
-      "mcap_usd": 28204252.41,
+      "price": 0.01259161343739224,
+      "fdv_usd": 125916134.37,
+      "mcap_usd": 28091889.58,
       "circulating_supply": 2231000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-01-27T00:00:00.000Z",
       "slug": "fabric-foundation",
-      "fetched_utc": "2026-07-08T19:34:35Z"
+      "fetched_utc": "2026-07-08T20:56:16Z"
     },
     "SAFE": {
-      "price": 0.10494352973337429,
-      "fdv_usd": 104943529.73,
-      "mcap_usd": 79677278.19,
+      "price": 0.10538200416840968,
+      "fdv_usd": 105382004.17,
+      "mcap_usd": 80010185.32,
       "circulating_supply": 759239549.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": null,
       "slug": "safe1",
-      "fetched_utc": "2026-07-08T19:34:37Z"
+      "fetched_utc": "2026-07-08T20:56:18Z"
     },
     "SAPIEN": {
-      "price": 0.07150541959672584,
-      "fdv_usd": 71505419.6,
-      "mcap_usd": 17876354.9,
+      "price": 0.07192759138286092,
+      "fdv_usd": 71927591.38,
+      "mcap_usd": 17981897.85,
       "circulating_supply": 250000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-08-20T00:00:00.000Z",
       "slug": "sapien-io",
-      "fetched_utc": "2026-07-08T19:34:39Z"
+      "fetched_utc": "2026-07-08T20:56:20Z"
     },
     "SENT": {
-      "price": 0.014134066020197933,
-      "fdv_usd": 485642810.53,
-      "mcap_usd": 102300658.04,
+      "price": 0.013873941064127178,
+      "fdv_usd": 476704985.1,
+      "mcap_usd": 100417905.11,
       "circulating_supply": 7237878887.0,
       "total_supply": 34359738368.0,
       "max_supply": null,
       "date_launched": "2025-11-09T00:00:00.000Z",
       "slug": "sentient",
-      "fetched_utc": "2026-07-08T19:34:40Z"
+      "fetched_utc": "2026-07-08T20:56:21Z"
     },
     "SIGN": {
-      "price": 0.008520082355388958,
-      "fdv_usd": 85200823.55,
-      "mcap_usd": 20334596.55,
+      "price": 0.008556045214989073,
+      "fdv_usd": 85560452.15,
+      "mcap_usd": 20420427.91,
       "circulating_supply": 2386666666.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-04-27T00:00:00.000Z",
       "slug": "sign",
-      "fetched_utc": "2026-07-08T19:34:42Z"
+      "fetched_utc": "2026-07-08T20:56:23Z"
     },
     "SKR": {
-      "price": 0.009407950443017605,
-      "fdv_usd": 98140446.09,
-      "mcap_usd": 47017711.84,
-      "circulating_supply": 4997657260.315634,
-      "total_supply": 10431649983.686104,
+      "price": 0.009476869533473651,
+      "fdv_usd": 98859383.57,
+      "mcap_usd": 47361979.43,
+      "circulating_supply": 4997639701.915205,
+      "total_supply": 10431649735.998299,
       "max_supply": null,
       "date_launched": "2026-01-21T00:00:00.000Z",
       "slug": "solana-mobile-seeker",
-      "fetched_utc": "2026-07-08T19:34:44Z"
+      "fetched_utc": "2026-07-08T20:56:24Z"
     },
     "SLX": {
-      "price": 0.1906482741749031,
-      "fdv_usd": 190648274.17,
-      "mcap_usd": 46299738.49,
+      "price": 0.19227662701436687,
+      "fdv_usd": 192276627.01,
+      "mcap_usd": 46695190.85,
       "circulating_supply": 242854223.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-09-29T00:00:00.000Z",
       "slug": "solstice",
-      "fetched_utc": "2026-07-08T19:34:45Z"
+      "fetched_utc": "2026-07-08T20:56:26Z"
     },
     "SPK": {
-      "price": 0.01723187392711029,
-      "fdv_usd": 172318739.27,
-      "mcap_usd": 52885511.86,
+      "price": 0.017299829617331338,
+      "fdv_usd": 172998296.17,
+      "mcap_usd": 53094071.39,
       "circulating_supply": 3069051693.6803985,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-06-17T00:00:00.000Z",
       "slug": "spark",
-      "fetched_utc": "2026-07-08T19:34:47Z"
+      "fetched_utc": "2026-07-08T20:56:28Z"
     },
     "SPX": {
-      "price": 0.36973856462752336,
-      "fdv_usd": 369738564.63,
-      "mcap_usd": 344224048.8,
+      "price": 0.3696039766350022,
+      "fdv_usd": 369603976.64,
+      "mcap_usd": 344098748.31,
       "circulating_supply": 930993090.07,
       "total_supply": 930993090.07,
       "max_supply": 1000000000.0,
       "date_launched": null,
       "slug": "spx6900",
-      "fetched_utc": "2026-07-08T19:34:49Z"
+      "fetched_utc": "2026-07-08T20:56:29Z"
     },
     "SXT": {
-      "price": 0.006937164341870606,
-      "fdv_usd": 34685821.71,
-      "mcap_usd": 9712030.08,
+      "price": 0.006966166953228457,
+      "fdv_usd": 34830834.77,
+      "mcap_usd": 9752633.73,
       "circulating_supply": 1400000000.0,
       "total_supply": 5000000000.0,
       "max_supply": 5000000000.0,
       "date_launched": "2025-05-05T00:00:00.000Z",
       "slug": "space-and-time",
-      "fetched_utc": "2026-07-08T19:34:50Z"
+      "fetched_utc": "2026-07-08T20:56:31Z"
     },
     "TOSHI": {
-      "price": 0.00011160498096549682,
-      "fdv_usd": 46951099.44,
-      "mcap_usd": 46948795.64,
+      "price": 0.00011143096964639392,
+      "fdv_usd": 46877894.62,
+      "mcap_usd": 46875594.41,
       "circulating_supply": 420669357553.201,
       "total_supply": 420690000000.0,
       "max_supply": 420690000000.0,
       "date_launched": "2023-07-30T00:00:00.000Z",
       "slug": "toshithecat",
-      "fetched_utc": "2026-07-08T19:34:52Z"
+      "fetched_utc": "2026-07-08T20:56:33Z"
     },
     "TOWNS": {
-      "price": 0.002019977775820822,
-      "fdv_usd": 21336374.24,
-      "mcap_usd": 6657623.7,
+      "price": 0.00199039671107433,
+      "fdv_usd": 21023918.99,
+      "mcap_usd": 6560127.78,
       "circulating_supply": 3295889580.0,
       "total_supply": 10562677716.0,
       "max_supply": null,
       "date_launched": "2025-08-01T00:00:00.000Z",
       "slug": "towns",
-      "fetched_utc": "2026-07-08T19:34:54Z"
+      "fetched_utc": "2026-07-08T20:56:34Z"
     },
     "TREE": {
-      "price": 0.040486433822546075,
-      "fdv_usd": 40486433.82,
-      "mcap_usd": 6320841.2,
+      "price": 0.0402384537447598,
+      "fdv_usd": 40238453.74,
+      "mcap_usd": 6282125.94,
       "circulating_supply": 156122449.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2021-06-29T00:00:00.000Z",
       "slug": "treehouse",
-      "fetched_utc": "2026-07-08T19:34:55Z"
+      "fetched_utc": "2026-07-08T20:56:36Z"
     },
     "TRUST": {
-      "price": 0.04726939325476988,
-      "fdv_usd": 49723765.6,
-      "mcap_usd": 8491844.02,
+      "price": 0.047199365571891,
+      "fdv_usd": 49650101.86,
+      "mcap_usd": 8479263.7,
       "circulating_supply": 179647832.0,
       "total_supply": 1051923076.9230769,
       "max_supply": null,
       "date_launched": "2025-11-05T00:00:00.000Z",
       "slug": "intuition",
-      "fetched_utc": "2026-07-08T19:34:57Z"
+      "fetched_utc": "2026-07-08T20:56:38Z"
     },
     "VIRTUAL": {
-      "price": 0.5236403098990333,
-      "fdv_usd": 523640309.9,
-      "mcap_usd": 344257810.31,
+      "price": 0.5221310289071477,
+      "fdv_usd": 522131028.91,
+      "mcap_usd": 343265560.94,
       "circulating_supply": 657431835.9406898,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2023-12-23T00:00:00.000Z",
       "slug": "virtual-protocol",
-      "fetched_utc": "2026-07-08T19:35:00Z"
+      "fetched_utc": "2026-07-08T20:56:41Z"
     },
     "VVV": {
-      "price": 11.297856575786751,
-      "fdv_usd": 910104207.43,
-      "mcap_usd": 533429415.18,
-      "circulating_supply": 47215098.86439156,
-      "total_supply": 80555475.39707878,
+      "price": 11.702347033030888,
+      "fdv_usd": 942693917.23,
+      "mcap_usd": 552532931.93,
+      "circulating_supply": 47215565.42189688,
+      "total_supply": 80555970.06054233,
       "max_supply": null,
       "date_launched": "2025-01-26T00:00:00.000Z",
       "slug": "venice-token",
-      "fetched_utc": "2026-07-08T19:35:02Z"
+      "fetched_utc": "2026-07-08T20:56:43Z"
     },
     "WAL": {
-      "price": 0.03133647008996117,
-      "fdv_usd": 156682350.45,
-      "mcap_usd": 76983261.53,
+      "price": 0.031196707002089118,
+      "fdv_usd": 155983535.01,
+      "mcap_usd": 76639910.21,
       "circulating_supply": 2456666667.0,
       "total_supply": 5000000000.0,
       "max_supply": 5000000000.0,
       "date_launched": "2025-03-23T00:00:00.000Z",
       "slug": "walrus-xyz",
-      "fetched_utc": "2026-07-08T19:35:04Z"
+      "fetched_utc": "2026-07-08T20:56:44Z"
     },
     "WET": {
-      "price": 0.06733853463361748,
-      "fdv_usd": 67338534.63,
-      "mcap_usd": 15487862.97,
+      "price": 0.06646872482905274,
+      "fdv_usd": 66468724.83,
+      "mcap_usd": 15287806.71,
       "circulating_supply": 230000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": null,
       "slug": "humidifi",
-      "fetched_utc": "2026-07-08T19:35:05Z"
+      "fetched_utc": "2026-07-08T20:56:46Z"
     },
     "XAN": {
-      "price": 0.010965641874781351,
-      "fdv_usd": 109656418.75,
-      "mcap_usd": 27414104.69,
+      "price": 0.010815061015527629,
+      "fdv_usd": 108150610.16,
+      "mcap_usd": 27037652.54,
       "circulating_supply": 2500000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-09-30T00:00:00.000Z",
       "slug": "anoma",
-      "fetched_utc": "2026-07-08T19:35:07Z"
+      "fetched_utc": "2026-07-08T20:56:48Z"
     },
     "XPL": {
-      "price": 0.09113112727903111,
-      "fdv_usd": 911311272.79,
-      "mcap_usd": 164036029.1,
+      "price": 0.09107559950955656,
+      "fdv_usd": 910755995.1,
+      "mcap_usd": 163936079.12,
       "circulating_supply": 1800000000.0,
       "total_supply": 10000000000.0,
       "max_supply": null,
       "date_launched": "2025-09-25T00:00:00.000Z",
       "slug": "plasma-xpl",
-      "fetched_utc": "2026-07-08T19:35:08Z"
+      "fetched_utc": "2026-07-08T20:56:49Z"
     },
     "YB": {
-      "price": 0.07040395385711366,
-      "fdv_usd": 70403953.86,
-      "mcap_usd": 9277468.15,
-      "circulating_supply": 131774817.18626963,
-      "total_supply": 741444336.7122238,
+      "price": 0.07015845122755678,
+      "fdv_usd": 70158451.23,
+      "mcap_usd": 9245774.93,
+      "circulating_supply": 131784193.7370063,
+      "total_supply": 741453713.2629604,
       "max_supply": 1000000000.0,
       "date_launched": "2025-09-14T00:00:00.000Z",
       "slug": "yieldbasis",
-      "fetched_utc": "2026-07-08T19:35:10Z"
+      "fetched_utc": "2026-07-08T20:56:51Z"
     },
     "ZAMA": {
-      "price": 0.03335847537985134,
-      "fdv_usd": 373499781.91,
-      "mcap_usd": 73388645.84,
+      "price": 0.03343094649541674,
+      "fdv_usd": 374311208.25,
+      "mcap_usd": 73548082.29,
       "circulating_supply": 2200000000.0,
       "total_supply": 11196548333.0,
       "max_supply": null,
       "date_launched": "2026-02-01T00:00:00.000Z",
       "slug": "zama",
-      "fetched_utc": "2026-07-08T19:35:12Z"
+      "fetched_utc": "2026-07-08T20:56:53Z"
     },
     "ZEST": {
-      "price": 0.20845269728302313,
-      "fdv_usd": 208452697.28,
-      "mcap_usd": 30434093.8,
+      "price": 0.20705004272490357,
+      "fdv_usd": 207050042.72,
+      "mcap_usd": 30229306.24,
       "circulating_supply": 146000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-05-19T00:00:00.000Z",
       "slug": "zest-protocol",
-      "fetched_utc": "2026-07-08T19:35:13Z"
+      "fetched_utc": "2026-07-08T20:56:54Z"
     },
     "ZETA": {
-      "price": 0.03373458631397609,
-      "fdv_usd": 70842631.26,
-      "mcap_usd": 50932900.1,
+      "price": 0.03358792966387395,
+      "fdv_usd": 70534652.29,
+      "mcap_usd": 50711476.06,
       "circulating_supply": 1509812500.0,
       "total_supply": 2100000000.0,
       "max_supply": 2100000000.0,
       "date_launched": "2021-06-25T00:00:00.000Z",
       "slug": "zetachain",
-      "fetched_utc": "2026-07-08T19:35:15Z"
+      "fetched_utc": "2026-07-08T20:56:56Z"
     },
     "ZKC": {
-      "price": 0.04285273571686122,
-      "fdv_usd": 45310197.11,
-      "mcap_usd": 13120822.08,
+      "price": 0.04296529124035978,
+      "fdv_usd": 45429207.32,
+      "mcap_usd": 13155284.78,
       "circulating_supply": 306184001.0,
       "total_supply": 1057346663.0,
       "max_supply": null,
       "date_launched": "2025-09-14T00:00:00.000Z",
       "slug": "boundless",
-      "fetched_utc": "2026-07-08T19:35:17Z"
+      "fetched_utc": "2026-07-08T20:56:58Z"
     },
     "ZKP": {
-      "price": 0.044169159391750305,
-      "fdv_usd": 44169159.39,
-      "mcap_usd": 12440979.87,
+      "price": 0.04382421037715032,
+      "fdv_usd": 43824210.38,
+      "mcap_usd": 12343819.23,
       "circulating_supply": 281666666.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-12-19T00:00:00.000Z",
       "slug": "zkpass",
-      "fetched_utc": "2026-07-08T19:35:18Z"
+      "fetched_utc": "2026-07-08T20:56:59Z"
     },
     "ZORA": {
-      "price": 0.00713968018067124,
-      "fdv_usd": 71396801.81,
-      "mcap_usd": 31914370.4,
+      "price": 0.007147323486974262,
+      "fdv_usd": 71473234.87,
+      "mcap_usd": 31948535.98,
       "circulating_supply": 4469999999.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2025-04-23T00:00:00.000Z",
       "slug": "zora",
-      "fetched_utc": "2026-07-08T19:35:20Z"
+      "fetched_utc": "2026-07-08T20:57:01Z"
     },
     "BTW": {
-      "price": 0.06566918975825771,
-      "fdv_usd": 656691897.58,
-      "mcap_usd": 144472217.47,
+      "price": 0.06716003439769778,
+      "fdv_usd": 671600343.98,
+      "mcap_usd": 147752075.67,
       "circulating_supply": 2200000000.0,
       "total_supply": 10000000000.0,
       "max_supply": 10000000000.0,
       "date_launched": "2026-03-02T00:00:00.000Z",
       "slug": "bitway-btw",
-      "fetched_utc": "2026-07-08T19:33:23Z"
+      "fetched_utc": "2026-07-08T20:55:02Z"
     },
     "VELVET": {
-      "price": 0.42244393475322084,
-      "fdv_usd": 422443934.75,
-      "mcap_usd": 177781474.46,
+      "price": 0.4128395571834629,
+      "fdv_usd": 412839557.18,
+      "mcap_usd": 173739564.37,
       "circulating_supply": 420840399.9645232,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2025-07-10T00:00:00.000Z",
       "slug": "velvet",
-      "fetched_utc": "2026-07-08T19:34:59Z"
+      "fetched_utc": "2026-07-08T20:56:39Z"
     },
     "O": {
-      "price": 0.5573891357989456,
-      "fdv_usd": 557389135.8,
-      "mcap_usd": 89182261.73,
+      "price": 0.5585566711951382,
+      "fdv_usd": 558556671.2,
+      "mcap_usd": 89369067.39,
       "circulating_supply": 160000000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-06-15T00:00:00.000Z",
       "slug": "o1-exchange",
-      "fetched_utc": "2026-07-08T19:34:14Z"
+      "fetched_utc": "2026-07-08T20:55:55Z"
     },
     "ARX": {
-      "price": 0.18004680893088335,
-      "fdv_usd": 180046808.93,
-      "mcap_usd": 37599416.73,
+      "price": 0.18171499181366585,
+      "fdv_usd": 181714991.81,
+      "mcap_usd": 37947785.6,
       "circulating_supply": 208831342.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-06-15T00:00:00.000Z",
       "slug": "arcium",
-      "fetched_utc": "2026-07-08T19:33:07Z"
+      "fetched_utc": "2026-07-08T20:54:46Z"
     },
     "CAP": {
       "price": null,
@@ -925,18 +925,18 @@
       "max_supply": 120000.0,
       "date_launched": "2020-07-04T00:00:00.000Z",
       "slug": "cap",
-      "fetched_utc": "2026-07-08T19:33:25Z"
+      "fetched_utc": "2026-07-08T20:55:04Z"
     },
     "RE": {
-      "price": 0.6082976335031466,
-      "fdv_usd": 608297633.5,
-      "mcap_usd": 97084302.31,
+      "price": 0.6028265100668913,
+      "fdv_usd": 602826510.07,
+      "mcap_usd": 96211111.01,
       "circulating_supply": 159600000.0,
       "total_supply": 1000000000.0,
       "max_supply": 1000000000.0,
       "date_launched": "2026-06-16T00:00:00.000Z",
       "slug": "re-protocol",
-      "fetched_utc": "2026-07-08T19:34:32Z"
+      "fetched_utc": "2026-07-08T20:56:13Z"
     }
   }
 }
