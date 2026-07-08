@@ -1,1420 +1,1430 @@
 {
-  "CLO": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "clovis"
-  },
-  "NAORIS": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "naoris-protocol"
-  },
-  "VELVET": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "velvet"
-  },
-  "LAB": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lab"
-  },
-  "SKYAI": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "skyai"
-  },
-  "M": {
-    "sections": [
-      "short_term_interest",
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "memecore"
-  },
-  "GRIFFAIN": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "griffain"
-  },
-  "STABLE": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "stable"
-  },
-  "GUA": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "superfortune"
-  },
-  "ESPORTS": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "yooldo"
-  },
-  "ZEREBRO": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "zerebro"
-  },
-  "UB": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "unibase"
-  },
-  "US": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "talus-network"
-  },
-  "BROCCOLI714": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "broccoli-714"
-  },
-  "DEXE": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "dexe"
-  },
-  "B": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "buildon"
-  },
-  "BLUAI": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bluwhale"
-  },
-  "HANA": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "hana-network"
-  },
-  "IN": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "infinit"
-  },
-  "BEAT": {
-    "sections": [
-      "short_term_interest",
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "audiera"
-  },
-  "PIEVERSE": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "pieverse"
-  },
-  "GENIUS": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "genius-terminal"
-  },
-  "AGT": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "alaya-ai"
-  },
-  "LYN": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "everlyn"
-  },
-  "TAC": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tac-protocol"
-  },
-  "RECALL": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "recall-network"
-  },
-  "BR": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bedrock-dao"
-  },
-  "AIOT": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "okzoo"
-  },
-  "TRUTH": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "swarm-network-ai"
-  },
-  "BSB": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "block-street"
-  },
-  "BAS": {
-    "sections": [
-      "short_term_interest",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bnb-attestation-service"
-  },
-  "UAI": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "unifai-network"
-  },
-  "JCT": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "janction"
-  },
-  "BANANAS31": {
-    "sections": [
-      "short_term_interest",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "banana-for-scale"
-  },
-  "PLAY": {
-    "sections": [
-      "short_term_interest",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "solana-poker"
-  },
-  "AIO": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "olaxbt"
-  },
-  "SPACE": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "spacecoin-org"
-  },
-  "ZBT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "zerobase"
-  },
-  "TST": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "test-token-bsc"
-  },
-  "ENSO": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "enso"
-  },
-  "ARC": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "ai-rig-complex"
-  },
-  "SOPH": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "sophon"
-  },
-  "ICNT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "impossible-cloud-network"
-  },
-  "TUT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tutellus"
-  },
-  "BARD": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lombard"
-  },
-  "HUMA": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "huma-finance"
-  },
-  "HEI": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "heima"
-  },
-  "AKE": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "akedo"
-  },
-  "KITE": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "kite"
-  },
-  "EVAA": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "evaa-protocol"
-  },
-  "TRUST": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "intuition"
-  },
-  "JELLYJELLY": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "jelly-my-jelly"
-  },
-  "ACT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "act-i-the-ai-prophecy"
-  },
-  "SWARMS": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "swarms"
-  },
-  "TRADOOR": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tradoor"
-  },
-  "AVAAI": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "ava-ai-top"
-  },
-  "PARTI": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "particle-network"
-  },
-  "MORPHO": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "morpho"
-  },
-  "MUBARAK": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "mubarak"
-  },
-  "FF": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "falcon-finance-ff"
-  },
-  "AWE": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "awe-network"
-  },
-  "ARPA": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "arpa-chain"
-  },
-  "PTB": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "portaltobitcoin"
-  },
-  "ALCH": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "alchemist-ai"
-  },
-  "XAN": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "anoma"
-  },
-  "RIVER": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "river"
-  },
-  "B2": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bsquared-network"
-  },
-  "BAN": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "banana-gun",
-    "perp_sym": "BANANA"
-  },
-  "XPIN": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "xpin-network"
-  },
-  "RESOLV": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "resolv"
-  },
-  "LA": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lagrange"
-  },
-  "AERGO": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "aergo"
-  },
-  "4": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "4four"
-  },
-  "GIGGLE": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "giggle-fund"
-  },
-  "BLESS": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bless"
-  },
-  "Q": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "quack-ai"
-  },
-  "APR": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "apriori"
-  },
-  "IRYS": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "irys"
-  },
-  "KGEN": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "kgen"
-  },
-  "ALLO": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "allora"
-  },
-  "SAHARA": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "sahara-ai"
-  },
-  "HEMI": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "hemi"
-  },
-  "XNY": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "codatta"
-  },
-  "BANK": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lorenzo-protocol"
-  },
-  "PIPPIN": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "pippin"
-  },
-  "SIREN": {
-    "sections": [
-      "full_list",
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "siren-bsc"
-  },
-  "MOODENG": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "moo-deng-solana"
-  },
-  "TOSHI": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "toshithecat"
-  },
-  "DOOD": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "doodles"
-  },
-  "ZORA": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "zora"
-  },
-  "AXS": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "axie-infinity"
-  },
-  "ANIME": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "animecoin"
-  },
-  "KAITO": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "kaito"
-  },
-  "SUPER": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "superverse"
-  },
-  "LSK": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lisk"
-  },
-  "OG": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "og-fan-token"
-  },
-  "NMR": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "numeraire"
-  },
-  "MOVE": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "movement"
-  },
-  "BIO": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bio"
-  },
-  "COAI": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "chainopera-ai"
-  },
-  "H": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "humanity-protocol"
-  },
-  "MYX": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "myx-finance"
-  },
-  "SOON": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "soon"
-  },
-  "POWER": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "powerprotocol"
-  },
-  "FHE": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "mind-network"
-  },
-  "TAKE": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "overtake"
-  },
-  "MASK": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "mask-network"
-  },
-  "TRB": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tellor"
-  },
-  "BTR": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bitlayer"
-  },
-  "AIA": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "deagentai"
-  },
-  "PUMPBTC": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "pumpbtc-btc"
-  },
-  "BULLA": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bulla-mascot"
-  },
-  "TNSR": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tensor"
-  },
-  "AUCTION": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bounce-token"
-  },
-  "SAROS": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": false,
-    "cmc_slug": "saros"
-  },
-  "MERL": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "merlin-chain"
-  },
-  "LIGHT": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "light"
-  },
-  "ARIA": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "aria-ai"
-  },
-  "RAVE": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview",
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "ravedao"
-  },
-  "IP": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "story-protocol"
-  },
-  "LAYER": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "solayer"
-  },
-  "WCT": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "walletconnect-token"
-  },
-  "STO": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "stakestone"
-  },
-  "FOLKS": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "folks-finance"
-  },
-  "ID": {
-    "sections": [
-      "old"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "space-id"
-  },
-  "HYPE": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "hyperliquid"
-  },
-  "CC": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "canton-network"
-  },
-  "MON": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "monad"
-  },
-  "GWEI": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "eth-gas"
-  },
-  "VVV": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "venice-token"
-  },
-  "LIT": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "lighter"
-  },
-  "KAS": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "kaspa"
-  },
-  "AERO": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "aerodrome-finance"
-  },
-  "BILL": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "billions-network"
-  },
-  "TAG": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "tagger"
-  },
-  "BTW": {
-    "sections": [],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "bitway-btw"
-  },
-  "MAGMA": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "magma-finance"
-  },
-  "ME": {
-    "sections": [
-      "just_neg_funding_no_manip"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "magiceden"
-  },
-  "MMT": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "momentum-token"
-  },
-  "PLAYSOUT": {
-    "sections": [
-      "short_term_interest"
-    ],
-    "sources": [
-      "tradingview"
-    ],
-    "has_perp": true,
-    "cmc_slug": "playsout",
-    "perp_sym": "PLAY"
-  },
-  "BASED": {
-    "sections": [
-      "full_list"
-    ],
-    "sources": [
-      "watchlist"
-    ],
-    "has_perp": true,
-    "cmc_slug": "basedone"
-  }
+ "CLO": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "clovis"
+ },
+ "NAORIS": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "naoris-protocol"
+ },
+ "VELVET": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "velvet"
+ },
+ "LAB": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lab"
+ },
+ "SKYAI": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "skyai"
+ },
+ "M": {
+  "sections": [
+   "short_term_interest",
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "memecore"
+ },
+ "GRIFFAIN": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "griffain"
+ },
+ "STABLE": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "stable"
+ },
+ "GUA": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "superfortune"
+ },
+ "ESPORTS": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "yooldo"
+ },
+ "ZEREBRO": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "zerebro"
+ },
+ "UB": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "unibase"
+ },
+ "US": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "talus-network"
+ },
+ "BROCCOLI714": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "broccoli-714"
+ },
+ "DEXE": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "dexe"
+ },
+ "B": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "buildon"
+ },
+ "BLUAI": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bluwhale"
+ },
+ "HANA": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "hana-network"
+ },
+ "IN": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "infinit"
+ },
+ "BEAT": {
+  "sections": [
+   "short_term_interest",
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "audiera"
+ },
+ "PIEVERSE": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "pieverse"
+ },
+ "GENIUS": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "genius-terminal"
+ },
+ "AGT": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "alaya-ai"
+ },
+ "LYN": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "everlyn"
+ },
+ "TAC": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tac-protocol"
+ },
+ "RECALL": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "recall-network"
+ },
+ "BR": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bedrock-dao"
+ },
+ "AIOT": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "okzoo"
+ },
+ "TRUTH": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "swarm-network-ai"
+ },
+ "BSB": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "block-street"
+ },
+ "BAS": {
+  "sections": [
+   "short_term_interest",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bnb-attestation-service"
+ },
+ "UAI": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "unifai-network"
+ },
+ "JCT": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "janction"
+ },
+ "BANANAS31": {
+  "sections": [
+   "short_term_interest",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "banana-for-scale"
+ },
+ "PLAY": {
+  "sections": [
+   "short_term_interest",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": false,
+  "cmc_slug": "solana-poker"
+ },
+ "AIO": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "olaxbt"
+ },
+ "SPACE": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "spacecoin-org"
+ },
+ "ZBT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "zerobase"
+ },
+ "TST": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "test-token-bsc"
+ },
+ "ENSO": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "enso"
+ },
+ "ARC": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "ai-rig-complex"
+ },
+ "SOPH": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "sophon"
+ },
+ "ICNT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "impossible-cloud-network"
+ },
+ "TUT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tutellus"
+ },
+ "BARD": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lombard"
+ },
+ "HUMA": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "huma-finance"
+ },
+ "HEI": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "heima"
+ },
+ "AKE": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "akedo"
+ },
+ "KITE": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "kite"
+ },
+ "EVAA": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "evaa-protocol"
+ },
+ "TRUST": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "intuition"
+ },
+ "JELLYJELLY": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "jelly-my-jelly"
+ },
+ "ACT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "act-i-the-ai-prophecy"
+ },
+ "SWARMS": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "swarms"
+ },
+ "TRADOOR": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tradoor"
+ },
+ "AVAAI": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "ava-ai-top"
+ },
+ "PARTI": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "particle-network"
+ },
+ "MORPHO": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "morpho"
+ },
+ "MUBARAK": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "mubarak"
+ },
+ "FF": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "falcon-finance-ff"
+ },
+ "AWE": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "awe-network"
+ },
+ "ARPA": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "arpa-chain"
+ },
+ "PTB": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "portaltobitcoin"
+ },
+ "ALCH": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "alchemist-ai"
+ },
+ "XAN": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "anoma"
+ },
+ "RIVER": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "river"
+ },
+ "B2": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bsquared-network"
+ },
+ "BAN": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "banana-gun",
+  "perp_sym": "BANANA"
+ },
+ "XPIN": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "xpin-network"
+ },
+ "RESOLV": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "resolv"
+ },
+ "LA": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lagrange"
+ },
+ "AERGO": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "aergo"
+ },
+ "4": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "4four"
+ },
+ "GIGGLE": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "giggle-fund"
+ },
+ "BLESS": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bless"
+ },
+ "Q": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "quack-ai"
+ },
+ "APR": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "apriori"
+ },
+ "IRYS": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "irys"
+ },
+ "KGEN": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "kgen"
+ },
+ "ALLO": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "allora"
+ },
+ "SAHARA": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "sahara-ai"
+ },
+ "HEMI": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "hemi"
+ },
+ "XNY": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "codatta"
+ },
+ "BANK": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lorenzo-protocol"
+ },
+ "PIPPIN": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "pippin"
+ },
+ "SIREN": {
+  "sections": [
+   "full_list",
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "siren-bsc"
+ },
+ "MOODENG": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "moo-deng-solana"
+ },
+ "TOSHI": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "toshithecat"
+ },
+ "DOOD": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "doodles"
+ },
+ "ZORA": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "zora"
+ },
+ "AXS": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "axie-infinity"
+ },
+ "ANIME": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "animecoin"
+ },
+ "KAITO": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "kaito"
+ },
+ "SUPER": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "superverse"
+ },
+ "LSK": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lisk"
+ },
+ "OG": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "og-fan-token"
+ },
+ "NMR": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "numeraire"
+ },
+ "MOVE": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "movement"
+ },
+ "BIO": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bio"
+ },
+ "COAI": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "chainopera-ai"
+ },
+ "H": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "humanity-protocol"
+ },
+ "MYX": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "myx-finance"
+ },
+ "SOON": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "soon"
+ },
+ "POWER": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "powerprotocol"
+ },
+ "FHE": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "mind-network"
+ },
+ "TAKE": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "overtake"
+ },
+ "MASK": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "mask-network"
+ },
+ "TRB": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tellor"
+ },
+ "BTR": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bitlayer"
+ },
+ "AIA": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "deagentai"
+ },
+ "PUMPBTC": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "pumpbtc-btc"
+ },
+ "BULLA": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bulla-mascot"
+ },
+ "TNSR": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tensor"
+ },
+ "AUCTION": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bounce-token"
+ },
+ "SAROS": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": false,
+  "cmc_slug": "saros"
+ },
+ "MERL": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "merlin-chain"
+ },
+ "LIGHT": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "light"
+ },
+ "ARIA": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "aria-ai"
+ },
+ "RAVE": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview",
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "ravedao"
+ },
+ "IP": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "story-protocol"
+ },
+ "LAYER": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "solayer"
+ },
+ "WCT": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "walletconnect-token"
+ },
+ "STO": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "stakestone"
+ },
+ "FOLKS": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "folks-finance"
+ },
+ "ID": {
+  "sections": [
+   "old"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "space-id"
+ },
+ "HYPE": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "hyperliquid"
+ },
+ "CC": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "canton-network"
+ },
+ "MON": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "monad"
+ },
+ "GWEI": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "eth-gas"
+ },
+ "VVV": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "venice-token"
+ },
+ "LIT": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "lighter"
+ },
+ "KAS": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "kaspa"
+ },
+ "AERO": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "aerodrome-finance"
+ },
+ "BILL": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "billions-network"
+ },
+ "TAG": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "tagger"
+ },
+ "BTW": {
+  "sections": [],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "bitway-btw"
+ },
+ "MAGMA": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "magma-finance"
+ },
+ "ME": {
+  "sections": [
+   "just_neg_funding_no_manip"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "magiceden"
+ },
+ "MMT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "momentum-token"
+ },
+ "PLAYSOUT": {
+  "sections": [
+   "short_term_interest"
+  ],
+  "sources": [
+   "tradingview"
+  ],
+  "has_perp": true,
+  "cmc_slug": "playsout",
+  "perp_sym": "PLAY"
+ },
+ "BASED": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "basedone"
+ },
+ "COLLECT": {
+  "sections": [
+   "full_list"
+  ],
+  "sources": [
+   "watchlist"
+  ],
+  "has_perp": true,
+  "cmc_slug": "collect-on-fanable"
+ }
 }
