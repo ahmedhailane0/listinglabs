@@ -1961,7 +1961,7 @@ def _pnl_card(closed) -> str:
             f'<div class="pnl-top"><span class="pnl-ttl"><i class="pnl-dot"></i>Profit / Loss</span>'
             f'<div class="pnl-tfs">{btns}</div></div>'
             f'<div class="pnl-val" id="pnl-val">{val}</div>'
-            f'<div class="pnl-sub" id="pnl-sub">All time · hypothetical ${PNL_STAKE}/trade</div>'
+            f'<div class="pnl-sub" id="pnl-sub">All time · hypothetical ${PNL_STAKE}/trade · one fire per coin per 72h</div>'
             f'<svg class="pnl-chart" id="pnl-chart" viewBox="0 0 320 80" preserveAspectRatio="none"></svg>'
             f'<script>(function(){{var PTS={data_js},STAKE={PNL_STAKE};{_PNL_JS}}})();</script>'
             f'</aside>')
@@ -2125,7 +2125,12 @@ def _journal_page(recs) -> str:
     (win rate / +50% hit rate / avg P&L) plus closed + open trades. These are
     RESEARCH PAPER signals scored on real prices — not executed trades, not advice."""
     built = {r["symbol"].upper() for r in recs}
-    fires = [e for e in _load_fires() if e.get("strat") in JOURNAL_SETUPS]
+    # Honest counting (2026-07-09 audit F-19): episode-dedup BEFORE the strat
+    # filter — the same rules the Models page and the box graders use (one fire
+    # per coin per 72h; a market-wide burst counts once). Without this the
+    # journal + PnL card booked pre-refractory hourly re-fires as separate
+    # $100 trades (30 duplicates ≈ doubled the headline equity).
+    fires = [e for e in _episodes(_load_fires()) if e.get("strat") in JOURNAL_SETUPS]
     closed = [e for e in fires if e.get("outcome")]
     open_ = [e for e in fires if not e.get("outcome")]
     # `t` is the actual signal/fire time (the entry); logged_utc is just when the
@@ -2600,13 +2605,16 @@ def _models_page(recs) -> str:
     ROSTER = [
         ("v1", "Buy v1 — accumulation breakout", "alert",
          "OI climbing 4 bars & +5%/3h while price lags (OI/price ≥ 2) and funding is calm",
-         "walk-forward OOS lift ~1.9×, 4/4 folds (funding tightened to 0.1% 2026-07-05)", "alerts (gate ≥7)"),
+         "OOS lift ~1.6× at its 2026-07-05 promotion (funding→0.1%); trade-weighted ~2.4× "
+         "(2026-07-09 audit) — re-scored nightly", "alerts (gate ≥7)"),
         ("v2", "Buy v2 — Ignition", "alert",
          "a tight multi-day coil breaking on ≥5× volume WHILE OI surges — the OI-confirmed breakout",
-         "walk-forward OOS lift ~2.5–2.8×, 4/4 folds", "alerts (gate ≥7)"),
+         "OOS lift ~2.5× at its 2026-06-27 swap-in; trade-weighted ~2.0× (2026-07-09 audit) — "
+         "re-scored nightly", "alerts (gate ≥7)"),
         ("v4", "Buy v4 — coiled accumulation", "alert",
          "OI building ≥40% under a flat, tight price for ~3 days — quiet loading before the vertical",
-         "walk-forward OOS lift ~4.2×, 4/4 folds", "alerts (gate ≥7)"),
+         "OOS lift ~4.2× at validation; trade-weighted ~3.6× (2026-07-09 audit) — re-scored "
+         "nightly", "alerts (gate ≥7)"),
         ("probe", "Probe day", "earn",
          "12h volume burst ≥3× baseline breaking the top of a tight coil — the pre-vertical test",
          "backtest ~2.5× per-hour, but live ledger came in a net loser (59 graded, 30% win, "
@@ -2620,10 +2628,10 @@ def _models_page(recs) -> str:
          "~6.2× lift to a −20%/72h drop (vs ~10.7% base)", "journal-only"),
         ("bear_trap", "Bear trap", "earn",
          "a ≥15% flush below the 2-day close, fully reclaimed, no new low in 12h — the dip got bought back",
-         "4.6× per-hour / ~2.9× per-episode", "journal-only"),
+         "exploratory study numbers: 4.6× per-hour / ~2.9× per-episode (live ledger decides)", "journal-only"),
         ("spike_retrace", "Spike & retrace", "earn",
          "a +30% spike sold back down ≥15% while holding the pre-spike level, funding negative",
-         "~2.9× (thin sample — 12 episodes)", "journal-only"),
+         "exploratory study ~2.9× (thin sample — live ledger decides)", "journal-only"),
     ]
     GROUPS = {"alert": "Alerting setups — proven enough to ping Telegram",
               "earn": "Earning their way in — journaled &amp; graded, never alerted (yet)"}

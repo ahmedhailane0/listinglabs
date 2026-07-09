@@ -119,6 +119,8 @@ CMC_DETAIL_URL = "https://api.coinmarketcap.com/data-api/v3/cryptocurrency/detai
 CMC_UA = {"User-Agent": "Mozilla/5.0", "Accept": "application/json"}
 CMC_MAP_FILE = HERE.parent / "cmc_map.json"   # may not exist on the box (gitignored)
 PRICE_TOL = 3.0               # CMC price must be within 3x of Binance perp mark
+FDV_DIVERGE = 1.20            # accepted CMC price >20% off the live mark → derive
+                              # FDV/mcap from mark × CMC supply instead (audit F-18)
 
 # ── Forward fire-log (out-of-sample ledger) ─────────────────────────────────
 # Append-only record of every NEW (sym, setup, fire-hour) the screener reports,
@@ -1108,6 +1110,30 @@ def main(argv: list[str]) -> int:
             m["fdv"] = bn_price * ts
             m["fdv_src"] = "perp_price_x_supply"
             rec["market"] = m
+
+    # ── Divergence guard (2026-07-09 audit F-18): CMC's price can lag a fast
+    # mover by 15-35%+ between hourly runs (measured: TAG 36%, US 20%, LAB 19%),
+    # which drags FDV/mcap with it while the live layer already shows the real
+    # mark. When an ACCEPTED CMC price is > FDV_DIVERGE off the Binance mark,
+    # re-derive price/FDV/mcap from the mark × CMC's (slow-moving) supply and
+    # tag the source, same convention as the deactivated-page fallback above.
+    for s in screenable:
+        rec = recs[s]
+        mkt = rec.get("market")
+        bn_price = rec.get("mark_price")
+        if not mkt or not bn_price or mkt.get("fdv_src"):
+            continue
+        cp = mkt.get("price")
+        if not cp or not (cp / bn_price > FDV_DIVERGE or bn_price / cp > FDV_DIVERGE):
+            continue
+        tot, circ = mkt.get("total_supply"), mkt.get("circ_supply")
+        if not tot:
+            continue
+        mkt["price"] = bn_price
+        mkt["fdv"] = bn_price * tot
+        if circ:
+            mkt["mcap"] = bn_price * circ
+        mkt["fdv_src"] = "mark_x_cmc_supply"
 
     # ── Bybit OI + FDV gate (uses market-verified FDV) ───────────────────────
     for s in screenable:

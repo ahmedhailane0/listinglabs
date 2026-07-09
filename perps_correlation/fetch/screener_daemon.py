@@ -3,19 +3,29 @@
 RUNS ON THE ALWAYS-ON BOX, ALONGSIDE the existing hourly `fetch_screener.py`
 cron (this does NOT replace it). The hourly cron only checks once per hour
 (cron fires :17 past, plus ~1-2min compute), so a v1/v4/v2/probe fire can sit
-unalerted for up to ~20-70 minutes. This daemon keeps two Binance futures
-websocket streams open — kline_1m (to build the CURRENTLY FORMING hourly
-candle) and markPrice (live mark price + live estimated funding rate) — and
-re-evaluates lib.signals.evaluate() every EVAL_INTERVAL_S so a fire alerts
-within seconds of the condition being true, not up to an hour late.
+unalerted for up to ~20-70 minutes. This daemon keeps a fast REST loop hot —
+one bulk premiumIndex call for ALL marks+funding every MARK_POLL_S, a klines
+top-up right after every hour closes — and re-evaluates lib.signals.evaluate()
+every EVAL_INTERVAL_S so a fire alerts within ~1-2 minutes of being true, not
+up to an hour late.
+
+WHY REST, NOT WEBSOCKETS (2026-07-09 audit, F-01): Binance's futures websocket
+endpoint accepts connections from this datacenter IP but delivers ZERO data —
+verified live even for a single btcusdt stream (the silent ws analog of their
+REST 451 policy; REST works fine). The original ws design therefore never
+produced one alert: mark/candle state stayed empty, every fire logged with
+entry_price null, and _alert_buy() bailed on the missing price. Do not
+reintroduce websockets on a datacenter box without re-testing data flow.
 
 THE HOURLY CRON STAYS THE SOURCE OF TRUTH. This daemon is a faster notifier
 only:
   - historical OI/klines/funding come from the SAME REST endpoints
-    fetch_screener.py uses (re-bootstrapped every BOOTSTRAP_REFRESH_S so any
-    websocket drift self-heals); only the CURRENT, not-yet-closed hour is
-    filled in live from the websockets (current OI via a cheap 90s self-poll,
-    current candle from kline_1m, current price/funding from markPrice).
+    fetch_screener.py uses (re-bootstrapped every BOOTSTRAP_REFRESH_S); the
+    CURRENT hour is approximated live: mark price/funding from the bulk
+    premiumIndex poll (which also synthesizes a volume-less forming candle —
+    volume-gated setups correctly stay `insufficient` until the hour closes),
+    current OI via a cheap 90s self-poll, and a klines-only top-up ~75s after
+    each hour boundary so just-closed-hour fires are caught within ~2 minutes.
   - a newly-detected fire is appended to cache/screener/daemon/fires_live.jsonl
     (source:"daemon", NOT git-tracked — a local hand-off file on the box).
     fetch_screener.py's hourly _log_fires() folds those lines into the real
@@ -60,11 +70,6 @@ from fetch.fetch_perp_markets import _get, _f, _binance_intervals
 from fetch import fetch_screener as fs
 from lib.signals import evaluate
 
-try:
-    import websockets
-except ImportError:
-    websockets = None
-
 HERE = Path(__file__).resolve().parents[1]        # perps_correlation/
 CACHE = HERE.parent / "cache"
 DAEMON_DIR = CACHE / "screener" / "daemon"
@@ -74,12 +79,13 @@ HEARTBEAT = DAEMON_DIR / "heartbeat.json"          # git-tracked hourly (screene
 DRY_RUN = bool(os.environ.get("DRY_RUN"))
 EVAL_INTERVAL_S = 20            # how often evaluate() re-runs on live-updated buffers
 OI_POLL_S = 90                  # current-OI self-poll sweep (Binance has no OI websocket)
-BOOTSTRAP_REFRESH_S = 30 * 60   # full REST re-bootstrap (self-heals websocket drift)
+BOOTSTRAP_REFRESH_S = 30 * 60   # full REST re-bootstrap (OI + klines + funding)
 DEDUP_REFRESH_TICKS = 15        # ~5min at EVAL_INTERVAL_S=20s: reload fires_log.json dedup
-WS_BASE = "wss://fstream.binance.com/stream"
+MARK_POLL_S = 30                # bulk premiumIndex poll (ALL marks+funding, ONE call)
+TOPUP_DELAY_S = 75              # klines-only refresh this many seconds after each hour closes
 
 _TICKER_TO_STATE: dict[str, "_Sym"] = {}
-_WS_STATUS = {"kline": False, "mark": False}
+_NET = {"mark_ts": 0.0, "kline_ts": 0.0}   # last-success stamps for the honest heartbeat
 
 
 class _Sym:
@@ -131,6 +137,7 @@ def bootstrap(state: dict[str, _Sym], workers: int = 6) -> None:
                 continue
             st.oi_hist, st.kl_hist, st.funding_hist = oi, kl, fund
             st.funding_interval_h = float(intervals.get(f"{st.ticker}USDT", 8) or 8)
+    _NET["kline_ts"] = time.time()
     print(f"[daemon] bootstrapped {len(state)} symbols")
 
 
@@ -180,93 +187,89 @@ async def oi_poll_loop(state, executor):
         await asyncio.sleep(max(1.0, OI_POLL_S - (time.time() - t0)))
 
 
-# ── websocket listeners ──────────────────────────────────────────────────────
+# ── fast REST layers (Binance ws is data-blackholed for this IP — docstring) ─
 
 def _ticker_from_stream_symbol(s: str) -> str:
     s = (s or "").upper()
     return s[:-4] if s.endswith("USDT") else s
 
 
-def _handle_kline_msg(raw: str) -> None:
-    try:
-        msg = json.loads(raw)
-        d = msg.get("data") or {}
-        k = d.get("k") or {}
-        st = _TICKER_TO_STATE.get(_ticker_from_stream_symbol(d.get("s")))
+def _mark_poll_all(state: dict[str, _Sym]) -> int:
+    """ONE bulk premiumIndex call → live mark price + estimated funding for EVERY
+    symbol, plus a synthetic volume-less forming candle (o/h/l/c tracked from the
+    mark samples; volume stays 0.0 so volume-gated setups (v2/probe) remain
+    honestly `insufficient` until the hour actually closes — suppress-only,
+    never fabricates a fire). Returns rows matched."""
+    d = _get(f"{fs.FAPI}/fapi/v1/premiumIndex")
+    if not isinstance(d, list):
+        return 0
+    now = int(time.time())
+    hour = (now // 3600) * 3600
+    n = 0
+    for row in d:
+        st = _TICKER_TO_STATE.get(_ticker_from_stream_symbol(row.get("symbol")))
         if not st:
-            return
-        t = int(k.get("t", 0)) // 1000
-        hour_t = (t // 3600) * 3600
-        o, h, l, c = _f(k.get("o")), _f(k.get("h")), _f(k.get("l")), _f(k.get("c"))
-        v = _f(k.get("v")) or 0.0
-        if c is None:
-            return
-        cur = st.cur_candle
-        if not cur or cur["t"] != hour_t:
-            cur = {"t": hour_t, "o": o if o is not None else c,
-                   "h": h if h is not None else c, "l": l if l is not None else c,
-                   "c": c, "closed_vol": 0.0, "live_min_t": t, "live_min_v": v}
-            st.cur_candle = cur
-        else:
-            cur["h"] = max(cur["h"], h if h is not None else c)
-            cur["l"] = min(cur["l"], l if l is not None else c)
-            cur["c"] = c
-            if cur.get("live_min_t") != t:
-                # a new minute started — the previous forming minute is done
-                cur["closed_vol"] = (cur.get("closed_vol") or 0.0) + (cur.get("live_min_v") or 0.0)
-                cur["live_min_t"] = t
-            cur["live_min_v"] = v   # v is cumulative for the current minute, not a delta
-    except Exception:
-        pass
-
-
-def _handle_mark_msg(raw: str) -> None:
-    try:
-        msg = json.loads(raw)
-        d = msg.get("data") or {}
-        st = _TICKER_TO_STATE.get(_ticker_from_stream_symbol(d.get("s")))
-        if not st:
-            return
-        p, r = _f(d.get("p")), _f(d.get("r"))
-        if p is not None:
-            st.mark_price = p
+            continue
+        p, r = _f(row.get("markPrice")), _f(row.get("lastFundingRate"))
+        if p is None:
+            continue
+        st.mark_price = p
         if r is not None:
             st.mark_funding = r
-    except Exception:
-        pass
+        cur = st.cur_candle
+        if not cur or cur.get("t") != hour:
+            st.cur_candle = {"t": hour, "o": p, "h": p, "l": p, "c": p,
+                             "closed_vol": 0.0, "live_min_t": now, "live_min_v": 0.0}
+        else:
+            cur["h"] = max(cur["h"], p)
+            cur["l"] = min(cur["l"], p)
+            cur["c"] = p
+        n += 1
+    if n:
+        _NET["mark_ts"] = time.time()
+    return n
 
 
-async def _ws_loop(stream_suffix: str, handler, status_key: str):
-    if websockets is None:
-        print(f"[daemon] websockets not installed — {status_key} stream disabled "
-              f"(daemon falls back to REST-only cadence)")
-        return
-    streams = "/".join(f"{st.ticker.lower()}usdt@{stream_suffix}"
-                        for st in _TICKER_TO_STATE.values())
-    url = f"{WS_BASE}?streams={streams}"
-    backoff = 2
+async def mark_poll_loop(state, executor):
+    loop = asyncio.get_event_loop()
     while True:
+        t0 = time.time()
         try:
-            async with websockets.connect(url, ping_interval=180, ping_timeout=60,
-                                          max_size=2 ** 20) as ws:
-                print(f"[daemon] {status_key} stream connected")
-                _WS_STATUS[status_key] = True
-                backoff = 2
-                async for raw in ws:
-                    handler(raw)
+            n = await loop.run_in_executor(executor, _mark_poll_all, state)
+            if not n:
+                print("[daemon] mark poll matched no rows")
         except Exception as e:
-            _WS_STATUS[status_key] = False
-            print(f"[daemon] {status_key} stream error: {e} — reconnecting in {backoff}s")
-            await asyncio.sleep(backoff)
-            backoff = min(backoff * 2, 60)
+            print(f"[daemon] mark poll failed: {e}")
+        await asyncio.sleep(max(1.0, MARK_POLL_S - (time.time() - t0)))
 
 
-def kline_listener():
-    return _ws_loop("kline_1m", _handle_kline_msg, "kline")
+def _kline_topup_all(state: dict[str, _Sym], workers: int = 8) -> None:
+    """Klines-only refresh (no OI/funding — bootstrap covers those) run just
+    after each hour closes, so a just-closed-hour fire alerts within ~2 minutes
+    instead of waiting for the :17 cron."""
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        futs = {ex.submit(fs._klines_1h, st.ticker): sym for sym, st in state.items()}
+        for fut, sym in futs.items():
+            try:
+                kl = fut.result()
+            except Exception:
+                continue
+            if kl:
+                state[sym].kl_hist = kl
+    _NET["kline_ts"] = time.time()
 
 
-def mark_listener():
-    return _ws_loop("markPrice@1s", _handle_mark_msg, "mark")
+async def kline_topup_loop(state, executor):
+    loop = asyncio.get_event_loop()
+    while True:
+        now = time.time()
+        next_run = (int(now) // 3600 + 1) * 3600 + TOPUP_DELAY_S
+        await asyncio.sleep(max(1.0, next_run - now))
+        try:
+            await loop.run_in_executor(executor, _kline_topup_all, state)
+            print("[daemon] hourly kline top-up complete")
+        except Exception as e:
+            print(f"[daemon] kline top-up failed: {e}")
 
 
 # ── dedup state (shared with the hourly ledger) ──────────────────────────────
@@ -373,7 +376,11 @@ def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
     for sym, strat, d, st in candidates:
         ft = d.get("t") or now_hour           # fire hour (current or just-closed)
         last_fire[(sym, strat)] = ft
-        px = st.mark_price or (st.cur_candle or {}).get("c")
+        # entry-price chain: live mark → forming candle → last CLOSED candle's
+        # close. The final fallback guarantees a fire is never logged unpriced
+        # (2026-07-09 audit F-01: unpriced fires silently disabled all alerts).
+        px = (st.mark_price or (st.cur_candle or {}).get("c")
+              or (st.kl_hist[-1][4] if st.kl_hist else None))
         pump = None
         try:
             if fs._pump_score and fs._PUMP_MODEL:
@@ -411,9 +418,13 @@ def eval_tick(state: dict[str, _Sym], last_fire: dict[tuple, int]) -> bool:
 
 def _write_heartbeat(tick: int, n_syms: int, last_fire_ts: int | None) -> None:
     DAEMON_DIR.mkdir(parents=True, exist_ok=True)
+    # Honest health: ages of the last SUCCESSFUL data pulls (the old ws flags
+    # reported "connected" on a socket that never delivered a byte — F-01).
+    now = time.time()
     HEARTBEAT.write_text(json.dumps({
-        "ts": fs._now(), "tick": tick, "symbols": n_syms,
-        "ws_kline_connected": _WS_STATUS["kline"], "ws_mark_connected": _WS_STATUS["mark"],
+        "ts": fs._now(), "tick": tick, "symbols": n_syms, "mode": "rest",
+        "mark_age_s": (round(now - _NET["mark_ts"]) if _NET["mark_ts"] else None),
+        "kline_age_s": (round(now - _NET["kline_ts"]) if _NET["kline_ts"] else None),
         "last_fire_ts": last_fire_ts, "dry_run": DRY_RUN,
     }, separators=(",", ":")), encoding="utf-8")
 
@@ -462,8 +473,8 @@ async def main_async() -> int:
 
     print(f"[daemon] running — {len(state)} symbols, DRY_RUN={DRY_RUN}")
     await asyncio.gather(
-        kline_listener(),
-        mark_listener(),
+        mark_poll_loop(state, executor),
+        kline_topup_loop(state, executor),
         oi_poll_loop(state, executor),
         bootstrap_refresh_loop(state, executor),
         eval_loop(state, last_fire, executor),

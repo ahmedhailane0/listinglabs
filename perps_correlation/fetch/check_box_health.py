@@ -42,6 +42,16 @@ STALE_H = float(os.environ.get("BOX_STALE_HOURS", "3"))
 DAEMON_HEARTBEAT = CACHE / "screener" / "daemon" / "heartbeat.json"
 DAEMON_STALE_H = float(os.environ.get("DAEMON_STALE_HOURS", "2.5"))
 
+# ── two more organs (2026-07-09 audit F-22 — watchdog blind spots) ───────────
+# The nightly signal loop writes loop_heartbeat.json on the box; screener_cron's
+# hourly push commits it, so CI can tell a dead tuning loop from a healthy one.
+LOOP_HEARTBEAT = CACHE / "screener" / "loop_heartbeat.json"
+LOOP_STALE_H = float(os.environ.get("LOOP_STALE_HOURS", "30"))
+# The ~60s live-cells chain (box minute-cron → Caddy → ZeroSSL cert). Checked
+# directly over HTTPS; arms only after it has been seen healthy once.
+LIVE_URL = os.environ.get("LIVE_URL", "https://45-32-102-44.sslip.io/live.json")
+LIVE_STALE_MIN = float(os.environ.get("LIVE_STALE_MIN", "20"))
+
 
 def _now() -> dt.datetime:
     return dt.datetime.now(dt.timezone.utc)
@@ -111,6 +121,74 @@ def _check_daemon(state: dict) -> dict:
     return state
 
 
+def _check_loop(state: dict) -> dict:
+    """DOWN/RECOVERED pair for the nightly signal loop, from the committed
+    loop_heartbeat.json. No-ops until the heartbeat first exists (fleet that
+    hasn't deployed it yet never false-alarms)."""
+    try:
+        ts = json.loads(LOOP_HEARTBEAT.read_text(encoding="utf-8")).get("ts")
+        age_h = (_now() - dt.datetime.fromtimestamp(ts, dt.timezone.utc)).total_seconds() / 3600
+    except Exception:
+        print("loop-health: no loop_heartbeat.json yet; skipping")
+        return state
+    prev = state.get("loop_state", "ok")
+    now_state = "down" if age_h > LOOP_STALE_H else "ok"
+    print(f"loop-health: heartbeat age {age_h:.1f}h (threshold {LOOP_STALE_H}h) "
+          f"-> {now_state} (was {prev})")
+    sent: bool | None = None
+    if now_state == "down" and prev == "ok":
+        sent = tg.send(
+            f"\U0001F7E0 <b>NIGHTLY LOOP SILENT</b> — signal_loop's heartbeat is "
+            f"{age_h:.0f}h stale. Tuning/grading paused; live alerts still run.\n"
+            f"Check: <code>ssh box</code> · <code>tail /root/signal_loop.log</code>")
+    elif now_state == "ok" and prev == "down":
+        sent = tg.send("✅ <b>NIGHTLY LOOP RECOVERED</b> — tuning/grading resumed.")
+    if now_state != prev and sent is False:
+        print("loop-health: transition but Telegram unconfigured/failed — state held")
+        return state
+    state["loop_state"] = now_state
+    return state
+
+
+def _check_live(state: dict) -> dict:
+    """DOWN/RECOVERED pair for the ~60s live.json chain. Arms only after the
+    first successful healthy read (state['live_seen'])."""
+    age_min = None
+    try:
+        import urllib.request
+        req = urllib.request.Request(LIVE_URL, headers={"User-Agent": "watchdog"})
+        with urllib.request.urlopen(req, timeout=10) as r:
+            g = json.load(r).get("generated_utc")
+        t = dt.datetime.strptime(g, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=dt.timezone.utc)
+        age_min = (_now() - t).total_seconds() / 60
+    except Exception as e:
+        if not state.get("live_seen"):
+            print(f"live-health: unreachable and never seen healthy — skipping ({type(e).__name__})")
+            return state
+    healthy = age_min is not None and age_min <= LIVE_STALE_MIN
+    if healthy:
+        state["live_seen"] = True
+    prev = state.get("live_state", "ok")
+    now_state = "ok" if healthy else "down"
+    shown = "n/a" if age_min is None else f"{age_min:.1f}"
+    print(f"live-health: age {shown}min (threshold {LIVE_STALE_MIN}min) "
+          f"-> {now_state} (was {prev})")
+    sent: bool | None = None
+    if now_state == "down" and prev == "ok":
+        sent = tg.send(
+            f"\U0001F7E0 <b>LIVE CELLS DOWN</b> — live.json is stale/unreachable; the site "
+            f"shows build-time numbers (~20min cadence) until it's back.\n"
+            f"Check: <code>ssh box</code> · <code>tail /root/live_cron.log</code> · "
+            f"<code>systemctl status caddy</code>")
+    elif now_state == "ok" and prev == "down":
+        sent = tg.send("✅ <b>LIVE CELLS RECOVERED</b> — ~60s updates resumed.")
+    if now_state != prev and sent is False:
+        print("live-health: transition but Telegram unconfigured/failed — state held")
+        return state
+    state["live_state"] = now_state
+    return state
+
+
 def main() -> int:
     t = _box_run_time()
     if t is None:
@@ -143,6 +221,12 @@ def main() -> int:
         "checked_utc": _now().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "since": st.get("since"),
     }
+    # Carry the sub-checks' transition state across runs — without this each
+    # run started from "ok" and a sustained outage would re-alert every ~20min
+    # (latent repeat-alert bug found while wiring the new checks, 2026-07-09).
+    for k in ("daemon_state", "daemon_since", "loop_state", "live_state", "live_seen"):
+        if k in st:
+            new[k] = st[k]
     if now_state != prev:
         if sent is False:
             # A transition happened but the ping didn't go out (token unset/failed).
@@ -155,6 +239,8 @@ def main() -> int:
             print(f"box-health: ALERT sent ({prev} -> {now_state})")
 
     new = _check_daemon(new)
+    new = _check_loop(new)
+    new = _check_live(new)
 
     STATE.parent.mkdir(parents=True, exist_ok=True)
     STATE.write_text(json.dumps(new, indent=1), encoding="utf-8")

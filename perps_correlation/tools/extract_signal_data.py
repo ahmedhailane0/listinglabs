@@ -108,9 +108,13 @@ def fetch_oi(tkr: str, start_ms: int) -> list[tuple[int, float]]:
 
 
 def fetch_klines(tkr: str, start_ms: int) -> list[tuple]:
-    """Hourly OHLCV paged back to start_ms (klines allow limit=1500)."""
+    """Hourly OHLCV paged back to start_ms (klines allow limit=1500).
+    Drops the still-FORMING candle (closeTime in the future) — same guard as
+    fetch_screener._klines_1h. Without it every raw series ended on a mid-hour
+    snapshot with partial close/volume (2026-07-09 audit F-05)."""
     out: dict[int, tuple] = {}
-    end_ms = _now() * 1000
+    now_ms0 = _now() * 1000
+    end_ms = now_ms0
     for _ in range(8):
         url = (f"{FAPI}/fapi/v1/klines?symbol={tkr}&interval=1h"
                f"&limit=1500&endTime={end_ms}")
@@ -118,6 +122,8 @@ def fetch_klines(tkr: str, start_ms: int) -> list[tuple]:
         if not d:
             break
         for k in d:
+            if len(k) > 6 and int(k[6]) >= now_ms0:
+                continue                       # forming candle — not settled yet
             t = _hour_floor(int(k[0]) // 1000)
             out[t] = (t, float(k[1]), float(k[2]), float(k[3]),
                       float(k[4]), float(k[5]))

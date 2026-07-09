@@ -15,8 +15,23 @@ PY="${PYTHON:-python3}"
 
 echo "=== $(date -u +%FT%TZ) screener_cron ==="
 
+# 0) Preflight (2026-07-09 audit F-21): a previous run's conflicted rebase or
+# merge would otherwise wedge every later pull into a mid-rebase state — clear
+# any half-finished git state before touching the repo.
+git -C "$REPO" rebase --abort >/dev/null 2>&1 || true
+git -C "$REPO" merge --abort  >/dev/null 2>&1 || true
+OLD_HEAD="$(git -C "$REPO" rev-parse HEAD)"
+
 # 1) Get the latest cache (best-effort; keep going if the pull hiccups).
 git -C "$REPO" pull --rebase --autostash origin main || echo "warn: pull failed, continuing"
+
+# 1b) Restart the real-time daemon when the pull changed its code (audit F-17:
+# the systemd service otherwise keeps running the old image forever — code
+# deploys never reached it).
+if ! git -C "$REPO" diff --quiet "$OLD_HEAD" HEAD -- perps_correlation/fetch perps_correlation/lib 2>/dev/null; then
+  systemctl restart screener-daemon 2>/dev/null || true
+  echo "screener-daemon restarted (fetch/ or lib/ changed in this pull)"
+fi
 
 # 2) Fetch + compute (reaches Binance from this box).
 if ! "$PY" fetch/fetch_screener.py; then
@@ -26,6 +41,9 @@ fi
 # 3) Commit the compact outputs + the forward fire-log + any new holder files.
 git -C "$REPO" add cache/screener/screener.json cache/screener/market.json
 git -C "$REPO" add cache/screener/fires_log.json 2>/dev/null || true
+# nightly-loop heartbeat (tools/signal_loop.py writes it; the CI watchdog reads
+# the committed copy to detect a dead tuning loop — audit F-22)
+git -C "$REPO" add cache/screener/loop_heartbeat.json 2>/dev/null || true
 # screener_daemon.py's heartbeat (real-time websocket alerter, its own systemd
 # service) — the daemon itself has no push access, so this hourly commit is
 # how CI's box-down watchdog (check_box_health.py _check_daemon) ever sees it.
