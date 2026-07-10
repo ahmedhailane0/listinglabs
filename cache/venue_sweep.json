@@ -3949,5 +3949,31 @@
       "kucoin_spot": "2026-07-09T17:39:36.302108Z",
       "kucoin_futures": "2026-07-09T17:39:36.302108Z"
     }
+  },
+  "skhy": {
+    "symbol": "SKHY",
+    "floor": "2026-06-10T15:37:03+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-07-02T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-07-03T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-07-10T17:35:28.890967Z",
+      "kraken_futures": "2026-07-10T17:35:28.890967Z",
+      "kucoin_spot": "2026-07-10T17:35:28.890967Z",
+      "kucoin_futures": "2026-07-10T17:35:28.890967Z",
+      "bitget_perp": "2026-07-10T17:35:28.890967Z",
+      "gate_perp": "2026-07-10T17:35:28.890967Z"
+    }
   }
 }

@@ -7,9 +7,19 @@
   "window_end_utc": "2026-07-10T21:37:03Z",
   "events": [
     {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-07-02T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-07-03T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-07-10T15:37:03Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined SKHYUSDT Perpetual Contract (2026-07-10) 币安重要公告: 币安期货将推出以美元Ⓢ为保证金的SKHYUSDT永续合约（2026年7月1\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16326",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined SKHYUSDT Perpetual Contract (2026-07-10) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u671f\u8d27\u5c06\u63a8\u51fa\u4ee5\u7f8e\u5143\u24c8\u4e3a\u4fdd\u8bc1\u91d1\u7684SKHYUSDT\u6c38\u7eed\u5408\u7ea6\uff082026\u5e747\u67081\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16326",
       "source": "bwenews"
     }
   ],
