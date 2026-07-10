@@ -1,0 +1,18 @@
+{
+  "token": "SKHY",
+  "name": "SKHY",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-10T13:37:03Z",
+  "window_end_utc": "2026-07-10T21:37:03Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-07-10T15:37:03Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined SKHYUSDT Perpetual Contract (2026-07-10) 币安重要公告: 币安期货将推出以美元Ⓢ为保证金的SKHYUSDT永续合约（2026年7月1\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16326",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
