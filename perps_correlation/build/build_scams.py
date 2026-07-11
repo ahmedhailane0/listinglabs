@@ -2119,6 +2119,116 @@ def _outcome_story(o) -> str:
     return f'<span class="{cls}" title="{peak}">{txt}</span>'
 
 
+# ── Forward paper-trade experiment: v4 + high open-interest + tight take-profit ──
+# Frozen 2026-07-11 after a walk-forward test showed a tight-TP high-OI v4 long
+# hitting ~90% in-sample. This panel scores ONLY fires logged AFTER the freeze —
+# a genuinely out-of-sample forward ledger that grows on its own as the box logs
+# and grades new fires. The rule params are derived from the already-public
+# fires_log (oi_combined is committed per fire), so nothing here leaks a tuned
+# edge. Mirrors tools/paper_trade_tracker.py (the box-side/local version).
+PT_FREEZE_TS = 1783813238            # 2026-07-11T23:40:38Z — the out-of-sample boundary
+PT_FREEZE_TXT = "2026-07-11"
+PT_OI_CUTOFF = 6_928_091             # 60th-pct open interest of v4 fires at freeze
+PT_COSTS = 0.0015                    # 0.05% fee + 0.10% slippage per round trip
+PT_TP_MAIN = 0.03
+
+
+def _papertrade_panel() -> str:
+    """A section on the AI Journal: the v4 + high-OI + tight-TP forward experiment,
+    scored only on fires that fired AFTER the frozen out-of-sample boundary."""
+    fires = [e for e in _episodes(_load_fires())
+             if e.get("strat") == "v4"
+             and (e.get("oi_combined") or 0) >= PT_OI_CUTOFF
+             and (e.get("t") or e.get("logged_utc") or 0) >= PT_FREEZE_TS]
+    closed = [e for e in fires if e.get("outcome")]
+    pending = [e for e in fires if not e.get("outcome")]
+
+    def _mfe(e):
+        return (e.get("outcome") or {}).get("mfe") or 0.0
+
+    def _stat(label, val, cls=""):
+        return (f'<div class="jstat {cls}"><span class="jstat-v">{val}</span>'
+                f'<span class="jstat-l">{label}</span></div>')
+
+    def _score(tp):
+        nets = [(tp - PT_COSTS) if _mfe(e) >= tp
+                else ((e.get("outcome") or {}).get("pnl_real") or 0.0)
+                for e in closed]
+        w = sum(1 for e in closed if _mfe(e) >= tp)
+        return {"w": w, "wr": w / len(closed) * 100, "net": sum(nets) / len(nets)}
+
+    intro = (
+        '<p class="jnote">A <b>forward, out-of-sample experiment</b> frozen on '
+        f'<b>{PT_FREEZE_TXT}</b>: go <b>long a Buy&nbsp;v4</b> signal only when the coin '
+        'has <b>high open interest</b>, then take profit fast at <b>+2–3%</b> (own ~16% '
+        'stop, 72h max). A walk-forward test hinted this could win ~90% of the time — so '
+        'this panel scores <b>only fires that triggered after the freeze</b>, an honest '
+        'unseen test. <b>Paper only — not executed trades, not financial advice.</b></p>')
+
+    if not closed:
+        cards = (
+            '<div class="jcards">'
+            + _stat("forward fires", len(fires))
+            + _stat("awaiting 72h grade", len(pending))
+            + _stat("win rate", "—")
+            + _stat("net / trade", "—")
+            + '</div>'
+            + '<p class="jnote">Day&nbsp;0 — no qualifying v4 fire has matured since the '
+              'freeze yet. This fills on its own as high-OI v4 setups fire and grade '
+              '(expect only a few per week).</p>')
+        table = ""
+    else:
+        s2, s3 = _score(0.02), _score(0.03)
+        worst = min((e.get("outcome") or {}).get("pnl_real") or 0.0 for e in closed)
+        cards = (
+            '<div class="jcards">'
+            + _stat("forward fires (graded)", len(closed))
+            + _stat("win rate @ +2%", f'{s2["wr"]:.0f}%',
+                    "good" if s2["net"] > 0 else "bad")
+            + _stat("win rate @ +3%", f'{s3["wr"]:.0f}%',
+                    "good" if s3["net"] > 0 else "bad")
+            + _stat("net / trade @ +3%", f'{s3["net"]*100:+.2f}%',
+                    "good" if s3["net"] > 0 else "bad")
+            + _stat("worst single trade", f'{worst*100:+.1f}%',
+                    "bad" if worst < 0 else "")
+            + '</div>')
+        rows = []
+        for e in sorted(closed, key=lambda e: e.get("t") or 0, reverse=True):
+            o = e.get("outcome") or {}
+            mfe = _mfe(e)
+            ep = e.get("entry_price") or o.get("entry")
+            c2 = "jhit" if mfe >= 0.02 else "jmiss"
+            c3 = "jhit" if mfe >= 0.03 else "jmiss"
+            rows.append(
+                f'<tr><td>{_dts(e.get("t") or e.get("logged_utc") or 0)}</td>'
+                f'<td class="jt">{html.escape((e.get("sym") or "").upper())}</td>'
+                f'<td class="jnum">{fmt_subscript_price(ep) if ep else "—"}</td>'
+                f'<td class="jnum {c2}">{"✓" if mfe >= 0.02 else "✗"}</td>'
+                f'<td class="jnum {c3}">{"✓" if mfe >= 0.03 else "✗"}</td>'
+                f'<td class="jnum">{mfe*100:+.1f}%</td>'
+                f'<td class="jnum">{_jpct(o.get("pnl_real"))}</td></tr>')
+        table = (
+            '<div class="tablewrap jscroll"><table class="jtable"><thead><tr>'
+            '<th>When</th><th>Token</th>'
+            '<th title="entry reference price (Binance mark at the signal)">Bought at</th>'
+            '<th title="did price reach +2%?">+2%?</th>'
+            '<th title="did price reach +3%?">+3%?</th>'
+            '<th title="best move within 72h">Best move</th>'
+            '<th title="realistic P&amp;L, net of fees + slippage">Result</th>'
+            '</tr></thead><tbody>' + "".join(rows) + '</tbody></table></div>')
+
+    return (
+        '<section class="card span jscore" id="papertrade">'
+        '<h3>V4 High-OI Paper Trade '
+        '<span class="asof">forward · out-of-sample · tight +2–3% take-profit</span></h3>'
+        + intro + cards + table
+        + '<p class="jnote"><b>Honest caveat:</b> a high win rate here is bought with a '
+          'tiny profit target — the ~16% stop makes the few losers big, and they tend to '
+          'cluster together in a market pullback. <b>Not proven until it survives a '
+          'downturn.</b></p>'
+        '</section>')
+
+
 def _journal_page(recs) -> str:
     """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
     (entry + stop, logged by the box), graded 72h later on real price. A scorecard
@@ -2398,6 +2508,7 @@ early evidence.</p></header>
 </section>
 {_pnl_card(closed)}
 </div>
+{_papertrade_panel()}
 <div class="jrow">{bench}{_winrate_chart(closed)}</div>
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
