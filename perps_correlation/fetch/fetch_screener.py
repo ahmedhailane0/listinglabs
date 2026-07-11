@@ -23,6 +23,7 @@ signals are correct from the very first run (no multi-day warm-up).
 from __future__ import annotations
 
 import json
+import os
 import sys
 import time
 import urllib.request
@@ -92,16 +93,32 @@ SCORE_WATCH_COOLDOWN_S = 24 * 3600
 SCORE_WATCH_FILE = OUTDIR / "score_watch.json"
 
 # Buy-signal play-by-play on the +50% pump odds (pump_score). When a coin's +50%
-# chance crosses ALERT_BUY_ODDS we ping Telegram, then ping again on each NEW HIGH
-# while it stays above, and once when it drops back under (re-arming a later
-# re-cross). Per-coin state in BUY_WATCH_FILE. Logs ONE journal fire (strat
-# "buy15") on the first crossing (see _log_fires) so the Buy Signals journal can
-# score it 72h later. Hourly cadence (the model only re-scores each closed hour).
+# chance crosses ALERT_BUY_ODDS we ping Telegram (🚀 arm), then again on each real
+# NEW HIGH while it stays above (📈), and once when it dies (🔻). Per-coin state in
+# BUY_WATCH_FILE. Logs ONE journal fire (strat "buy15") on the first crossing (see
+# _log_fires) so the Buy Signals journal can score it 72h later.
 # Raised 15->20 on 2026-07-05: graded live fires showed the 15-20% score band was
 # the sole source of the journal's net loss (-$47 of -$33 total across 25 trades,
 # mostly clean stop-outs with no real move), while 20%+ was ~breakeven/positive
 # (still a thin sample, ~9 trades) — see memory trade_journal_pnl_card.md.
+#
+# Since 2026-07-11 this is driven by the REAL-TIME daemon (screener_daemon.py's
+# buy_climb_loop, ~60s) so a crossing pings instantly, not up to an hour late. The
+# hourly cron NO LONGER re-runs it (was the source of "alerts every hour": the
+# coincident, noisy pump-score jitters across a single line, so a coin parked near
+# 20 pinged 🚀buy/🔻off/📈climb almost every hour). Two guards kill that spam:
+#   • HYSTERESIS — arm at ALERT_BUY_ODDS, but only disarm/emit 🔻 once the score
+#     falls all the way through ALERT_BUY_ODDS_OFF. The dead-band between them
+#     absorbs the hour-to-hour wobble so a coin can't buy/off flip-flop.
+#   • COOLDOWN + real new-high — after ANY ping, stay quiet for
+#     BUY_CLIMB_COOLDOWN_S even on fresh highs, and a 📈 climb needs a genuine
+#     BUY_CLIMB_MIN_JUMP-point new high, not float noise. The daemon evaluates
+#     every ~60s, so without this a climbing coin would ping every minute.
+# One 🚀 per real episode; the daemon is the single writer of BUY_WATCH_FILE.
 ALERT_BUY_ODDS = 20.0
+ALERT_BUY_ODDS_OFF = 12.0        # lower hysteresis floor: must drop below this to disarm
+BUY_CLIMB_MIN_JUMP = 6.0         # a 📈 climb ping needs a real new high this many points up
+BUY_CLIMB_COOLDOWN_S = 6 * 3600  # after any ping, no further ping for this coin for 6h
 BUY_WATCH_FILE = OUTDIR / "buy_watch.json"
 BUY_LINK_BASE = "https://ahmedhailane0.github.io/listinglabs/scams/"
 
@@ -638,11 +655,17 @@ def _alert_score_watch(recs: dict) -> int:
 
 
 def _alert_buy_climb(recs: dict) -> int:
-    """Buy-signal play-by-play on the +50% pump odds (pump_score). For each coin:
-    a 🚀 ping the first time it crosses ALERT_BUY_ODDS, a 📈 ping on each NEW HIGH
-    while it stays above, and a 🔻 'signal off' when it drops back under (which
-    re-arms a later re-cross). Per-coin state in BUY_WATCH_FILE. Hourly cadence;
-    no-op without Telegram; never raises."""
+    """Buy-signal play-by-play on the +50% pump odds (pump_score), with hysteresis
+    + cooldown so a noisy score parked near the line can't spam (see the module
+    comment above ALERT_BUY_ODDS). For each coin:
+      • 🚀 buy   — first time it crosses ALERT_BUY_ODDS (arms it; instant, no cooldown)
+      • 📈 climb — a genuine new high (>last + BUY_CLIMB_MIN_JUMP) once the per-coin
+                   BUY_CLIMB_COOLDOWN_S since the last ping has elapsed
+      • 🔻 off   — only once it falls all the way through ALERT_BUY_ODDS_OFF (the
+                   dead-band above it is held silently), which re-arms a later cross
+    Per-coin state in BUY_WATCH_FILE ({armed, last=score at last ping, t=last ping
+    time}). Driven by the daemon (~60s) — single writer. No-op without Telegram;
+    never raises."""
     if not _tg or not _tg.enabled():
         return 0
     try:
@@ -660,15 +683,18 @@ def _alert_buy_climb(recs: dict) -> int:
             continue
         st = state.get(sym) or {}
         armed = bool(st.get("armed"))
-        last = st.get("last") or 0.0
+        last = st.get("last") or 0.0          # score at the last ping (high-water)
+        last_t = st.get("t") or 0             # time of the last ping (cooldown clock)
         kind = None
-        if score >= ALERT_BUY_ODDS:
-            if not armed:
-                kind = "buy"                      # first crossing
-            elif score > last + 0.05:             # a new high (epsilon vs float noise)
-                kind = "climb"
-        elif armed:
-            kind = "off"                          # dropped back under the line
+        if not armed:
+            if score >= ALERT_BUY_ODDS:
+                kind = "buy"                  # first crossing → arm + instant ping
+        else:
+            if score < ALERT_BUY_ODDS_OFF:
+                kind = "off"                  # fell through the lower floor → disarm
+            elif score > last + BUY_CLIMB_MIN_JUMP \
+                    and now - last_t >= BUY_CLIMB_COOLDOWN_S:
+                kind = "climb"                # a real new high, past the cooldown
         if kind is None:
             continue
         try:
@@ -695,7 +721,7 @@ def _alert_buy_climb(recs: dict) -> int:
                 ])
             else:  # off
                 msg = (f"\U0001F53B <b>{_esc(sym)}</b> buy signal off — "
-                       f"+50% chance back under {ALERT_BUY_ODDS:.0f}% (now {_pump_pct(score)})")
+                       f"+50% chance faded under {ALERT_BUY_ODDS_OFF:.0f}% (now {_pump_pct(score)})")
             if _tg.send(msg):
                 if kind == "off":
                     state[sym] = {"armed": False, "last": 0.0, "t": now}
@@ -708,9 +734,14 @@ def _alert_buy_climb(recs: dict) -> int:
             print(f"  buy-climb {sym} failed: {ex}")
     if changed:
         try:
-            BUY_WATCH_FILE.write_text(
+            # Atomic replace: the daemon rewrites this every ~60s, so a crash
+            # mid-write must not leave a truncated file (a torn read parses to {}
+            # and would re-arm every coin → a burst of duplicate 🚀 pings).
+            tmp = BUY_WATCH_FILE.with_suffix(".json.tmp")
+            tmp.write_text(
                 json.dumps(state, ensure_ascii=False, separators=(",", ":")),
                 encoding="utf-8")
+            os.replace(tmp, BUY_WATCH_FILE)
         except Exception as ex:
             print(f"  buy_watch: state write failed ({ex})")
     if sent:
@@ -1210,9 +1241,11 @@ def main(argv: list[str]) -> int:
     # Second net: ping standout pump-scores with no fired setup (runs before
     # mark_price is stripped below, so the price is still available).
     _alert_score_watch(recs)
-    # Buy-signal play-by-play: ping when the +50% odds cross 15% and on each new
-    # high while above (the owner's "watch it climb" feed). Same pre-strip spot.
-    _alert_buy_climb(recs)
+    # Buy-signal play-by-play (🚀 cross / 📈 climb / 🔻 off) is driven by the
+    # real-time daemon (screener_daemon.py buy_climb_loop, ~60s) so it pings
+    # instantly, not up to an hour late — and the daemon is its SINGLE writer, so
+    # the hourly cron no longer re-runs it (that hourly re-run was the "alerts
+    # every hour" spam). Journaling of the buy15 fire still happens in _log_fires.
     # Instant target-hit heads-up: ping the moment an open buy-signal reaches
     # +25%/+50% (don't wait for the 72h grade). Needs live mark_price (pre-strip).
     _alert_targets(recs)

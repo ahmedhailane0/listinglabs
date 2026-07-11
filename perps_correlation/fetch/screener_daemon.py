@@ -1,9 +1,18 @@
-"""Real-time Telegram alerting daemon for Buy v1/v2/v4/probe fires.
+"""Real-time Telegram alerting daemon for Buy v1/v2/v4/probe fires + the
++50%-pump-odds BUY SIGNAL feed.
 
 RUNS ON THE ALWAYS-ON BOX, ALONGSIDE the existing hourly `fetch_screener.py`
 cron (this does NOT replace it). The hourly cron only checks once per hour
 (cron fires :17 past, plus ~1-2min compute), so a v1/v4/v2/probe fire can sit
 unalerted for up to ~20-70 minutes. This daemon keeps a fast REST loop hot —
+
+BUY SIGNAL feed (2026-07-11): the +50%-pump-odds play-by-play (🚀 crosses 20% /
+📈 new high / 🔻 fades) is ALSO driven here, on its own ~60s buy_climb_loop, so a
+crossing pings within a minute instead of up to an hour late. The daemon is the
+SINGLE writer of buy_watch.json — the hourly cron no longer runs _alert_buy_climb
+(its hourly re-run of a noisy, coincident score was the old "alerts every hour"
+spam; fetch_screener now guards it with hysteresis + a per-coin cooldown).
+
 one bulk premiumIndex call for ALL marks+funding every MARK_POLL_S, a klines
 top-up right after every hour closes — and re-evaluates lib.signals.evaluate()
 every EVAL_INTERVAL_S so a fire alerts within ~1-2 minutes of being true, not
@@ -83,6 +92,7 @@ BOOTSTRAP_REFRESH_S = 30 * 60   # full REST re-bootstrap (OI + klines + funding)
 DEDUP_REFRESH_TICKS = 15        # ~5min at EVAL_INTERVAL_S=20s: reload fires_log.json dedup
 MARK_POLL_S = 30                # bulk premiumIndex poll (ALL marks+funding, ONE call)
 TOPUP_DELAY_S = 75              # klines-only refresh this many seconds after each hour closes
+BUY_CLIMB_INTERVAL_S = 60       # re-score every coin's +50% pump-odds for the buy-signal feed
 
 _TICKER_TO_STATE: dict[str, "_Sym"] = {}
 _NET = {"mark_ts": 0.0, "kline_ts": 0.0}   # last-success stamps for the honest heartbeat
@@ -453,6 +463,67 @@ async def eval_loop(state, last_fire, executor):
         await asyncio.sleep(EVAL_INTERVAL_S)
 
 
+# ── buy-signal (+50% pump-odds) feed ─────────────────────────────────────────
+
+def _build_climb_recs(state: dict[str, _Sym]) -> dict:
+    """Score every symbol's +50% pump-odds (and the +25%/+10% ladder) off the
+    live buffers, shaped like fetch_screener's `recs` so fs._alert_buy_climb can
+    consume it verbatim. Mirrors fetch_screener._screen_one's pump-odds block
+    (same models, same P(+10)>=P(+25)>=P(+50) nesting clamp)."""
+    if not (fs._pump_score and fs._PUMP_MODEL):
+        return {}
+    now_hour = (int(time.time()) // 3600) * 3600
+    recs: dict = {}
+    for sym, st in state.items():
+        oi_eff = list(st.oi_hist)
+        if st.cur_oi is not None and (not oi_eff or oi_eff[-1][0] < now_hour):
+            oi_eff.append((now_hour, st.cur_oi))
+        kl_eff = list(st.kl_hist)
+        live_row = st.kl_tuple()
+        if live_row and live_row[0] == now_hour and (not kl_eff or kl_eff[-1][0] < now_hour):
+            kl_eff.append(live_row)
+        if not oi_eff or not kl_eff:
+            continue
+        try:
+            def _ps(model):
+                return fs._pump_score(oi_eff, kl_eff, st.funding_hist, model) if model else None
+            pump = _ps(fs._PUMP_MODEL)
+            if pump is None:
+                continue
+            p25, p10 = _ps(fs._PUMP_MODEL_25), _ps(fs._PUMP_MODEL_10)
+            if p25 is not None:
+                p25 = max(p25, pump)
+            if p10 is not None:
+                p10 = max(v for v in (p10, p25, pump) if v is not None)
+        except Exception:
+            continue
+        px = (st.mark_price or (st.cur_candle or {}).get("c")
+              or (st.kl_hist[-1][4] if st.kl_hist else None))
+        recs[sym] = {"pump_score": pump, "pump_score_25": p25, "pump_score_10": p10,
+                     "mark_price": px, "market": {}}
+    return recs
+
+
+async def buy_climb_loop(state, executor):
+    """Re-score the +50% pump-odds for every coin every BUY_CLIMB_INTERVAL_S and
+    let fs._alert_buy_climb emit the hysteresis+cooldown-guarded 🚀/📈/🔻 pings.
+    Suppressed under DRY_RUN (it sends real Telegram; nothing is logged here — the
+    buy15 journal fire still comes from the hourly cron's _log_fires)."""
+    loop = asyncio.get_event_loop()
+    while True:
+        await asyncio.sleep(BUY_CLIMB_INTERVAL_S)
+        if DRY_RUN:
+            continue
+        try:
+            recs = await loop.run_in_executor(executor, _build_climb_recs, state)
+            if recs:
+                n = await loop.run_in_executor(executor, fs._alert_buy_climb, recs)
+                if n:
+                    print(f"[daemon] buy-climb sent {n} ping(s)")
+        except Exception as e:
+            print(f"[daemon] buy-climb loop failed: {e}")
+
+
 # ── main ─────────────────────────────────────────────────────────────────────
 
 async def main_async() -> int:
@@ -478,6 +549,7 @@ async def main_async() -> int:
         oi_poll_loop(state, executor),
         bootstrap_refresh_loop(state, executor),
         eval_loop(state, last_fire, executor),
+        buy_climb_loop(state, executor),
     )
     return 0
 
