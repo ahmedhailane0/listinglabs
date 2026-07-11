@@ -62,6 +62,13 @@ _QUOTE_SUFFIXES = ("USDT", "USDC", "USD", "USDⓈ", "KRW", "BTC", "ETH")
 _NOISE_SYMBOLS = {"USDT", "USDC", "USD", "KRW", "BTC", "ETH", "ETF", "IPO", "CEO",
                   "SEC", "US", "AI", "DEX", "NFT"}
 
+# Tokenized stocks / non-crypto tickers that Binance lists but which are OUT OF
+# SCOPE for a crypto-listing tracker (they behave like equities, not tokens).
+# The `_is_tradfi` keyword filter only catches headlines that say "tradfi"/
+# "pre-ipo"; a plain "…Will Launch SKHYUSDT Perpetual Contract" slips through,
+# so we blocklist the symbol itself. Add tickers here as they appear.
+_STOCK_SYMBOLS = {"SKHY"}
+
 
 def _clean(title: str) -> str:
     """Strip the HTML the feed embeds inside <title> (e.g. <br/>, entities)."""
@@ -198,6 +205,8 @@ def main() -> int:
         # one signal per named symbol — a single headline can list several
         # ("ZESTUSDT and BTWUSDT"); fall back to a symbol-less signal otherwise.
         for sym in (_extract_symbols(it["title"]) or [None]):
+            if sym and sym in _STOCK_SYMBOLS:
+                continue  # tokenized stock / non-crypto ticker — never a signal
             signals.append({
                 **it,
                 "venue": venue,
