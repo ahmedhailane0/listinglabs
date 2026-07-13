@@ -62,11 +62,20 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 
 # The AI's forward "trade journal": every live Buy-setup fire the box logged, with
 # the outcome it scored 72h later (grade_fires). Public-safe — it exposes the calls
-# and results, NOT the tuned thresholds (the edge). Rendered into journal.html.
+# and results, NOT the tuned thresholds (the edge). Rendered into trades.html.
 FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
-# Only the setups the trained model currently trades — v3 was dropped (never fired),
+# The three proven setups always shown on the site. v3 was dropped (never fired),
 # so featuring it would misrepresent "what the AI thinks is a good trade".
-JOURNAL_SETUPS = ("v1", "v2", "v4")
+CORE_SETUPS = ("v1", "v2", "v4")
+# Unproven setups: still logged + graded on the box (they keep building a live
+# track record) but HIDDEN from the site until each earns its way back — a setup
+# auto-returns once it has >= EARN_MIN_N graded episodes AND positive avg $ P&L
+# (see _visible_setups()). buy15 is the pump-odds "buy signal"; the rest are the
+# experimental detectors (probe/dump/bear_trap/spike_retrace).
+HIDDEN_SETUPS = ("probe", "dump", "bear_trap", "spike_retrace", "buy15")
+EARN_MIN_N = 30        # graded episodes a hidden setup needs before it may show
+EARN_MIN_EXP = 0.0     # ...and its avg realized P&L must be above this to unhide
+JOURNAL_SETUPS = CORE_SETUPS   # back-compat alias (kept for readability below)
 # Hypothetical equal stake per paper trade, so the PnL card can show a $ figure
 # (Polymarket-style) while staying honest — the model risks NO real capital. The
 # card labels this assumption; change it here and the whole card rescales.
@@ -78,19 +87,24 @@ PNL_STAKE = 100
 # rebuild. Only this page widens its CSP connect-src to allow it (page_meta arg).
 LIVE_ORIGIN = "https://45-32-102-44.sslip.io"
 LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
-STRATS = ("v1", "v2", "v3", "v4")
+STRATS = ("v1", "v2", "v4")   # v3 dropped (never fired) — not rendered on detail cards
 STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4",
-              "buy15": "Buy signal"}
+              "buy15": "Buy signal", "probe": "Probe", "dump": "Dump (short)",
+              "bear_trap": "Bear trap", "spike_retrace": "Spike & retrace"}
 STRAT_TITLE = {"v1": "High-control accumulation breakout",
                "v2": "Ignition (OI-confirmed coil-break)", "v3": "Washout reversal",
                "v4": "Coiled accumulation (pre-pump build)",
-               "buy15": "Pump odds crossed 20%"}
-# plain-English "why the AI bought" — for the AI Journal table (non-expert friendly)
+               "buy15": "Pump odds crossed 20%", "probe": "Pre-vertical volume break",
+               "dump": "Distribution after a markup (short)",
+               "bear_trap": "Flush fully reclaimed", "spike_retrace": "Spike sold back down"}
+# plain-English "why the AI bought" — for the trade table (non-expert friendly)
 STRAT_WHY = {"v1": "quiet OI build",
              "v2": "coil breakout on volume",
              "v3": "washout reversal",
              "v4": "quiet accumulation",
-             "buy15": "odds crossed 20%"}
+             "buy15": "odds crossed 20%", "probe": "volume break of the coil",
+             "dump": "crowded longs rolling over", "bear_trap": "flush bought back",
+             "spike_retrace": "spike faded, shorts crowd"}
 BUY_ODDS_GATE = 20.0   # the +50% pump_score that flags a coin as a "buy signal".
                        # KEEP IN SYNC with fetch_screener.ALERT_BUY_ODDS (the box's
                        # actual fire/alert threshold) — raised 15->20 on 2026-07-04.
@@ -1364,7 +1378,6 @@ def _supply_valuation_block(rec) -> str:
             f'<div class="donut-grid">{"".join(donuts)}</div></section>')
 
 
-
 def _dt_hour(ts) -> str:
     import datetime as _dt
     return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%Y-%m-%d %H:00")
@@ -1376,7 +1389,7 @@ def _binance_btn(sym) -> str:
 
 
 def _signals_section(sym, rec=None) -> str:
-    """Buy v1/v2/v3 cards + combined OI / FDV / funding + a Binance link, from
+    """Buy v1/v2/v4 cards + combined OI / FDV / funding + a Binance link, from
     cache/screener (hourly box). Empty for coins with no Binance perp."""
     r = _sig(sym)
     if not r or r.get("data") == "no_perp":
@@ -1424,21 +1437,23 @@ def _signals_section(sym, rec=None) -> str:
         cards.append(f'<div class="buycard{" fired" if fired else ""}">'
                      f'<div class="bc-head">{STRAT_NAME[k]} <span>{STRAT_TITLE[k]}</span>{state}</div>'
                      f'{extra}<ul class="conds">{conds}</ul></div>')
-    # #7 probe + #6 dump — extra validated detectors, shown alongside the Buy setups.
-    # probe = a long CONFIRMATION (the pre-vertical volume break); dump = a SHORT
-    # (distribution). Rendered only when there's enough data to have a verdict.
+    # Extra detectors (probe/dump/bear_trap/spike_retrace) are HIDDEN from the site
+    # while they build a live record — they render here only if they've earned their
+    # way back via _visible_setups() (see the trades tab). Still logged+graded on the box.
     EXTRA = {
         "probe": ("⚡ Probe day", "volume break out of the coil — the pre-vertical test",
                   "probe", "2.5× lift to a +50% pump"),
         "dump": ("🔻 Distribution — short", "crowded longs rolling over after a markup",
                  "dump", "6.2× lift to a −20% drop"),
-        # Dimension-01 price-action factors (2026-07-02) — journal-only, no alerts.
         "bear_trap": ("🪤 Bear trap", "a ≥15% flush fully reclaimed — the dip got bought back",
                       "beartrap", "4.6× lift to a +50% pump"),
         "spike_retrace": ("🌊 Spike & retrace", "a +30% spike sold back down while shorts crowd in",
                           "spikeret", "2.9× lift to a +50% pump"),
     }
+    _vis = _visible_setups_cached()
     for k, (nm, ttl, css, cred) in EXTRA.items():
+        if k not in _vis:
+            continue
         d = s.get(k) or {}
         if not d or d.get("insufficient"):
             continue
@@ -1464,11 +1479,10 @@ def _signals_section(sym, rec=None) -> str:
             f'{_dt_hour(as_of) if as_of else "—"} UTC</span>'
             f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
-            f'<p class="note">Buy v1–v4 are mechanical long setups on open interest, price '
-            f'and funding. <b>Probe</b> (long confirmation), <b>Distribution</b> (a short) '
-            f'and the price-action factors <b>Bear trap</b> / <b>Spike &amp; retrace</b> '
-            f'are newer, backtest-validated detectors — experimental, not yet alert-wired. '
-            f'Research signals, not financial advice.</p></section>')
+            f'<p class="note">Buy v1, v2 &amp; v4 are mechanical long setups on open interest, '
+            f'price and funding — the model\'s live trades are tracked on the '
+            f'<a href="trades.html">AI Trades</a> tab. Research signals, not financial advice.'
+            f'</p></section>')
 
 
 def _detail(rec, platforms) -> str:
@@ -1565,7 +1579,6 @@ def _filter_bar() -> str:
   <div class="fp-presets">
     <button class="fp-pre" data-pre="v1">Buy v1</button>
     <button class="fp-pre" data-pre="v2">Buy v2</button>
-    <button class="fp-pre" data-pre="v3">Buy v3</button>
     <button class="fp-pre" data-pre="v4">Buy v4</button>
   </div>
   <div class="fp-grid">
@@ -1583,9 +1596,6 @@ def _filter_bar() -> str:
     </fieldset>
     <fieldset class="fp-group"><legend>Funding</legend>
       """ + _cb("fund01", "Funding &lt;0.1%") + _cb("fund002", "|Funding 8h| ≤0.02%") + """
-    </fieldset>
-    <fieldset class="fp-group"><legend>Washout (v3)</legend>
-      """ + _cb("oidd15", "OI drawdown ≥15%") + _cb("pxdd10", "Price dd ≤10%") + _cb("pxoidd", "Price/OI dd ≤0.5") + _cb("oireb8", "OI rebuild ≥8%") + _cb("brkwash", "Breaks washout high") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Coiled accumulation (v4)</legend>
       """ + _cb("oibld72", "OI +40% (72h)") + _cb("pxflat72", "Price flat ≤25% (72h)") + _cb("coil45", "Coiling range ≤45%") + _cb("oilead2", "OI leads price ≥2×") + _cb("fundsqz", "Funding squeeze/trend") + """
@@ -1634,14 +1644,14 @@ LIVE_JS = (
     'function tileMeta(t,label,txt){var sp=t.querySelectorAll(".tile-meta span");'
     'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
     'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
-    'function buyBadges(sig){var o="";["v1","v2","v3","v4"].forEach(function(k){'
+    'function buyBadges(sig){var o="";["v1","v2","v4"].forEach(function(k){'
     'if(sig&&sig[k])o+="<span class=\\"buy "+k+" mini\\" title=\\""+k+" fired\\">Buy "+k+"</span>";});return o;}'
     # Rebuild the pipe-delimited data-cond string from the live fired flags, so
     # the (checkbox-driven) Buy v1-v4 preset filters track the live verdicts:
     # a strategy fires iff ALL its conditions are true, so the union of fired
     # strategies' condition keys is exactly what their checkboxes test for.
     'function condFromSig(sig){var P=window.__PRESETS;if(!P)return null;var seen={},o="|";'
-    '["v1","v2","v3","v4"].forEach(function(k){if(sig&&sig[k])(P[k]||[]).forEach(function(c){'
+    '["v1","v2","v4"].forEach(function(k){if(sig&&sig[k])(P[k]||[]).forEach(function(c){'
     'if(!seen[c]){seen[c]=1;o+=c+"|";}});});return o==="|"?"||":o;}'
     'function setCount(id,val){var el=document.getElementById(id);'
     'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
@@ -1671,7 +1681,7 @@ LIVE_JS = (
     'if(v.sig){var lbr=row.querySelector("[data-buyrow]");if(lbr){var lnb=buyBadges(v.sig);if(lbr.innerHTML!==lnb){lbr.innerHTML=lnb;flash(lbr);}}}}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
-    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v3",d.sig_counts.v3);setCount("cnt-v4",d.sig_counts.v4);}'
+    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v4",d.sig_counts.v4);}'
     # re-run the filter (data-cond just changed) so a Buy v1-v4 preset shows
     # exactly the coins now firing, then re-apply the active sort so the row
     # order matches the live values (e.g. the top 24h mover stays on top).
@@ -1750,7 +1760,7 @@ SETUP_PANEL = """
         <li><b>Trend</b> flavour — funding calm/slightly positive with an EMA20&gt;EMA60 uptrend.</li></ul>
       </div>
       <div class="sm-setup"><h3><span class="buy v1 mini">Buy v1</span> Accumulation breakout</h3>
-        <p>OI surges <b>≥8% in 3h</b> while price barely moves (<b>≤8%</b>), then
+        <p>OI surges <b>≥5% in 3h</b> while price barely moves (<b>≤5%</b>), then
           price <b>breaks the 6h high</b> with funding still low. Catches the
           breakout as it starts — later than v4, but more confirmed.</p>
       </div>
@@ -1760,16 +1770,11 @@ SETUP_PANEL = """
           still cold — leveraged money igniting the move. Catches "cold" pumps that
           skip v1/v4's quiet-accumulation tell (caught VELVET at its breakout).</p>
       </div>
-      <div class="sm-setup"><h3><span class="buy v3 mini">Buy v3</span> Washout reversal</h3>
-        <p>After a sharp shakeout (OI flushed <b>≥15%</b> but price held, <b>≤10%</b>
-          down), OI <b>rebuilds</b> and price reclaims the post-flush high — a
-          bounce off a cleared-out low.</p>
-      </div>
     </div>
     <p class="sm-foot">Use the <b>⚙ Filter</b> panel to build your own screen
       (OI +40% / price flat / funding &lt;0 / OI/MC…), or click a preset
-      (Buy v1–v4) to load that setup's conditions. Signals recompute each hour
-      and update live.</p>
+      (Buy v1, v2 or v4) to load that setup's conditions. Signals recompute each
+      hour and update live.</p>
   </div>
 </div>
 <script>(function(){
@@ -1930,6 +1935,56 @@ def _real_pnl(e):
     return o.get("pnl_real") if o.get("pnl_real") is not None else o.get("pnl_ownstop")
 
 
+def _setup_stats(sid, eps) -> dict:
+    """Episode-deduped live record for one setup, over pre-computed episodes `eps`
+    (from _episodes). exp = mean realized P&L per graded trade — the honest edge
+    read the site gates visibility on."""
+    es = [e for e in eps if e.get("strat") == sid]
+    g = [e for e in es if e.get("outcome")]
+    wins = sum(1 for e in g if (e.get("outcome") or {}).get("pump"))
+    pnls = [_real_pnl(e) for e in g if _real_pnl(e) is not None]
+    return {"eps": len(es), "graded": len(g), "wins": wins,
+            "hit": (wins / len(g)) if g else None,
+            "exp": (sum(pnls) / len(pnls)) if pnls else None,
+            "pending": len(es) - len(g)}
+
+
+def _setup_curve(sid, eps) -> list:
+    """[(fire_t, realized_pnl), …] for a setup's graded episodes, in fire order —
+    feeds the per-model equity small-multiples (_equity_grid)."""
+    es = sorted((e for e in eps if e.get("strat") == sid and _real_pnl(e) is not None),
+                key=lambda e: e.get("t") or 0)
+    return [(e.get("t"), _real_pnl(e)) for e in es]
+
+
+def _visible_setups(eps=None) -> list:
+    """The setups the site shows: CORE_SETUPS always, plus any HIDDEN_SETUPS that
+    have earned their way back (>= EARN_MIN_N graded episodes AND avg realized P&L
+    > EARN_MIN_EXP). This is the single gate — everything the trade tab renders
+    filters through it, so a hidden setup reappears automatically the moment its
+    live record turns positive at a real sample size (no code change needed)."""
+    if eps is None:
+        eps = _episodes(_load_fires())
+    vis = list(CORE_SETUPS)
+    for sid in HIDDEN_SETUPS:
+        st = _setup_stats(sid, eps)
+        if st["graded"] >= EARN_MIN_N and (st["exp"] or 0) > EARN_MIN_EXP:
+            vis.append(sid)
+    return vis
+
+
+_VIS_CACHE = None
+
+
+def _visible_setups_cached() -> tuple:
+    """Build-time cache of _visible_setups() — the fire ledger doesn't change during
+    a build, so the per-coin detail pages can gate on this without re-reading it 140×."""
+    global _VIS_CACHE
+    if _VIS_CACHE is None:
+        _VIS_CACHE = tuple(_visible_setups())
+    return _VIS_CACHE
+
+
 def _pnl_card(closed) -> str:
     """Polymarket-style PnL card: cumulative equity of the model's closed v1/v4
     paper trades on a hypothetical PNL_STAKE/trade, with a timeframe toggle and a
@@ -2080,15 +2135,12 @@ _JOURNAL_TABS_JS = """
 
 
 def scams_subnav(active: str) -> str:
-    """Sub-tabs under the Manipulated top tab — Screener / AI Track Record / Pump
-    Odds / Buy Signals / Models. All live in scams/; the Manipulated TOP tab stays
-    active for all of them (these pages call site_nav("scams")). `active` ∈
-    {screener, journal, pumpodds, buy, models}."""
+    """Sub-tabs under the Manipulated top tab — Screener (the coin list) and AI
+    Trades (the merged v1/v2/v4 trade ledger; absorbed the old Journal / Pump Odds
+    / Buy Signals / Models pages). Both live in scams/; the Manipulated TOP tab
+    stays active for both. `active` ∈ {screener, trades}."""
     tabs = [("screener", "index.html", "Screener"),
-            ("journal", "journal.html", "AI Journal"),
-            ("pumpodds", "pumpodds.html", "Pump Odds"),
-            ("buy", "buysignals.html", "Buy Signals"),
-            ("models", "models.html", "Models")]
+            ("trades", "trades.html", "AI Trades")]
     parts = []
     for key, href, text in tabs:
         cls = ' class="active"' if key == active else ""
@@ -2229,18 +2281,21 @@ def _papertrade_panel() -> str:
         '</section>')
 
 
-def _journal_page(recs) -> str:
-    """The trained model's forward TRADE JOURNAL: each live v1/v4 setup it fired
-    (entry + stop, logged by the box), graded 72h later on real price. A scorecard
-    (win rate / +50% hit rate / avg P&L) plus closed + open trades. These are
-    RESEARCH PAPER signals scored on real prices — not executed trades, not advice."""
+def _trades_page(recs) -> str:
+    """The merged AI TRADES tab: one broker-style ledger of the model's live
+    v1/v2/v4 setups (plus any hidden setup that has earned its way back — see
+    _visible_setups). Each fire is logged with an entry the moment it triggers,
+    then graded 72h later on real price. Shows a per-setup scorecard, OPEN
+    positions, and CLOSED history with the model's confidence + realistic $ P&L.
+    Research paper signals scored on real prices — not executed trades, not advice."""
     built = {r["symbol"].upper() for r in recs}
     # Honest counting (2026-07-09 audit F-19): episode-dedup BEFORE the strat
-    # filter — the same rules the Models page and the box graders use (one fire
-    # per coin per 72h; a market-wide burst counts once). Without this the
-    # journal + PnL card booked pre-refractory hourly re-fires as separate
-    # $100 trades (30 duplicates ≈ doubled the headline equity).
-    fires = [e for e in _episodes(_load_fires()) if e.get("strat") in JOURNAL_SETUPS]
+    # filter — the same rules the box graders use (one fire per coin per 72h; a
+    # market-wide burst counts once). Without this the ledger + PnL card booked
+    # pre-refractory hourly re-fires as separate $100 trades.
+    eps = _episodes(_load_fires())
+    vis = _visible_setups(eps)                 # v1/v2/v4 + any earned-back setup
+    fires = [e for e in eps if e.get("strat") in vis]
     closed = [e for e in fires if e.get("outcome")]
     open_ = [e for e in fires if not e.get("outcome")]
     # `t` is the actual signal/fire time (the entry); logged_utc is just when the
@@ -2292,7 +2347,7 @@ def _journal_page(recs) -> str:
 
     # Per-setup mini-breakdown.
     by = []
-    for k in JOURNAL_SETUPS:
+    for k in vis:
         cs = [e for e in closed if e.get("strat") == k]
         if not cs:
             continue
@@ -2352,6 +2407,16 @@ def _journal_page(recs) -> str:
         def _px(v):
             return fmt_subscript_price(v) if v else "—"
 
+        def _dpnl(vf):
+            """Realized $ P&L on the hypothetical stake (big), with the % underneath."""
+            if vf is None:
+                return '<span class="jp">—</span>'
+            d = PNL_STAKE * vf
+            cls = "pos" if d >= 0 else "neg"
+            sg = "+" if d >= 0 else "−"
+            return (f'<span class="jp {cls}">{sg}${abs(d):,.0f}</span>'
+                    f'<span class="jsub">{_jpct(vf)}</span>')
+
         for e in closed:
             o = e["outcome"] or {}
             ep = e.get("entry_price") or o.get("entry")
@@ -2366,21 +2431,25 @@ def _journal_page(recs) -> str:
                 f'<tr><td>{_dts(_key(e))}</td>'
                 f'<td class="jt">{_tok(e.get("sym"))}</td>'
                 f'<td class="jwhycell">{why}</td>'
+                f'<td class="jnum">{_pump_pct(e.get("pump_score"))}</td>'
                 f'<td class="jnum">{_px(ep)}</td>'
                 f'<td class="jnum">{_px(e.get("stop"))}</td>'
                 f'{h1c}{h2c}'
                 f'<td>{_outcome_story(o)}</td>'
-                f'<td class="jnum">{_jpct(_real_pnl(e))}</td></tr>')
+                f'<td class="jnum">${PNL_STAKE}</td>'
+                f'<td class="jnum jpnl">{_dpnl(_real_pnl(e))}</td></tr>')
         closed_tbl = (
             '<div class="tablewrap jscroll"><table class="jtable" id="jclosed"><thead><tr>'
             '<th>When</th><th>Token</th>'
-            '<th title="the pattern the AI spotted">Why it bought</th>'
+            '<th title="the setup version that bought — v1/v2/v4">Bought</th>'
+            '<th title="the model&#39;s predicted chance of +50%/72h at entry">Model %</th>'
             '<th title="entry reference price (Binance mark at the signal)">Bought at</th>'
             '<th title="where the trade bails if it goes wrong">Stop</th>'
             '<th title="did price reach +25% (sell half)?">Hit +25%?</th>'
             '<th title="did price reach +50% (sell rest)?">Hit +50%?</th>'
             '<th>What happened</th>'
-            '<th title="realistic P&amp;L, net of fees + slippage">Result</th>'
+            '<th title="hypothetical stake per paper trade">Stake</th>'
+            '<th title="realistic $ P&amp;L on the stake, net of fees + slippage">P&amp;L ($)</th>'
             '</tr></thead><tbody>'
             + "".join(crows) + '</tbody></table></div>'
             + '<p class="jnote">Each row: <b>when</b> the AI bought, <b>why</b> (the pattern it '
@@ -2391,7 +2460,8 @@ def _journal_page(recs) -> str:
         closed_tbl = ('<p class="jnote">No v1/v2/v4 trades have matured yet — each is '
                       'graded 72h after it fires. Check back as the ledger fills.</p>')
 
-    # Open trades (fired, not yet matured).
+    # Open positions (fired, not yet matured) — what the model is "in" right now,
+    # with the full plan: entry, stop, take-profit target and the hypothetical stake.
     if open_:
         orows = []
         for e in open_:
@@ -2401,18 +2471,37 @@ def _journal_page(recs) -> str:
             k = e.get("strat")
             why = (f'{_setup_chip(k)} '
                    f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
+            stop = e.get("stop")
+            stopcell = fmt_subscript_price(stop) if stop else "—"
+            tp1, tp2 = e.get("tp1"), e.get("tp2")
+            short = e.get("side") == "short" or k == "dump"
+            if short:                                  # dump covers at −20%
+                tgt = (f'<span title="cover target −20% at {tp2:.6g}">{fmt_subscript_price(tp2)} '
+                       f'<small>−20%</small></span>' if tp2 else '<small>−20% (short)</small>')
+            elif tp2:
+                ttl = f"first target +25% at {tp1:.6g}" if tp1 else "+50% take-profit"
+                tgt = f'<span title="{ttl}">{fmt_subscript_price(tp2)} <small>+50%</small></span>'
+            else:
+                tgt = '<small>+50%</small>'
             orows.append(
                 f'<tr><td>{_dts(_key(e))}</td>'
                 f'<td class="jt">{_tok(e.get("sym"))}</td>'
                 f'<td class="jwhycell">{why}</td>'
+                f'<td class="jnum">{_pump_pct(e.get("pump_score"))}</td>'
                 f'<td class="jnum">{entry}</td>'
-                f'<td>{grades}</td>'
-                f'<td><span class="jpending">⏳ watching</span></td></tr>')
+                f'<td class="jnum">{stopcell}</td>'
+                f'<td class="jnum">{tgt}</td>'
+                f'<td class="jnum">${PNL_STAKE}</td>'
+                f'<td>{grades} <span class="jpending">⏳</span></td></tr>')
         open_tbl = (
-            '<h3>Open trades <span class="asof">bought · waiting for the 72h grade</span></h3>'
+            '<h3>Open positions <span class="asof">live · what the model is in now, '
+            'waiting for the 72h grade</span></h3>'
             '<div class="tablewrap jscroll"><table class="jtable" id="jopen"><thead><tr>'
-            '<th>When</th><th>Token</th><th>Why it bought</th><th>Bought at</th>'
-            '<th>Grades on</th><th>Status</th>'
+            '<th>When</th><th>Token</th><th>Bought</th>'
+            '<th title="model chance of +50%/72h at entry">Model %</th>'
+            '<th>Bought at</th><th>Stop</th>'
+            '<th title="+50% take-profit price (first tier at +25%)">Target</th>'
+            '<th title="hypothetical stake per paper trade">Stake</th><th>Grades on</th>'
             '</tr></thead><tbody>' + "".join(orows) + '</tbody></table></div>')
     else:
         open_tbl = ""
@@ -2484,16 +2573,21 @@ def _journal_page(recs) -> str:
         'early-warning feed, not the main pump bet.</p>'
         f'{m_score}</section>')
 
+    # Per-setup equity small-multiples (absorbs the old Models tab's per-model view).
+    _eq_curves = [(sid, STRAT_NAME.get(sid, sid), _MODEL_COLORS.get(sid, "#888"),
+                   _setup_curve(sid, eps)) for sid in vis]
+
     body = f"""
-<header><h1>AI Journal</h1>
+<header><h1>AI Trades</h1>
 {site_nav("scams")}
-{scams_subnav("journal")}
-<p class="sub">The AI's <b>journal</b> of its live Buy v1, v2 &amp; v4 setups — the patterns it reads
-as a coming pump. Each trade is logged with an entry price the moment it triggers, then <b>scored on
-the real price</b>. Two views below: the headline <b>+50% pump</b> target (72h) and a faster
-<b>+10% mover</b> target (24h). <b>Research paper signals scored on real prices — not executed
-trades, not financial advice</b>; the sample is small and grows over time, so read the rates as
-early evidence.</p></header>
+{scams_subnav("trades")}
+<p class="sub">One ledger for every trade the AI's live Buy <b>v1</b>, <b>v2</b> &amp; <b>v4</b> setups
+make — the token it bought, which version fired, the model's confidence, the stop and take-profit,
+the hypothetical stake and the realistic <b>$ result</b>. Each trade is logged with an entry price
+the moment it triggers, then <b>scored on the real price</b> 72h later. Two targets below: the
+headline <b>+50% pump</b> (72h) and a faster <b>+10% mover</b> (24h). <b>Research paper signals
+scored on real prices — not executed trades, not financial advice</b>; the sample is small and
+grows over time.</p></header>
 <main>
 <div class="jtabs" role="tablist">
   <button class="jtab active" data-view="pumps" type="button">+50% Pumps</button>
@@ -2502,19 +2596,20 @@ early evidence.</p></header>
 <div id="view-pumps" class="jview">
 <div class="jtop">
 <section class="card span jscore">
-  <h3>Scorecard <span class="asof">v1/v2/v4 · +50% / 72h · closed (graded)</span></h3>
+  <h3>Scorecard <span class="asof">live setups · +50% / 72h · closed (graded)</span></h3>
   {scorecard}
   {by_html}
 </section>
 {_pnl_card(closed)}
 </div>
+{f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
 {_papertrade_panel()}
 <div class="jrow">{bench}{_winrate_chart(closed)}</div>
+{_equity_grid(_eq_curves)}
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
 </section>
-{f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
 </div>
 <div id="view-movers" class="jview" style="display:none">
 <div class="jrow">{mover_scorecard}{_winrate_chart(m_closed, lambda e: _o(e, "m_pnl_real"), "+10% / 24h")}</div>
@@ -2522,13 +2617,14 @@ early evidence.</p></header>
 </div>
 </main>
 {THEME_JS}{_JOURNAL_TABS_JS}{_WINRATE_TIP_JS}"""
-    desc = ("The AI's live journal on the Manipulated tab — every Buy v1/v4 setup it "
-            "bought, graded 72h later on real price: why it bought, what happened, win "
-            "rate and average result. Research paper signals, not executed trades.")
+    desc = ("The AI's live trade ledger on the Manipulated tab — every Buy v1/v2/v4 setup "
+            "it bought, graded 72h later on real price: which token, the model's confidence, "
+            "stop, take-profit, stake and the realistic $ result. Research paper signals, "
+            "not executed trades.")
     return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
             f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("AI Journal — Manipulated — ListingLabs", desc)}'
-            f'<title>AI Journal — Manipulated</title>'
+            f'{page_meta("AI Trades — Manipulated — ListingLabs", desc)}'
+            f'<title>AI Trades — Manipulated</title>'
             f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head><body>{body}</body></html>')
 
 
@@ -2539,58 +2635,6 @@ _MODEL_COLORS = {
     "probe": "#9c6ade", "buy15": "#d98c5f",
     "dump": "#c0392b", "bear_trap": "#6aa84f", "spike_retrace": "#7f8c9a",
 }
-
-
-def _maturity_scatter(pts) -> str:
-    """Model-maturity scatter: X = graded episode count, Y = live hit-rate — 'how
-    much do I trust this number yet', NOT a backtest-vs-live comparison. One dot
-    per setup with >=1 graded episode (setups with none simply don't appear yet).
-    Static SVG, <title>-per-shape hover (the _donut technique, no JS)."""
-    pts = [p for p in pts if p[3] >= 1]
-    if not pts:
-        return ""
-    W, H, L, R, T, B = 760, 300, 54, 24, 20, 40
-    pw, ph = W - L - R, H - T - B
-    xmax = max(p[3] for p in pts) * 1.15 or 1.0
-    # hit-rates on this site cluster low (honest odds, not coin-flips) — a fixed
-    # 0-100 axis would cram every real dot into the bottom-fifth of the chart.
-    ymax = max(20.0, max(p[4] for p in pts) * 1.25)
-
-    grid = []
-    for frac in (0, 0.5, 1.0):
-        y = T + (1 - frac) * ph
-        cls = "msc-grid msc-base" if frac == 0 else "msc-grid"
-        grid.append(f'<line x1="{L}" y1="{y:.1f}" x2="{W-R}" y2="{y:.1f}" class="{cls}"/>')
-        grid.append(f'<text x="{L-8}" y="{y+3:.1f}" class="msc-axis" text-anchor="end">'
-                    f'{ymax*frac:.0f}%</text>')
-    for frac in (0, 0.5, 1.0):
-        x = L + frac * pw
-        grid.append(f'<line x1="{x:.1f}" y1="{T}" x2="{x:.1f}" y2="{T+ph}" class="msc-grid"/>')
-        grid.append(f'<text x="{x:.1f}" y="{T+ph+16}" class="msc-axis" text-anchor="middle">'
-                    f'{xmax*frac:.0f}</text>')
-    grid.append(f'<text x="{L+pw/2:.1f}" y="{H-6}" class="msc-axis" text-anchor="middle">'
-                f'graded episodes (sample size) →</text>')
-
-    dots, legend = [], []
-    for sid, name, color, graded, hit in pts:
-        cx = L + (graded / xmax) * pw
-        cy = T + (1 - hit / ymax) * ph
-        dots.append(f'<circle class="msc-dot" r="6.5" cx="{cx:.1f}" cy="{cy:.1f}" '
-                    f'fill="{color}"><title>{html.escape(name)} — {graded} graded, '
-                    f'{hit:.0f}% hit-rate</title></circle>')
-        dots.append(f'<text class="msc-lbl" x="{cx+9:.1f}" y="{cy-8:.1f}">{sid}</text>')
-        legend.append(f'<span class="msc-leg"><i style="background:{color}"></i>'
-                      f'{html.escape(name)}</span>')
-
-    svg = (f'<svg class="msc-svg" viewBox="0 0 {W} {H}" role="img" '
-           f'aria-label="model maturity: sample size vs live hit-rate">'
-           + "".join(grid) + "".join(dots) + '</svg>')
-    return (f'<section class="card span"><h3>Model maturity <span class="asof">sample size vs '
-            f'live hit-rate</span></h3>{svg}<div class="msc-legend">{"".join(legend)}</div>'
-            f'<p class="jnote">How much do we trust this number yet — X is how many graded fires '
-            f'back it, Y is its live +50% hit-rate. This is <b>not</b> a backtest-vs-live '
-            f'comparison. Setups with 0 graded fires don\'t appear yet; they show up once they '
-            f'clear their first grade.</p></section>')
 
 
 def _equity_grid(curves) -> str:
@@ -2656,266 +2700,6 @@ def _equity_grid(curves) -> str:
             f'</p></section>')
 
 
-def _models_page(recs) -> str:
-    """The MODELS report: every model/setup/loop the AI runs — what it is, how it
-    earned its place (backtest), how it's doing live (from the public fire ledger,
-    counted the honest way), plus the CHECK-BACK CALENDAR: what evidence lands
-    next, when, and where to look for it. Rebuilt every ~20 min by CI, so the
-    dates/counts stay current. Shows only production defaults + public ledger
-    data — never the tuner's private recommendations."""
-    import datetime as _dt
-    import statistics as _st
-    now = int(_dt.datetime.now(_dt.timezone.utc).timestamp())
-    H72 = 72 * 3600
-    fires = _load_fires()
-    eps = _episodes(fires)
-
-    def _stats(sid):
-        es = [e for e in eps if e.get("strat") == sid]
-        g = [e for e in es if e.get("outcome")]
-        wins = sum(1 for e in g if (e["outcome"] or {}).get("pump"))
-        pnls = [e["outcome"].get("pnl_real") for e in g
-                if (e.get("outcome") or {}).get("pnl_real") is not None]
-        pend = [e for e in es if not e.get("outcome")]
-        nxt = min((e["t"] + H72 for e in pend if e.get("t")), default=None)
-        return {"eps": len(es), "graded": len(g), "wins": wins,
-                "hit": (wins / len(g)) if g else None,
-                "exp": _st.mean(pnls) if pnls else None,
-                "pending": len(pend), "next_grade": max(nxt, now) if nxt else None}
-
-    def _curve(sid):
-        es = sorted((e for e in eps if e.get("strat") == sid and e.get("outcome")
-                     and (e["outcome"] or {}).get("pnl_real") is not None),
-                    key=lambda e: e.get("t") or 0)
-        return [(e.get("t"), e["outcome"]["pnl_real"]) for e in es]
-
-    def _rate(sid, days=14):
-        n = sum(1 for e in eps if e.get("strat") == sid
-                and (e.get("t") or 0) >= now - days * 86400)
-        return n / days
-
-    def _d(ts):
-        return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%b %d")
-
-    def _eta(need, have, per_day):
-        """'when will `need` graded fires exist' — accrual at the current fire
-        rate + the 72h grading lag. An estimate, labelled as such on the page."""
-        if have >= need:
-            return "any day now"
-        if per_day <= 0.05:
-            return "rate too low to estimate"
-        return "≈ " + _d(now + int((need - have) / per_day * 86400) + H72)
-
-    _ts = lambda *a: int(_dt.datetime(*a, tzinfo=_dt.timezone.utc).timestamp())
-    V1_PROMO = _ts(2026, 7, 1, 14)      # v1 re-tune promoted to production
-    V2_FREEZE = _ts(2026, 6, 28, 4)     # v2's challenger frozen (forward clock)
-    PA_SHIP = _ts(2026, 7, 2, 15)       # dump journaling + bear_trap/spike_retrace live
-
-    # ── the roster (static facts; live numbers joined from the ledger) ──────
-    #    id, name, group, status, what it reads / detects, backtest cred, alerts?
-    ROSTER = [
-        ("v1", "Buy v1 — accumulation breakout", "alert",
-         "OI climbing 4 bars & +5%/3h while price lags (OI/price ≥ 2) and funding is calm",
-         "OOS lift ~1.6× at its 2026-07-05 promotion (funding→0.1%); trade-weighted ~2.4× "
-         "(2026-07-09 audit) — re-scored nightly", "alerts (gate ≥7)"),
-        ("v2", "Buy v2 — Ignition", "alert",
-         "a tight multi-day coil breaking on ≥5× volume WHILE OI surges — the OI-confirmed breakout",
-         "OOS lift ~2.5× at its 2026-06-27 swap-in; trade-weighted ~2.0× (2026-07-09 audit) — "
-         "re-scored nightly", "alerts (gate ≥7)"),
-        ("v4", "Buy v4 — coiled accumulation", "alert",
-         "OI building ≥40% under a flat, tight price for ~3 days — quiet loading before the vertical",
-         "OOS lift ~4.2× at validation; trade-weighted ~3.6× (2026-07-09 audit) — re-scored "
-         "nightly", "alerts (gate ≥7)"),
-        ("probe", "Probe day", "earn",
-         "12h volume burst ≥3× baseline breaking the top of a tight coil — the pre-vertical test",
-         "backtest ~2.5× per-hour, but live ledger came in a net loser (59 graded, 30% win, "
-         "−$68 @ $100/trade) — demoted to journal-only 2026-07-05; earns alerts back if its "
-         "high-score edge holds", "journal-only"),
-        ("buy15", "Buy signal — odds ≥20%", "alert",
-         "PumpFinder's +50% odds crossing 20% — the model itself calling a standout",
-         "gate ≥7 validated ~2.75× on OOS predictions", "alerts (play-by-play)"),
-        ("dump", "Dump — distribution (SHORT)", "earn",
-         "after a ≥40% markup: price stalls, funding hot, OI still elevated — operator distributing",
-         "~6.2× lift to a −20%/72h drop (vs ~10.7% base)", "journal-only"),
-        ("bear_trap", "Bear trap", "earn",
-         "a ≥15% flush below the 2-day close, fully reclaimed, no new low in 12h — the dip got bought back",
-         "exploratory study numbers: 4.6× per-hour / ~2.9× per-episode (live ledger decides)", "journal-only"),
-        ("spike_retrace", "Spike & retrace", "earn",
-         "a +30% spike sold back down ≥15% while holding the pre-spike level, funding negative",
-         "exploratory study ~2.9× (thin sample — live ledger decides)", "journal-only"),
-    ]
-    GROUPS = {"alert": "Alerting setups — proven enough to ping Telegram",
-              "earn": "Earning their way in — journaled &amp; graded, never alerted (yet)"}
-
-    def _row(sid, name, reads, cred, alerts):
-        st = _stats(sid)
-        if st["graded"]:
-            live = (f'{st["wins"]}/{st["graded"]} pumped ({st["hit"]*100:.0f}%)')
-            expn = st["exp"]
-            exp = (f'<span class="{"pos" if expn >= 0 else "neg"}">{expn*100:+.1f}%</span>'
-                   if expn is not None else "—")
-        else:
-            live, exp = '<i>no graded fires yet</i>', "—"
-        pend = (f'{st["pending"]} open · next grades {_d(st["next_grade"])}'
-                if st["pending"] else "—")
-        return (f'<tr><td class="mname">{name}<div class="mreads">{reads}</div></td>'
-                f'<td data-s="{st["eps"]}">{st["eps"] or "—"}</td><td>{live}</td><td>{exp}</td>'
-                f'<td>{pend}</td><td class="mcred">{cred}</td><td>{alerts}</td></tr>')
-
-    tables = ""
-    for gid, gtitle in GROUPS.items():
-        rows = "".join(_row(sid, nm, rd, cr, al)
-                       for sid, nm, g, rd, cr, al in ROSTER if g == gid)
-        tables += (f'<section class="card span"><h3>{gtitle}</h3>'
-                   f'<div class="tablewrap"><table class="mtable"><thead><tr>'
-                   f'<th>model / what it reads</th><th>fires*</th><th>live +50% record</th>'
-                   f'<th>exp/trade</th><th>maturing</th><th>how it earned its place</th>'
-                   f'<th>alerts?</th></tr></thead><tbody>{rows}</tbody></table></div></section>')
-
-    # ── maturity scatter + per-model equity curves ──────────────────────────
-    _msc_pts, _eq_curves = [], []
-    for sid, name, _g, _rd, _cr, _al in ROSTER:
-        st = _stats(sid)
-        if st["graded"] >= 1:
-            _msc_pts.append((sid, name, _MODEL_COLORS[sid], st["graded"], st["hit"] * 100))
-            _eq_curves.append((sid, name, _MODEL_COLORS[sid], _curve(sid)))
-    maturity_section = _maturity_scatter(_msc_pts)
-    equity_section = _equity_grid(_eq_curves)
-
-    # ── the check-back calendar ──────────────────────────────────────────────
-    b15 = [e for e in fires if e.get("strat") == "buy15" and e.get("t")]
-    b15_first = (min(e["t"] for e in b15) + H72) if b15 else None
-    v1_have = sum(1 for e in eps if e.get("strat") == "v1" and (e.get("t") or 0) >= V1_PROMO)
-    v2_have = sum(1 for e in eps if e.get("strat") == "v2" and (e.get("t") or 0) >= V2_FREEZE
-                  and e.get("outcome"))
-    pa_first = {}
-    for sid in ("dump", "bear_trap", "spike_retrace"):
-        f1 = [e["t"] for e in fires if e.get("strat") == sid and e.get("t") and e["t"] >= PA_SHIP]
-        pa_first[sid] = (min(f1) + H72) if f1 else None
-
-    sched = []          # (sort_ts, when, what, where, look_for)
-    if b15_first:
-        sched.append((b15_first, ("landed — check now" if b15_first <= now else _d(b15_first)),
-                      "First <b>Buy-signal</b> grades — does the ≥20% odds call pick winners?",
-                      '<a href="buysignals.html">Buy Signals</a>',
-                      "hit-rate meaningfully above the ~5% base; read n first"))
-    for sid, label in (("dump", "Dump (short)"), ("bear_trap", "Bear trap"),
-                       ("spike_retrace", "Spike &amp; retrace")):
-        t1 = pa_first[sid]
-        sched.append((t1 or (now + 5 * 86400),
-                      ("landed — check now" if t1 and t1 <= now else (_d(t1) if t1 else "≈ first fire + 72h")),
-                      f"First live grades for <b>{label}</b> (journaling since Jul 02)",
-                      "this page (table above)",
-                      "dump: drops on >2× the 10.7% base · longs: ≥2× the ~5% pump base"))
-    sched.append((now + max(0, int((15 - v1_have) / max(_rate("v1"), 0.3) * 86400)) + H72,
-                  _eta(15, v1_have, _rate("v1")),
-                  f"<b>v1 re-tune verdict</b> — ~15 fresh episodes since the Jul 01 promotion ({v1_have}/15 so far)",
-                  "ask for an <i>RL status</i> (box report; summary lands here too)",
-                  "hit-rate back above ~10% (lift ≥1.5×); else pause v1 alerts"))
-    sched.append((now + max(0, int((25 - v2_have) / max(_rate("v2"), 0.3) * 86400)) + H72,
-                  _eta(25, v2_have, _rate("v2")),
-                  f"<b>v2 challenger decision</b> — 25 matured forward fires ({v2_have}/25), frozen Jun 28",
-                  "ask for an <i>RL status</i> — the loop flags READY-TO-PROMOTE itself",
-                  "challenger forward lift ≥1.5× AND beating the champion"))
-    sched.append((now + int(25 / max(_rate("probe"), 0.5) * 86400) + H72,
-                  _eta(25, 0, _rate("probe")),
-                  "<b>Probe tuning verdict</b> — its challenger pair starts Jul 03; probe hits ~12% live but "
-                  "loses ≈−2.5%/trade (late entries), so watch expectancy, not just hits",
-                  "ask for an <i>RL status</i>",
-                  "a challenger that fixes expectancy — or probe stays confirmation-only"))
-    sched.append((_ts(2026, 9, 1), "≈ Sep 2026",
-                  "<b>Multi-week horizon factors</b> — the hourly training series (accruing since Jun 23) "
-                  "gets deep enough to test the manipulation-article theses beyond 72h",
-                  "ask for an <i>RL status</i>", "months of hourly data → longer-horizon labels"))
-    sched.sort(key=lambda r: r[0])
-    sched_rows = "".join(
-        f'<tr class="{"due" if ts <= now else ""}"><td class="swhen">{when}</td><td>{what}</td>'
-        f'<td>{where}</td><td class="slook">{look}</td></tr>'
-        for ts, when, what, where, look in sched)
-
-    # ── timeline (the story so far) ──────────────────────────────────────────
-    TIMELINE = [
-        ("Jun 20", "The box starts journaling every live setup fire — the forward ledger "
-                   "(the out-of-sample truth everything below is judged on) begins."),
-        ("Jun 22", "Reinforcement loop built: replay 30 days of hourly OI/price/funding, define a "
-                   "hard pump (+50% within 72h), and walk-forward tune each Buy setup — promote only "
-                   "what holds on unseen data."),
-        ("Jun 23", "Loop moves to the always-on box (nightly 04:30 UTC). First pump-probability "
-                   "score (logistic). The permanent hourly training series starts accruing. "
-                   "Overfitting guards added: purged splits, a trials-aware promotion floor."),
-        ("Jun 24", "Probe (pre-vertical volume break) + Dump (distribution short) detectors built "
-                   "from the manipulation research."),
-        ("Jun 26", "First human promotion — tuned v1 + v4 thresholds go to production."),
-        ("Jun 27", "v2 reborn as <b>Ignition</b> (OI-confirmed coil-break; caught VELVET +178%). "
-                   "Probe joins the alerts. Champion-vs-challenger forward tracking per setup."),
-        ("Jun 29", "Pump model upgraded to gradient-boosted trees (top-decile ~4× OOS) with a "
-                   "+50/+25/+10% odds ladder. Buy-signal journal (odds ≥15%) starts. Nightly "
-                   "calibration audit — is a &ldquo;14%&rdquo; really 14%?"),
-        ("Jul 01", "v1 re-tuned and promoted (OOS 1.39→1.64×)."),
-        ("Jul 02", "Hygiene + expansion: episode-dedup fixes v4's live stats (its &ldquo;decay&rdquo; was "
-                   "double-counting), dump gets short-side grading, probe joins the nightly tuner, "
-                   "live expectancy lands in the reports, <b>bear trap</b> + <b>spike &amp; retrace</b> ship "
-                   "(the strongest backtests yet), and a market-breadth gate stops market-wide bursts "
-                   "from masquerading as N independent signals."),
-        ("Jul 05", "v1 challenger promoted (funding filter tightened 0.2%→0.1%): holds all four "
-                   "walk-forward folds &gt;1× and repairs v1&rsquo;s weak fold. A manual promotion — "
-                   "ahead of the auto-promote gate — so the forward ledger now judges the call."),
-    ]
-    tl = "".join(f'<li><span class="tld">{d}</span><div>{txt}</div></li>' for d, txt in TIMELINE)
-
-    body = f"""
-<header><h1>The Models</h1>
-{site_nav("scams")}
-{scams_subnav("models")}
-<p class="sub">One page for the whole machine: every model the AI runs, how each earned its place,
-how it's doing on <b>live, out-of-sample fires</b> — and the <b>check-back calendar</b>: what
-evidence lands next, when, and where to look. Counts use honest rules (one fire per coin per 72h;
-a market-wide burst counts once). Rebuilt every ~20 minutes. Research signals, not financial advice.</p></header>
-<main>
-<section class="card span goal"><h3>The goal</h3>
-<p class="jnote">Predict which coins will pump — with <b>honest, calibrated odds</b>, <b>early</b>
-(before the move) — and prove it on live results, not just backtests. The nightly loop only
-<i>recommends</i>; production thresholds change only when a human promotes them.</p>
-<div class="rhythm"><span>⏱ hourly :17 — box screens 139 coins, logs fires, pings alerts</span>
-<span>📊 ~60s — live prices/OI on the detail pages</span>
-<span>🌙 04:30 UTC nightly — re-tune + calibration audit</span>
-<span>⚖️ 72h — every fire graded on real price</span></div></section>
-<section class="card span"><h3>📅 Check-back calendar <span class="asof">computed from the live
-ledger each rebuild — dates are estimates at current fire rates</span></h3>
-<div class="tablewrap"><table class="mtable sched"><thead><tr><th>when</th><th>what lands</th>
-<th>where to look</th><th>what good looks like</th></tr></thead><tbody>{sched_rows}</tbody></table></div>
-<p class="jnote">The two pump-model heads not shown above (+25% / +10% odds) live on
-<a href="pumpodds.html">Pump Odds</a>; every fired setup shows on its coin's detail page cards.</p></section>
-<section class="card span"><h3>Probability scorers — PumpFinder</h3>
-<p class="jnote">A gradient-boosted model refit nightly on ~30 days of hourly OI / price / funding /
-volume state, exported to plain JSON and scored dependency-free on the box. Three heads:
-<b>+50%</b> (the headline <i>Pump %</i> — top-decile ~4× the base rate), <b>+25%</b> (~3.1×) and
-<b>+10%</b> (~1.9×), shown per-coin on <a href="pumpodds.html">Pump Odds</a> and the
-<a href="index.html">Screener</a>. Its odds gate the Telegram pings (score ≥7) and its ≥20%
-crossing drives the <a href="buysignals.html">Buy Signals</a> journal. Scores read low because
-hard pumps are rare — <b>rank with them, don't read them as coin-flips</b>. A nightly audit checks
-the odds stay honest (calibration error) and that each setup's live edge isn't decaying.
-<i>Retired: the original logistic scorer (kept as the &ldquo;Old %&rdquo; comparison column) and
-Buy v3 (never fired).</i></p></section>
-{tables}
-<p class="jnote">*fires = deduped episodes (one per coin per 72h, market-wide bursts count once).
-exp/trade = the tiered exit (half at +25%, rest at +50%, 72h time-stop) net of fees+slippage —
-dump is a short covering at −20%. Full trade-by-trade detail: <a href="journal.html">AI Journal</a>.</p>
-{maturity_section}
-{equity_section}
-<section class="card span"><h3>How we got here</h3><ul class="mline">{tl}</ul></section>
-</main>
-{THEME_JS}"""
-    desc = ("Every model the ListingLabs AI runs — pump-probability scorers, Buy setups, "
-            "experimental detectors — with live out-of-sample records and the check-back "
-            "calendar for what evidence lands next.")
-    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("Models — Manipulated — ListingLabs", desc)}'
-            f'<title>Models — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head><body>{body}</body></html>')
-
-
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
     head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
@@ -2927,8 +2711,8 @@ def _index(recs) -> str:
 <header><h1>Manipulated</h1>
 {site_nav("scams")}
 {scams_subnav("screener")}
-<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v3 <b id="cnt-v3">{c.get('v3', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1–v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1–v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
-<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v3/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
+<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1/v2/v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1/v2/v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
+<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {SETUP_PANEL}
 {_filter_bar()}
 <div id="views" class="view-grid">
@@ -2963,162 +2747,6 @@ _ODDS_SORT_JS = """<script>(function(){
     sort(i,ths[i].classList.contains('asc')?-1:1);});})(i);
   sort(2,-1);   // default: +50% odds, highest first
 })();</script>"""
-
-
-def _odds_row(rec) -> str:
-    sym = rec["symbol"]
-    r = _sig(sym)
-    search = html.escape(f"{rec.get('name', sym)} {sym}".lower())
-    tok = (f'<td class="tok" data-s="{search}"><a href="{sym.lower()}.html">'
-           f'<span class="lname"><span class="lnm">{html.escape(rec.get("name", sym))}</span>'
-           f'<span class="sym">{html.escape(sym)}</span></span></a></td>')
-    return (f'<tr class="lrow">'
-            f'<td class="rank"></td>{tok}'
-            f'{_odds_cell(r.get("pump_score"), _PUMP_TITLE)}'
-            f'{_odds_cell(r.get("pump_score_25"), _PUMP_TITLE_25)}'
-            f'{_odds_cell(r.get("pump_score_10"), _PUMP_TITLE_10)}</tr>')
-
-
-def _pump_odds_page(recs) -> str:
-    """Pump Odds sub-tab: per-coin model probability of a +50% / +25% / +10% move
-    within 72h. Same engine, three targets — smaller move = higher odds. Default
-    sort by +50% (highest first)."""
-    head = "".join(f"<th>{c}</th>" for c in ("#", "Token", "+50%", "+25%", "+10%"))
-    rows = "\n".join(_odds_row(r) for r in recs)
-    body = f"""
-<header><h1>Manipulated</h1>
-{site_nav("scams")}
-{scams_subnav("pumpodds")}
-<p class="sub">Pump Odds — the model's calibrated probability that each coin makes a
-<b>+50% / +25% / +10%</b> move within <b>72h</b> (smaller move = higher odds). These are
-PumpFinder probabilities, not certainty — research only, not financial advice. Click a coin
-for its detail.</p></header>
-<div class="listwrap"><table class="list" id="otab"><thead><tr>{head}</tr></thead>
-<tbody>{rows}</tbody></table></div>
-{_ODDS_SORT_JS}
-{THEME_JS}"""
-    desc = ("Pump Odds — per-coin model probability of a +50% / +25% / +10% move within 72h "
-            "for each manipulated-watchlist token.")
-    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("Pump Odds — Manipulated", desc)}'
-            f'<title>Pump Odds — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head>'
-            f'<body>{body}</body></html>')
-
-
-def _buy_signals_page(recs) -> str:
-    """Buy Signals sub-tab: the live "buy now" list (coins whose +50% pump chance is
-    over 20% right now) + a plain-English JOURNAL of every past buy call and whether
-    it actually pumped (graded 72h later). Built for a non-expert: storytelling, not a
-    wall of numbers."""
-    built = {r["symbol"].upper() for r in recs}
-    g = BUY_ODDS_GATE
-
-    # ── Buy now: coins currently over the line, by +50% odds ──
-    over = sorted((r for r in recs if (_sig(r["symbol"]).get("pump_score") or 0) >= g),
-                  key=lambda r: -(_sig(r["symbol"]).get("pump_score") or 0))
-    if over:
-        head = "".join(f"<th>{c}</th>" for c in ("#", "Token", "+50%", "+25%", "+10%"))
-        buy_now = (f'<div class="listwrap buynow-scroll"><table class="list" id="otab">'
-                   f'<thead><tr>{head}</tr></thead>'
-                   f'<tbody>{"".join(_odds_row(r) for r in over)}</tbody></table></div>'
-                   f'{_ODDS_SORT_JS}')
-    else:
-        buy_now = ('<p class="jnote">No coins are over the 20% line right now. When one '
-                   'crosses, it shows up here and pings your Telegram.</p>')
-
-    # ── Journal: buy15 fires, graded 72h later ──
-    fires = [e for e in _load_fires() if e.get("strat") == "buy15"]
-    closed = [e for e in fires if e.get("outcome")]
-    open_ = [e for e in fires if not e.get("outcome")]
-    _key = lambda e: e.get("t") or e.get("logged_utc") or 0
-    closed.sort(key=_key, reverse=True)
-    open_.sort(key=_key, reverse=True)
-
-    def _o(e, k):
-        return (e.get("outcome") or {}).get(k)
-
-    def _signed(v):
-        return f"{v*100:+.1f}%" if v is not None else "—"
-
-    def _tok(sym):
-        s = (sym or "").upper()
-        return (f'<a href="{s.lower()}.html">{html.escape(s)}</a>'
-                if s in built else html.escape(s))
-
-    n = len(closed)
-    hits = sum(1 for e in closed if _o(e, "pump"))
-    pnls = [_real_pnl(e) for e in closed if _real_pnl(e) is not None]
-    avg_pnl = sum(pnls) / len(pnls) if pnls else None
-    hit_rate = (hits / n * 100) if n else None
-    pnl_cls = "good" if (avg_pnl or 0) > 0 else ("bad" if avg_pnl is not None else "")
-    scorecard = (
-        '<div class="jcards">'
-        f'<div class="jstat"><span class="jstat-v">{n}</span>'
-        '<span class="jstat-l">buy calls graded</span></div>'
-        f'<div class="jstat {"good" if hits else ""}"><span class="jstat-v">'
-        f'{hits}/{n if n else "—"}</span><span class="jstat-l">actually pumped +50%</span></div>'
-        f'<div class="jstat"><span class="jstat-v">{f"{hit_rate:.0f}%" if hit_rate is not None else "—"}</span>'
-        '<span class="jstat-l">hit rate</span></div>'
-        f'<div class="jstat {pnl_cls}"><span class="jstat-v">{_signed(avg_pnl)}</span>'
-        '<span class="jstat-l">avg result / call (net)</span></div>'
-        '</div>')
-
-    # storytelling table
-    rows = []
-    for e in closed:
-        sym = e.get("sym")
-        mfe, pumped = _o(e, "mfe"), _o(e, "pump")
-        story = (f'<span class="jhit">🟢 Pumped — peaked {_signed(mfe)}</span>' if pumped
-                 else f'<span class="jmiss">🔴 No pump — peaked {_signed(mfe)}</span>')
-        rows.append(
-            f'<tr><td>{_dt_hour(e.get("t"))}</td>'
-            f'<td class="jt">{_tok(sym)}</td>'
-            f'<td>{_pump_pct(e.get("pump_score"))} chance of +50%</td>'
-            f'<td>{story}</td>'
-            f'<td class="{"good" if (_real_pnl(e) or 0) > 0 else "bad"}">{_signed(_real_pnl(e))}</td></tr>')
-    for e in open_:
-        rows.append(
-            f'<tr><td>{_dt_hour(e.get("t"))}</td>'
-            f'<td class="jt">{_tok(e.get("sym"))}</td>'
-            f'<td>{_pump_pct(e.get("pump_score"))} chance of +50%</td>'
-            f'<td colspan="2" class="jwatch">⏳ watching — graded 72h after the flag</td></tr>')
-    if rows:
-        journal = (
-            f'{scorecard}'
-            '<div class="tablewrap"><table class="jtable"><thead><tr>'
-            '<th>Flagged (UTC)</th><th>Token</th>'
-            '<th title="the model\'s +50% chance when it flagged the coin">Predicted</th>'
-            '<th>What happened (72h)</th><th title="realistic P&amp;L, net of fees + slippage">Result</th>'
-            f'</tr></thead><tbody>{"".join(rows)}</tbody></table></div>')
-    else:
-        journal = ('<p class="jnote">No buy calls logged yet. The moment a coin\'s +50% '
-                   'chance crosses 20%, it gets logged here and graded 72h later — the '
-                   'scoreboard fills in over the next few days.</p>')
-
-    body = f"""
-<header><h1>Manipulated</h1>
-{site_nav("scams")}
-{scams_subnav("buy")}
-<p class="sub">Buy Signals — when the model's chance of a <b>+50% pump within 72h</b> crosses
-<b>20%</b>, the coin is flagged here and you get a Telegram ping (and another each time the
-score climbs). Every call is then checked 72h later on the real price. Historically coins over
-this line pumped about <b>1 in 4 times (~5× the average)</b> — an edge, not a sure thing. Research
-only, not financial advice.</p></header>
-<section class="card span"><h3>Buy now <span class="asof">coins over 20% right now</span></h3>
-{buy_now}</section>
-<section class="card span"><h3>Track record <span class="asof">did the buy calls actually pump?</span></h3>
-{journal}</section>
-{THEME_JS}"""
-    desc = ("Buy Signals — coins whose model +50% pump chance crossed 20%, with a live "
-            "list and a graded track record of how those calls performed.")
-    return (f'<!doctype html><html lang="en"><head><meta charset="utf-8">'
-            f'<meta name="viewport" content="width=device-width, initial-scale=1">'
-            f'{page_meta("Buy Signals — Manipulated", desc)}'
-            f'<title>Buy Signals — Manipulated</title>'
-            f'<link rel="stylesheet" href="style.css?v={_CSS_VER}"></head>'
-            f'<body>{body}</body></html>')
 
 
 EXTRA_CSS = """
@@ -3195,6 +2823,8 @@ EXTRA_CSS = """
 .jset.v2{background:rgba(31,78,121,.18);color:#3b7cc4}
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
 .jpending{color:var(--text-4);font-size:12px}
+.jtable .jpnl{line-height:1.2}
+.jsub{display:block;font-size:11px;opacity:.68;font-weight:400}
 .jnote{color:var(--text-4);font-style:italic;margin:8px 0}
 .jtable .jx{font-size:12px;white-space:nowrap;color:var(--text-3,var(--text-2))}
 .jtable .jhit{color:#1a8a4f}
@@ -3816,13 +3446,17 @@ def main():
     SITE.mkdir(parents=True, exist_ok=True)
     (SITE / "style.css").write_text(RCSS + EXTRA_CSS, encoding="utf-8")
     (SITE / "index.html").write_text(_index(recs), encoding="utf-8")
-    (SITE / "journal.html").write_text(_journal_page(recs), encoding="utf-8")
-    (SITE / "pumpodds.html").write_text(_pump_odds_page(recs), encoding="utf-8")
-    (SITE / "buysignals.html").write_text(_buy_signals_page(recs), encoding="utf-8")
-    (SITE / "models.html").write_text(_models_page(recs), encoding="utf-8")
+    (SITE / "trades.html").write_text(_trades_page(recs), encoding="utf-8")
     for r in recs:
         page = _detail(r, platforms)
         (SITE / f"{r['symbol'].lower()}.html").write_text(page, encoding="utf-8")
+    # Prune orphaned pages: a coin that leaves the screener universe (or a sub-tab
+    # we retired) would otherwise linger as a stale file and still deploy — carrying
+    # old content (e.g. a dropped setup). Keep only the pages this build wrote.
+    keep = {"index.html", "trades.html"} | {f"{r['symbol'].lower()}.html" for r in recs}
+    for f in SITE.glob("*.html"):
+        if f.name not in keep:
+            f.unlink()
     n_curated = len(data)
     n_screener = len(recs) - n_curated
     n_market = sum(1 for r in recs if r not in data.values() and
