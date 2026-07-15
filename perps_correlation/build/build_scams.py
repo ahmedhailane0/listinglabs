@@ -64,15 +64,19 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
 # the outcome it scored 72h later (grade_fires). Public-safe — it exposes the calls
 # and results, NOT the tuned thresholds (the edge). Rendered into trades.html.
 FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
-# The three proven setups always shown on the site. v3 was dropped (never fired),
-# so featuring it would misrepresent "what the AI thinks is a good trade".
-CORE_SETUPS = ("v1", "v2", "v4")
+# The setups always shown on the site. v3 was dropped (never fired), so featuring
+# it would misrepresent "what the AI thinks is a good trade". `dump` joined
+# 2026-07-15: it is the only setup with a positive live expectancy AND the only
+# short, so hiding it while showing three flat longs told the wrong story about
+# what is actually working. It is still the youngest record here (see the t-stat
+# on its P&L card) — shown, not endorsed.
+CORE_SETUPS = ("v1", "v2", "v4", "dump")
 # Unproven setups: still logged + graded on the box (they keep building a live
 # track record) but HIDDEN from the site until each earns its way back — a setup
 # auto-returns once it has >= EARN_MIN_N graded episodes AND positive avg $ P&L
 # (see _visible_setups()). buy15 is the pump-odds "buy signal"; the rest are the
-# experimental detectors (probe/dump/bear_trap/spike_retrace).
-HIDDEN_SETUPS = ("probe", "dump", "bear_trap", "spike_retrace", "buy15")
+# experimental detectors (probe/bear_trap/spike_retrace).
+HIDDEN_SETUPS = ("probe", "bear_trap", "spike_retrace", "buy15")
 EARN_MIN_N = 30        # graded episodes a hidden setup needs before it may show
 EARN_MIN_EXP = 0.0     # ...and its avg realized P&L must be above this to unhide
 JOURNAL_SETUPS = CORE_SETUPS   # back-compat alias (kept for readability below)
@@ -1838,101 +1842,95 @@ def _jpct(v, signed=True) -> str:
     return f'<span class="jp {cls}">{sg}{pct:.1f}%</span>'
 
 
-# Client JS for the PnL card: windows the cumulative-equity curve by timeframe,
-# updates the $ figure + subtitle, and redraws a stepped area chart (equity is flat
-# between trades, jumps when one closes). PTS = [[realize_t_sec, cum_usd], ...].
-_PNL_JS = r"""
-var card=document.getElementById('pnlcard'),valEl=document.getElementById('pnl-val'),
-    subEl=document.getElementById('pnl-sub'),svg=document.getElementById('pnl-chart');
-var SUBS={'1':'Past day','7':'Past week','30':'Past month','365':'Past year',
-          'ytd':'Year to date','all':'All time'};
-var W=320,H=80,pad=6,STATE=null;
-function money(v){var s=v>0?'+':(v<0?'−':'');
-  return s+'$'+Math.abs(v).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fdate(ts){return new Date(ts*1000).toLocaleString('en-US',
-  {month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});}
-function windowPts(tf){
-  if(!PTS.length) return {pts:[],open:0};
-  var first=PTS[0][0];
-  if(tf==='all') return {pts:PTS.slice(),open:PTS[0][1]};
-  var now=Date.now()/1000,start;
-  if(tf==='ytd'){var d=new Date();start=Date.UTC(d.getUTCFullYear(),0,1)/1000;}
-  else start=now-parseInt(tf,10)*86400;
-  start=Math.max(start,first);          // never draw empty space before the data
-  var open=PTS[0][1],win=[];
-  for(var i=0;i<PTS.length;i++){ if(PTS[i][0]<start) open=PTS[i][1]; else win.push(PTS[i]); }
-  if(!win.length || win[0][0]>start) win.unshift([start,open]);
-  return {pts:win,open:open};
-}
-function summary(){
-  if(!STATE) return;
-  var p=STATE.pts,last=p.length?p[p.length-1][1]:STATE.open;
-  valEl.textContent=money(last-STATE.open);
-  subEl.textContent=SUBS[STATE.tf]+' · hypothetical $'+STAKE+'/trade';
-}
-function cross(cx,cy,show){
-  var ln=svg.querySelector('.pnl-cross'),dt=svg.querySelector('.pnl-cur');
-  if(!ln) return;
-  ln.style.display=dt.style.display=show?'':'none';
-  if(show){ln.setAttribute('x1',cx);ln.setAttribute('x2',cx);
-    dt.setAttribute('cx',cx);dt.setAttribute('cy',cy);}
-}
-function draw(tf){
-  var w=windowPts(tf),pts=w.pts;
-  card.classList.remove('pos','neg');
-  var net=(pts.length?pts[pts.length-1][1]:0)-w.open;
-  card.classList.add(net>=0?'pos':'neg');
-  if(pts.length<2){ svg.innerHTML=''; STATE={pts:pts,open:w.open,tf:tf}; summary(); return; }
-  var xs=pts.map(function(p){return p[0];}),ys=pts.map(function(p){return p[1];});
-  var x0=xs[0],x1=xs[xs.length-1],lo=Math.min.apply(null,ys),hi=Math.max.apply(null,ys);
-  if(hi-lo<1e-9){hi+=1;lo-=1;}
-  var sx=function(x){return x1===x0?W/2:pad+(x-x0)/(x1-x0)*(W-2*pad);};
-  var sy=function(y){return pad+(hi-y)/(hi-lo)*(H-2*pad);};
-  var d='M'+sx(xs[0]).toFixed(1)+','+sy(ys[0]).toFixed(1);
-  for(var i=1;i<pts.length;i++) d+='L'+sx(xs[i]).toFixed(1)+','+sy(ys[i]).toFixed(1);
-  var area=d+'L'+sx(x1).toFixed(1)+','+H+'L'+sx(x0).toFixed(1)+','+H+'Z';
-  var col=net>=0?'#2fd480':'#ff6b5e';
-  svg.innerHTML='<path d="'+area+'" fill="'+col+'" opacity="0.12"/>'+
-    '<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2" '+
-    'vector-effect="non-scaling-stroke" stroke-linejoin="round" stroke-linecap="round"/>'+
-    '<line class="pnl-cross" y1="0" y2="'+H+'" stroke="#cfd8e0" stroke-width="1" '+
-    'vector-effect="non-scaling-stroke" style="display:none"/>'+
-    '<circle class="pnl-cur" r="3.2" fill="'+col+'" stroke="#0f1620" stroke-width="1.5" '+
-    'style="display:none"/>';
-  STATE={pts:pts,open:w.open,tf:tf,sx:sx,sy:sy,x0:x0,x1:x1};
-  summary();
-}
-function hover(clientX){
-  var s=STATE; if(!s||!s.sx||s.pts.length<2) return;
-  var r=svg.getBoundingClientRect(),frac=(clientX-r.left)/r.width;
-  frac=Math.max(0,Math.min(1,frac));
-  var t=s.x0+frac*(s.x1-s.x0),best=0,bd=Infinity;
-  for(var i=0;i<s.pts.length;i++){var dd=Math.abs(s.pts[i][0]-t);if(dd<bd){bd=dd;best=i;}}
-  var pt=s.pts[best];
-  cross(s.sx(pt[0]),s.sy(pt[1]),true);
-  valEl.textContent=money(pt[1]-s.open);
-  subEl.textContent=fdate(pt[0]);
-}
-svg.addEventListener('mousemove',function(e){hover(e.clientX);});
-svg.addEventListener('mouseleave',function(){cross(0,0,false);summary();});
-svg.addEventListener('touchmove',function(e){if(e.touches[0])hover(e.touches[0].clientX);},{passive:true});
-svg.addEventListener('touchend',function(){cross(0,0,false);summary();});
-(card.querySelectorAll('.pnl-tf')||[]).forEach(function(b){
-  b.addEventListener('click',function(){
-    card.querySelectorAll('.pnl-tf').forEach(function(x){x.classList.remove('active');});
-    b.classList.add('active'); draw(b.dataset.tf);
-  });
-});
-draw('all');
-"""
-
-
 def _real_pnl(e):
     """Realized P&L per trade — the realistic tiered exit net of fees+slippage
     (pnl_real, grade_fires #5), falling back to the idealized own-stop number for
     trades graded before that field existed."""
     o = e.get("outcome") or {}
     return o.get("pnl_real") if o.get("pnl_real") is not None else o.get("pnl_ownstop")
+
+
+# The exit plan every graded trade is scored on — mirrors tools/grade_fires.py
+# (TP1/TP1_FRAC/TP2/DUMP_TARGET). Sell half at +25%, the rest at +50%; otherwise
+# the setup's own stop or the 72h close. Shorts (dump) cover at −20%.
+TP1, TP1_FRAC, TP2 = 0.25, 0.5, 0.50
+DUMP_TARGET = 0.20
+
+
+def _entry_px(e):
+    """The price the trade actually filled at.
+
+    NOT `entry_price` — that is only the mark at log time, and the two diverge
+    whenever detection lagged the fire (38/197 v1/v2/v4 fires are >5% apart, worst
+    55.8%). grade_fires computes every P&L from `outcome.entry` (the open of the
+    candle after the fire hour, no look-ahead), so the ledger must show that price
+    or a row's "bought at" contradicts its own result."""
+    o = e.get("outcome") or {}
+    return o.get("entry") or e.get("entry_price")
+
+
+def _target_px(e):
+    """The price the trade was aiming to sell at ("expected sell").
+
+    Recomputed from the real fill rather than read from the logged `tp1`/`tp2`,
+    which fetch_screener anchors to `entry_price` — wrong on 83/502 long fires
+    (16.5%), because the grader targets `outcome.entry * (1 + TP2)` instead."""
+    entry = _entry_px(e)
+    if not entry:
+        return None
+    if _is_short(e):
+        return entry * (1 - DUMP_TARGET)
+    return entry * (1 + TP2)
+
+
+def _is_short(e) -> bool:
+    return (e.get("outcome") or {}).get("side") == "short" or e.get("side") == "short" \
+        or e.get("strat") == "dump"
+
+
+def _exit_px(e):
+    """The price a closed trade actually sold at ("sold at").
+
+    grade_fires records the realized P&L but never the exit price, so reconstruct
+    it from what it did record. A stop/target exit IS its own level; a 72h timeout
+    closes at the final candle, recoverable by inverting grade_fires._net_hold on
+    the stored buy-&-hold return:
+        bh_coin = close*(1-slip) / (entry*(1+slip)) - 1 - 2*fee
+    A tiered exit sold half at +25% and the rest later, so report the blended
+    average of the two fills. Verified against all 564 graded long fires:
+    re-deriving pnl_real from these prices reproduces the stored value to <1e-4."""
+    o = e.get("outcome") or {}
+    entry, reason = _entry_px(e), o.get("exit_reason")
+    if not entry:
+        return None
+    fee = (o.get("fees_bps") or 5) / 1e4
+    slip = (o.get("slip_bps") or 10) / 1e4
+    bh = o.get("bh_coin")
+    last = ((bh + 1 + 2 * fee) * entry * (1 + slip) / (1 - slip)) if bh is not None else None
+    stop = e.get("stop")
+    if _is_short(e):                      # cover at −20%, the stop above entry, or the close
+        return {"stopped": stop, "target": entry * (1 - DUMP_TARGET)}.get(reason, last)
+    tp1_px = entry * (1 + TP1)
+    if reason == "stopped":
+        return stop
+    if reason == "tp2":                   # half at +25%, half at +50%
+        return TP1_FRAC * tp1_px + (1 - TP1_FRAC) * entry * (1 + TP2)
+    if reason == "tp1+stop" and stop:
+        return TP1_FRAC * tp1_px + (1 - TP1_FRAC) * stop
+    if reason == "tp1+timeout" and last is not None:
+        return TP1_FRAC * tp1_px + (1 - TP1_FRAC) * last
+    return last
+
+
+# exit_reason -> how to describe the fill(s) behind the "sold at" price.
+_EXIT_NOTE = {
+    "stopped": "stopped out at the setup's safety stop",
+    "timeout": "closed at the 72h mark",
+    "tp2": "blended: sold half at +25%, the rest at +50%",
+    "tp1+timeout": "blended: sold half at +25%, the rest at the 72h close",
+    "tp1+stop": "blended: sold half at +25%, the rest at the stop",
+    "target": "covered the −20% short target",
+}
 
 
 def _setup_stats(sid, eps) -> dict:
@@ -1955,6 +1953,42 @@ def _setup_curve(sid, eps) -> list:
     es = sorted((e for e in eps if e.get("strat") == sid and _real_pnl(e) is not None),
                 key=lambda e: e.get("t") or 0)
     return [(e.get("t"), _real_pnl(e)) for e in es]
+
+
+def _tstat(rets) -> float | None:
+    """t = mean ÷ standard error of a setup's per-trade returns. The conventional
+    "probably not luck" bar is |t| >= 2."""
+    n = len(rets)
+    if n < 3:
+        return None
+    mu = sum(rets) / n
+    se = ((sum((x - mu) ** 2 for x in rets) / n) / n) ** 0.5
+    return (mu / se) if se else None
+
+
+def _edge_verdict(rets) -> tuple:
+    """Plain-English honesty label for a model's live record → (css_class, text).
+
+    A $ total is meaningless without this. These setups run sd ≈ 15%/trade on
+    n ≈ 40-70, so the standard error swamps the mean: a ±$20 move is noise. Saying
+    so on the card is the whole point — reading a good week as an edge is exactly
+    what sent this page's combined P&L from +$160 to −$6 and back."""
+    n = len(rets)
+    if n < 10:
+        return ("early", f"only {n} graded — far too early to tell")
+    t = _tstat(rets)
+    if t is None:
+        return ("early", "not enough data yet")
+    if abs(t) >= 2:
+        return ("proven", f"statistically real — t={t:+.2f}, unlikely to be luck")
+    mu = sum(rets) / n
+    sd = (sum((x - mu) ** 2 for x in rets) / n) ** 0.5
+    tail = ""
+    if mu > 0 and sd:
+        need = int((2 * sd / mu) ** 2)
+        if n < need < 10 ** 7:
+            tail = f" — needs ~{need:,} trades to prove"
+    return ("noise", f"not yet distinguishable from luck (t={t:+.2f}){tail}")
 
 
 def _visible_setups(eps=None) -> list:
@@ -1983,43 +2017,6 @@ def _visible_setups_cached() -> tuple:
     if _VIS_CACHE is None:
         _VIS_CACHE = tuple(_visible_setups())
     return _VIS_CACHE
-
-
-def _pnl_card(closed) -> str:
-    """Polymarket-style PnL card: cumulative equity of the model's closed v1/v4
-    paper trades on a hypothetical PNL_STAKE/trade, with a timeframe toggle and a
-    stepped equity-curve chart. Equity uses the realistic net-of-cost P&L and is
-    booked at each trade's grade (close) time."""
-    graded = [e for e in closed if _real_pnl(e) is not None]
-    graded.sort(key=lambda e: (e["outcome"].get("graded_utc") or (e.get("t") or 0) + 72 * 3600))
-    pts, cum = [], 0.0
-    for e in graded:
-        o = e["outcome"]
-        cum += PNL_STAKE * _real_pnl(e)
-        rt = o.get("graded_utc") or (e.get("t") or 0) + 72 * 3600
-        pts.append([int(rt), round(cum, 2)])
-    # Anchor the curve at $0 at the earliest entry (fire) time, so it climbs from
-    # zero rather than starting mid-air — and so the line spans the real data window
-    # edge-to-edge instead of leaving a long empty flat before the first trade.
-    if pts:
-        t0 = min([e.get("t") or pts[0][0] for e in graded] + [pts[0][0] - 3600])
-        pts = [[int(t0), 0.0]] + pts
-    total = pts[-1][1] if pts else 0.0
-    cls = "pos" if total >= 0 else "neg"
-    sg = "+" if total > 0 else ("−" if total < 0 else "")
-    val = f"{sg}${abs(total):,.2f}"
-    tfs = [("1D", "1"), ("1W", "7"), ("1M", "30"), ("1Y", "365"), ("YTD", "ytd"), ("ALL", "all")]
-    btns = "".join(f'<button class="pnl-tf{" active" if d == "all" else ""}" '
-                   f'data-tf="{d}">{l}</button>' for l, d in tfs)
-    data_js = json.dumps(pts, separators=(",", ":"))
-    return (f'<aside class="pnl-card {cls}" id="pnlcard">'
-            f'<div class="pnl-top"><span class="pnl-ttl"><i class="pnl-dot"></i>Profit / Loss</span>'
-            f'<div class="pnl-tfs">{btns}</div></div>'
-            f'<div class="pnl-val" id="pnl-val">{val}</div>'
-            f'<div class="pnl-sub" id="pnl-sub">All time · hypothetical ${PNL_STAKE}/trade · one fire per coin per 72h</div>'
-            f'<svg class="pnl-chart" id="pnl-chart" viewBox="0 0 320 80" preserveAspectRatio="none"></svg>'
-            f'<script>(function(){{var PTS={data_js},STAKE={PNL_STAKE};{_PNL_JS}}})();</script>'
-            f'</aside>')
 
 
 def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
@@ -2154,21 +2151,37 @@ def _dts(ts) -> str:
     return _dt.datetime.fromtimestamp(ts, _dt.timezone.utc).strftime("%b %d %H:%M")
 
 
-def _outcome_story(o) -> str:
-    """Plain-English 'what happened' from a graded outcome: pumped / half-win /
-    stopped out / no move, with the peak move in the hover tooltip."""
+def _outcome_story(o, short=False) -> str:
+    """Plain-English "what happened" — to THE TRADE, not to the coin.
+
+    Keyed on exit_reason, deliberately. It used to key on `mfe` (the coin's peak),
+    which produced rows reading "🟢 Pumped … result $100": BILL peaked +59% AFTER
+    stopping the trade out flat, and the table called that a win. The coin's move
+    is its own column now ("Actually pumped"); this column answers what the trade
+    did, and the two disagreeing is the single most informative thing on the page
+    (it is how v1's too-tight stop shows itself)."""
     o = o or {}
     mfe = o.get("mfe") or 0
-    peak = f"peaked +{mfe*100:.0f}%"
-    if o.get("pump") or mfe >= 0.50:
-        cls, txt = "jhit", "🟢 Pumped"
-    elif mfe >= 0.25:
-        cls, txt = "jhit", "🟡 Half-win"
-    elif o.get("exit_reason") in ("stopped", "tp1+stop"):
-        cls, txt = "jstop", "🔴 Stopped out"
-    else:
-        cls, txt = "jmiss", "⚪ No move"
-    return f'<span class="{cls}" title="{peak}">{txt}</span>'
+    peak = (f"the coin fell {mfe*100:.0f}% at best" if short
+            else f"the coin peaked +{mfe*100:.0f}% at some point in the 72h")
+    xr = o.get("exit_reason")
+    stories = {
+        "tp2": ("jhit", "🟢 Hit target", "sold half at +25%, the rest at the +50% target"),
+        "target": ("jhit", "🟢 Hit target", "covered the −20% short target"),
+        "tp1+timeout": ("jhit", "🟡 Half-win", "banked +25% on half; the rest closed at 72h"),
+        "tp1+stop": ("jhit", "🟡 Half-win", "banked +25% on half; the rest stopped out"),
+        "stopped": ("jstop", "🔴 Stopped out", "hit the safety stop and closed for a loss"),
+        # "Closed at 72h", not "went nowhere" — a timeout can still land well clear of
+        # flat (a dump that fell 15% without reaching its −20% target pays +11.9%).
+        # How far it actually travelled is the next column's job, not this one's.
+        "timeout": ("jmiss", "⚪ Closed at 72h", "never hit target or stop; closed at the 72h mark"),
+    }
+    cls, txt, what = stories.get(xr, ("jmiss", "⚪ Closed at 72h", "closed at the 72h mark"))
+    # The painful case worth naming: stopped out, then the coin ran anyway.
+    if xr == "stopped" and mfe >= 0.25 and not short:
+        cls, txt = "jstop", "🔴 Stopped, then ran"
+        what = "the stop closed the trade first — then the coin went on without it"
+    return f'<span class="{cls}" title="{html.escape(what)} — {html.escape(peak)}">{txt}</span>'
 
 
 # ── Forward paper-trade experiment: v4 + high open-interest + tight take-profit ──
@@ -2394,114 +2407,114 @@ def _trades_page(recs) -> str:
         return (f'<span class="jset {k}" title="{html.escape(STRAT_TITLE.get(k, ""))}">'
                 f'{STRAT_NAME.get(k, k)}</span>')
 
-    # Closed-trades table (newest first).
+    def _px(v):
+        return fmt_subscript_price(v) if v else "—"
+
+    def _moved(e):
+        """"How much did it actually pump" — the best move the trade reached (max
+        favourable excursion): up for a long, DOWN for a short. The grader stops
+        measuring at +200%, so report anything there as a floor, not a number."""
+        o = e.get("outcome") or {}
+        m = o.get("mfe")
+        if m is None:
+            return '<span class="jp">—</span>'
+        cap, short = m >= 2.0, _is_short(e)
+        ttl = (f"fell {m*100:.0f}% below entry — a short wants this"
+               if short else f"peaked {m*100:.0f}% above entry")
+        if cap:
+            ttl = "reached +200%, where the grader stops measuring — the real peak was higher"
+        return (f'<span class="jp {"pos" if m > 0 else ""}" title="{html.escape(ttl)}">'
+                f'{"≥" if cap else ""}{"−" if short else "+"}{m*100:.0f}%</span>')
+
+    def _result(vf):
+        """What the hypothetical stake came back as: $100 in → $120 out on a win."""
+        if vf is None:
+            return '<span class="jp">—</span>'
+        val = PNL_STAKE * (1 + vf)
+        cls = "pos" if vf > 0 else ("neg" if vf < 0 else "")
+        word = "win" if vf > 0 else ("loss" if vf < 0 else "flat")
+        return (f'<span class="jp {cls}" title="{word} — ${PNL_STAKE:,.0f} in, '
+                f'${val:,.2f} out, net of fees + slippage">${val:,.0f}</span>'
+                f'<span class="jsub">{_jpct(vf)}</span>')
+
+    # Closed-trades table (newest first). 11 columns — keep the #jclosed nth-child
+    # width block in EXTRA_CSS in sync (table-layout:fixed gives an unlisted column
+    # ZERO width, which is what broke this table before).
     if closed:
         crows = []
-        # plan-vs-outcome: each row lays out the intended plan (entry, stop, TP1,
-        # TP2) and what actually closed the trade, with ✓/✗ on each target so you
-        # can see at a glance whether it respected the plan or stopped out.
-        _exit = {"tp2": ("TP2 hit ✓", "jhit"), "tp1+timeout": ("TP1 ✓ · 72h", "jhit"),
-                 "tp1+stop": ("TP1 ✓ · stop", "jhit"), "stopped": ("Stopped ✗", "jstop"),
-                 "timeout": ("72h close", "jmiss")}
-
-        def _px(v):
-            return fmt_subscript_price(v) if v else "—"
-
-        def _dpnl(vf):
-            """Realized $ P&L on the hypothetical stake (big), with the % underneath."""
-            if vf is None:
-                return '<span class="jp">—</span>'
-            d = PNL_STAKE * vf
-            cls = "pos" if d >= 0 else "neg"
-            sg = "+" if d >= 0 else "−"
-            return (f'<span class="jp {cls}">{sg}${abs(d):,.0f}</span>'
-                    f'<span class="jsub">{_jpct(vf)}</span>')
-
         for e in closed:
             o = e["outcome"] or {}
-            ep = e.get("entry_price") or o.get("entry")
-            mfe = o.get("mfe") or 0
-            hit1, hit2 = mfe >= 0.25, mfe >= 0.50
-            k = e.get("strat")
-            why = (f'{_setup_chip(k)} '
-                   f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
-            h1c = f'<td class="jnum {"jhit" if hit1 else "jmiss"}">{"✓" if hit1 else "✗"}</td>'
-            h2c = f'<td class="jnum {"jhit" if hit2 else "jmiss"}">{"✓" if hit2 else "✗"}</td>'
+            note = _EXIT_NOTE.get(o.get("exit_reason"), "")
+            sold = (f'<td class="jnum" title="{html.escape(note)}">{_px(_exit_px(e))}</td>'
+                    if note else f'<td class="jnum">{_px(_exit_px(e))}</td>')
             crows.append(
                 f'<tr><td>{_dts(_key(e))}</td>'
                 f'<td class="jt">{_tok(e.get("sym"))}</td>'
-                f'<td class="jwhycell">{why}</td>'
+                f'<td>{_setup_chip(e.get("strat"))}</td>'
                 f'<td class="jnum">{_pump_pct(e.get("pump_score"))}</td>'
-                f'<td class="jnum">{_px(ep)}</td>'
-                f'<td class="jnum">{_px(e.get("stop"))}</td>'
-                f'{h1c}{h2c}'
-                f'<td>{_outcome_story(o)}</td>'
+                f'<td class="jnum">{_px(_entry_px(e))}</td>'
+                f'{sold}'
+                f'<td class="jnum">{_px(_target_px(e))}</td>'
+                f'<td>{_outcome_story(o, short=_is_short(e))}</td>'
+                f'<td class="jnum">{_moved(e)}</td>'
                 f'<td class="jnum">${PNL_STAKE}</td>'
-                f'<td class="jnum jpnl">{_dpnl(_real_pnl(e))}</td></tr>')
+                f'<td class="jnum jpnl">{_result(_real_pnl(e))}</td></tr>')
         closed_tbl = (
             '<div class="tablewrap jscroll"><table class="jtable" id="jclosed"><thead><tr>'
             '<th>When</th><th>Token</th>'
-            '<th title="the setup version that bought — v1/v2/v4">Bought</th>'
-            '<th title="the model&#39;s predicted chance of +50%/72h at entry">Model %</th>'
-            '<th title="entry reference price (Binance mark at the signal)">Bought at</th>'
-            '<th title="where the trade bails if it goes wrong">Stop</th>'
-            '<th title="did price reach +25% (sell half)?">Hit +25%?</th>'
-            '<th title="did price reach +50% (sell rest)?">Hit +50%?</th>'
+            '<th title="which setup fired this trade">Model</th>'
+            '<th title="the model&#39;s own odds of a +50% move, as of that hour">Expected pump</th>'
+            '<th title="the price the trade actually filled at">Bought at</th>'
+            '<th title="the price it actually closed at">Sold at</th>'
+            '<th title="the take-profit the plan was aiming for">Expected sell</th>'
             '<th>What happened</th>'
-            '<th title="hypothetical stake per paper trade">Stake</th>'
-            '<th title="realistic $ P&amp;L on the stake, net of fees + slippage">P&amp;L ($)</th>'
+            '<th title="the best move it actually reached before closing">Actually pumped</th>'
+            '<th title="hypothetical stake per paper trade">Cost</th>'
+            '<th title="what the stake came back as, net of fees + slippage">Result</th>'
             '</tr></thead><tbody>'
             + "".join(crows) + '</tbody></table></div>'
-            + '<p class="jnote">Each row: <b>when</b> the AI bought, <b>why</b> (the pattern it '
-            'spotted), the plan (bought-at price + the safety stop), whether price reached '
-            '+25% / +50%, then <b>what actually happened</b> and the realistic result '
-            '(net of fees + slippage).</p>')
+            + '<p class="jnote">Each row: <b>when</b> the AI bought, <b>which model</b> fired and '
+            'the odds it gave that coin at the time, the price it actually <b>bought</b> and '
+            '<b>sold</b> at versus the sell it was aiming for, then <b>what happened</b>, how far '
+            f'the coin really moved, and what a hypothetical ${PNL_STAKE} came back as (net of '
+            'fees + slippage). Odds read “—” on trades logged before the model began scoring them; '
+            'a blended “sold at” (hover it) means half was sold at +25% and the rest later.</p>')
     else:
-        closed_tbl = ('<p class="jnote">No v1/v2/v4 trades have matured yet — each is '
+        closed_tbl = ('<p class="jnote">No trades have matured yet — each is '
                       'graded 72h after it fires. Check back as the ledger fills.</p>')
 
     # Open positions (fired, not yet matured) — what the model is "in" right now,
     # with the full plan: entry, stop, take-profit target and the hypothetical stake.
+    # Open positions mirror the closed columns, minus the four that only exist once
+    # a trade is graded (sold at / what happened / actually pumped / result).
+    # 8 columns — keep the #jopen nth-child width block in EXTRA_CSS in sync.
     if open_:
         orows = []
         for e in open_:
-            ep = e.get("entry_price")
-            entry = fmt_subscript_price(ep) if ep else "—"
-            grades = _dts(_key(e) + 72 * 3600)
-            k = e.get("strat")
-            why = (f'{_setup_chip(k)} '
-                   f'<span class="jwhy">{html.escape(STRAT_WHY.get(k, ""))}</span>')
-            stop = e.get("stop")
-            stopcell = fmt_subscript_price(stop) if stop else "—"
-            tp1, tp2 = e.get("tp1"), e.get("tp2")
-            short = e.get("side") == "short" or k == "dump"
-            if short:                                  # dump covers at −20%
-                tgt = (f'<span title="cover target −20% at {tp2:.6g}">{fmt_subscript_price(tp2)} '
-                       f'<small>−20%</small></span>' if tp2 else '<small>−20% (short)</small>')
-            elif tp2:
-                ttl = f"first target +25% at {tp1:.6g}" if tp1 else "+50% take-profit"
-                tgt = f'<span title="{ttl}">{fmt_subscript_price(tp2)} <small>+50%</small></span>'
-            else:
-                tgt = '<small>+50%</small>'
+            short = _is_short(e)
+            tgt = _target_px(e)
+            tcell = (f'{_px(tgt)} <small>{"−20%" if short else "+50%"}</small>'
+                     if tgt else f'<small>{"−20%" if short else "+50%"}</small>')
             orows.append(
                 f'<tr><td>{_dts(_key(e))}</td>'
                 f'<td class="jt">{_tok(e.get("sym"))}</td>'
-                f'<td class="jwhycell">{why}</td>'
+                f'<td>{_setup_chip(e.get("strat"))}</td>'
                 f'<td class="jnum">{_pump_pct(e.get("pump_score"))}</td>'
-                f'<td class="jnum">{entry}</td>'
-                f'<td class="jnum">{stopcell}</td>'
-                f'<td class="jnum">{tgt}</td>'
+                f'<td class="jnum">{_px(_entry_px(e))}</td>'
+                f'<td class="jnum">{tcell}</td>'
                 f'<td class="jnum">${PNL_STAKE}</td>'
-                f'<td>{grades} <span class="jpending">⏳</span></td></tr>')
+                f'<td>{_dts(_key(e) + 72 * 3600)} <span class="jpending">⏳</span></td></tr>')
         open_tbl = (
             '<h3>Open positions <span class="asof">live · what the model is in now, '
             'waiting for the 72h grade</span></h3>'
             '<div class="tablewrap jscroll"><table class="jtable" id="jopen"><thead><tr>'
-            '<th>When</th><th>Token</th><th>Bought</th>'
-            '<th title="model chance of +50%/72h at entry">Model %</th>'
-            '<th>Bought at</th><th>Stop</th>'
-            '<th title="+50% take-profit price (first tier at +25%)">Target</th>'
-            '<th title="hypothetical stake per paper trade">Stake</th><th>Grades on</th>'
+            '<th>When</th><th>Token</th>'
+            '<th title="which setup fired this trade">Model</th>'
+            '<th title="the model&#39;s own odds of a +50% move, as of that hour">Expected pump</th>'
+            '<th title="entry reference price (the mark when it fired)">Bought at</th>'
+            '<th title="the take-profit it is aiming for (first tier sells half at +25%)">Expected sell</th>'
+            '<th title="hypothetical stake per paper trade">Cost</th>'
+            '<th>Grades on</th>'
             '</tr></thead><tbody>' + "".join(orows) + '</tbody></table></div>')
     else:
         open_tbl = ""
@@ -2581,13 +2594,14 @@ def _trades_page(recs) -> str:
 <header><h1>AI Trades</h1>
 {site_nav("scams")}
 {scams_subnav("trades")}
-<p class="sub">One ledger for every trade the AI's live Buy <b>v1</b>, <b>v2</b> &amp; <b>v4</b> setups
-make — the token it bought, which version fired, the model's confidence, the stop and take-profit,
-the hypothetical stake and the realistic <b>$ result</b>. Each trade is logged with an entry price
-the moment it triggers, then <b>scored on the real price</b> 72h later. Two targets below: the
-headline <b>+50% pump</b> (72h) and a faster <b>+10% mover</b> (24h). <b>Research paper signals
-scored on real prices — not executed trades, not financial advice</b>; the sample is small and
-grows over time.</p></header>
+<p class="sub">One ledger for every trade the AI's live setups make — the token it bought, which
+model fired, the odds it gave at the time, the price it bought and sold at, and what a hypothetical
+${PNL_STAKE} came back as. Each trade is logged the moment it triggers, then <b>scored on the real
+price</b> 72h later. <b>Every model keeps its own profit and loss</b> below — a combined total would
+let one setup's wins hide another's losses. Two targets: the headline <b>+50% pump</b> (72h) and a
+faster <b>+10% mover</b> (24h). <b>Research paper signals scored on real prices — not executed
+trades, not financial advice</b>; the samples are small, and most are still too small to tell skill
+from luck (each card says so).</p></header>
 <main>
 <div class="jtabs" role="tablist">
   <button class="jtab active" data-view="pumps" type="button">+50% Pumps</button>
@@ -2600,12 +2614,11 @@ grows over time.</p></header>
   {scorecard}
   {by_html}
 </section>
-{_pnl_card(closed)}
 </div>
+{_equity_grid(_eq_curves)}
 {f'<section class="card span">{open_tbl}</section>' if open_tbl else ''}
 {_papertrade_panel()}
 <div class="jrow">{bench}{_winrate_chart(closed)}</div>
-{_equity_grid(_eq_curves)}
 <section class="card span">
   <h3>Closed trades <span class="asof">graded on real price 72h after entry</span></h3>
   {closed_tbl}
@@ -2684,20 +2697,33 @@ def _equity_grid(curves) -> str:
                     + pts_svg)
 
         final = cum[-1]
-        sub_cls = "pos" if final >= 0 else "neg"
         svg = (f'<svg class="eq-svg" viewBox="0 0 {W} {H}" role="img" '
                f'aria-label="{html.escape(name)} equity curve">{zero_line}{path}</svg>')
-        minis.append(f'<figure class="eq-mini"><figcaption><i style="background:{color}"></i>'
-                     f'{html.escape(name)}<span class="eq-sub">{len(pts)} graded · '
-                     f'<span class="{sub_cls}">{final*100:+.1f}%</span></span></figcaption>{svg}'
-                     f'</figure>')
+        # Each model carries its OWN P&L — a combined figure hides that one setup
+        # can be paying for another's losses.
+        rets = [p for _t, p in pts]
+        dollars = PNL_STAKE * final
+        d_cls = "pos" if dollars >= 0 else "neg"
+        wins = sum(1 for r in rets if r > 0)
+        vcls, vtxt = _edge_verdict(rets)
+        minis.append(
+            f'<figure class="eq-mini"><figcaption><i style="background:{color}"></i>'
+            f'{html.escape(name)}</figcaption>'
+            f'<div class="eq-pnl {d_cls}">{"+" if dollars >= 0 else "−"}${abs(dollars):,.2f}</div>'
+            f'<div class="eq-sub">{len(pts)} trades · {100*wins/len(rets):.0f}% won · '
+            f'{sum(rets)/len(rets)*100:+.2f}%/trade</div>{svg}'
+            f'<div class="eq-verdict {vcls}" title="{html.escape(vtxt)}">{html.escape(vtxt)}</div>'
+            f'</figure>')
 
-    return (f'<section class="card span"><h3>Per-model equity curves <span class="asof">trade '
-            f'order, not calendar time</span></h3><div class="eq-grid">{"".join(minis)}</div>'
-            f'<p class="jnote">Each line is the running SUM of that setup\'s realized P&amp;L, '
-            f'one point per graded trade in fire order (X is trade #, not date — Y is a plain '
-            f'running total, not a compounded account). Hover a point for that trade\'s result.'
-            f'</p></section>')
+    return (f'<section class="card span"><h3>Profit / loss by model <span class="asof">each model '
+            f'stands on its own · hypothetical ${PNL_STAKE}/trade</span></h3>'
+            f'<div class="eq-grid">{"".join(minis)}</div>'
+            f'<p class="jnote">Every model keeps its own books — a combined total would let one '
+            f'setup\'s wins paper over another\'s losses. The line is the running SUM of that '
+            f'model\'s realized P&amp;L, one point per graded trade in fire order (X is trade #, '
+            f'not date; Y is a plain running total, not a compounded account). Hover a point for '
+            f'that trade. <b>Read the grey line under each chart first</b> — at these sample sizes '
+            f'a ±$20 swing is usually luck, not skill.</p></section>')
 
 
 def _index(recs) -> str:
@@ -2784,7 +2810,8 @@ EXTRA_CSS = """
 .eq-mini{margin:0;background:var(--bg-subtle);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
 .eq-mini figcaption{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:650;color:var(--text);margin-bottom:4px}
 .eq-mini figcaption i{width:9px;height:9px;border-radius:50%;display:inline-block;flex:0 0 auto}
-.eq-sub{margin-left:auto;font-weight:500;font-size:11px;color:var(--text-3)}
+.eq-sub{font-weight:500;font-size:11px;color:var(--text-3);margin-bottom:6px;
+  font-variant-numeric:tabular-nums}
 .eq-sub .pos{color:var(--pos)}.eq-sub .neg{color:var(--neg)}
 .eq-svg{width:100%;height:auto;display:block}
 .eq-zero{stroke:var(--border);stroke-width:1;stroke-dasharray:3 3}
@@ -2822,6 +2849,8 @@ EXTRA_CSS = """
 .jset.v1{background:rgba(46,109,164,.14);color:#2e6da4}
 .jset.v2{background:rgba(31,78,121,.18);color:#3b7cc4}
 .jset.v4{background:rgba(156,106,222,.16);color:#7d4ec9}
+/* dump is a SHORT — red, so it reads as the opposite bet at a glance */
+.jset.dump{background:rgba(192,57,43,.16);color:#c0392b}
 .jpending{color:var(--text-4);font-size:12px}
 .jtable .jpnl{line-height:1.2}
 .jsub{display:block;font-size:11px;opacity:.68;font-weight:400}
@@ -2865,13 +2894,16 @@ EXTRA_CSS = """
 /* mobile: the journal trade tables SCROLL inside their wrap instead of crushing
    their columns into each other; stat cards stay 2-up but less chunky */
 @media(max-width:640px){
-  .tablewrap .jtable{min-width:560px}
+  /* NB: no min-width override here. It used to say 560px and was dead code anyway
+     (same specificity as `.jscroll .jtable`, which wins on source order) — and
+     cramming 11 columns into 560px is not what we want regardless. The tables keep
+     their real min-width and scroll sideways; only the type/padding tighten. */
   .jtable{font-size:12px}
   .jtable th,.jtable td{padding:7px 8px}
   .jcards{grid-template-columns:1fr 1fr;gap:8px}
   .jstat{padding:11px 13px}
   .jstat-v{font-size:21px}
-  .jb-v,.pnl-val{font-size:22px}
+  .jb-v{font-size:22px}
 }
 .jtable .jx.jhit{font-weight:600}
 .jtable .jx.jstop{font-weight:600}
@@ -2894,26 +2926,6 @@ EXTRA_CSS = """
 .jrow>.card.span{margin-top:0;flex:1 1 360px;min-width:0}
 .jrow>.wc-card{flex:1 1 360px;max-width:460px}
 @media(max-width:760px){.jrow>.wc-card{max-width:none}}
-.pnl-card{flex:0 0 340px;display:flex;flex-direction:column;background:#0f1620;
-  border:1px solid #1e2a38;border-radius:14px;padding:15px 18px 12px;color:#e6ebf1;
-  box-shadow:0 3px 16px rgba(0,0,0,.20)}
-.pnl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
-.pnl-ttl{display:flex;align-items:center;gap:7px;font-size:13px;color:#9aa7b4;font-weight:600;white-space:nowrap}
-.pnl-dot{width:8px;height:8px;border-radius:50%;background:#3a4654;flex:none}
-.pnl-card.pos .pnl-dot{background:#1fbf6b}
-.pnl-card.neg .pnl-dot{background:#e0564a}
-.pnl-tfs{display:flex;gap:1px}
-.pnl-tf{background:none;border:none;color:#7f8c9a;font-family:inherit;font-size:11px;
-  font-weight:600;padding:4px 6px;border-radius:6px;cursor:pointer}
-.pnl-tf:hover{color:#cfd8e0}
-.pnl-tf.active{background:#1d4e79;color:#fff}
-.pnl-val{font-size:30px;font-weight:800;letter-spacing:-.5px;line-height:1.1;color:#e6ebf1}
-.pnl-card.pos .pnl-val{color:#2fd480}
-.pnl-card.neg .pnl-val{color:#ff6b5e}
-.pnl-sub{font-size:12px;color:#7f8c9a;margin-top:3px}
-.pnl-chart{width:100%;flex:1 1 auto;min-height:80px;margin-top:10px;display:block;cursor:crosshair;touch-action:none}
-.pnl-val{transition:color .08s}
-@media(max-width:640px){.pnl-card{flex:1 1 100%}}
 /* deterministic column widths (11 cols: #, Token, Pump, Old, Price/24h,
    BN OI, OI (BN+BYB), Funding, Vol, FDV, MC). */
 #ltab{table-layout:fixed;min-width:940px}
@@ -3023,32 +3035,66 @@ EXTRA_CSS = """
 .buynow-scroll{max-height:340px;overflow:auto;
   border:1px solid var(--border);border-radius:10px}
 .buynow-scroll thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead)}
-/* AI Journal trade tables scroll inside their own box, header pinned. DETERMINISTIC
-   responsive table: table-layout:fixed (columns never hog/cram) + per-table widths
-   below + a comfy min-width so on a narrow screen the box scrolls SIDEWAYS instead
-   of squishing. (The Screener #ltab uses the same fixed-width approach.) */
-.jscroll{max-height:380px;overflow:auto;border:1px solid var(--border);border-radius:10px}
-.jscroll .jtable{table-layout:fixed;min-width:920px}
+/* AI Journal trade tables. DETERMINISTIC responsive table: table-layout:fixed
+   (columns never hog/cram) + a width rule for EVERY column below + a min-width so
+   a narrow screen scrolls SIDEWAYS instead of squishing. (Screener #ltab uses the
+   same approach.)
+   ⚠ Under table-layout:fixed a column with NO width rule gets whatever is LEFT —
+   i.e. ZERO once the listed widths already sum to 100%. That is what broke this
+   table on 2026-07-15: #jclosed had 11 columns and 9 rules, so "Stake"/"P&L ($)"
+   collapsed, the P&L header wrapped one letter per line, and vertical-align:bottom
+   then padded every other header down to match. If you add a column, add its width
+   here — the count in each comment below must match the <thead>. */
+/* The ledger is ~200 rows, so it scrolls inside its own box (header pinned) rather
+   than turning the page into a wall of rows. Sideways scroll only kicks in below
+   the table's min-width. */
+.jscroll{max-height:520px;overflow:auto;-webkit-overflow-scrolling:touch;
+  border:1px solid var(--border);border-radius:10px}
+.jscroll .jtable{table-layout:fixed;min-width:1220px}
+/* nowrap + overflow:hidden on TH is the guard that keeps a header from wrapping
+   one-letter-per-line if a column is ever short on space (see the ⚠ above);
+   vertical-align:middle means a stray tall header can't pad the whole row. */
 .jscroll .jtable thead th{position:sticky;top:0;z-index:3;background:var(--bg-thead);
-  white-space:normal;vertical-align:bottom;line-height:1.2}
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;
+  line-height:1.2}
 .jscroll .jtable td{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-/* the "why it bought" cell wraps at spaces (never mid-word); chip stays one line */
-.jscroll .jtable td.jwhycell{white-space:normal;word-break:normal;overflow-wrap:normal}
-.jscroll .jtable td.jwhycell .jset{white-space:nowrap}
+/* The closed ledger is ~200 rows and grows forever. Skip render work for rows
+   outside the scroll box — CSS-only virtualization, no JS, no library. The
+   intrinsic size must match the real row height or the scrollbar jumps. */
+.jscroll .jtable tbody tr{content-visibility:auto;contain-intrinsic-size:auto 36px}
 .jwhy{color:var(--text-3);font-size:12px}
-/* per-table column widths (sum 100%) — fixed layout distributes by these */
-#jclosed th:nth-child(1){width:12%}#jclosed th:nth-child(2){width:9%}
-#jclosed th:nth-child(3){width:18%}#jclosed th:nth-child(4){width:11%}
-#jclosed th:nth-child(5){width:11%}#jclosed th:nth-child(6){width:8%}
-#jclosed th:nth-child(7){width:8%}#jclosed th:nth-child(8){width:13%}
-#jclosed th:nth-child(9){width:10%}
-#jopen th:nth-child(1){width:16%}#jopen th:nth-child(2){width:12%}
-#jopen th:nth-child(3){width:26%}#jopen th:nth-child(4){width:16%}
-#jopen th:nth-child(5){width:18%}#jopen th:nth-child(6){width:12%}
+/* per-table column widths — one rule PER COLUMN, each set summing to 100% */
+/* #jclosed — 11 cols: When Token Model ExpPump BoughtAt SoldAt ExpSell What Moved Cost Result
+   (cols 8 + 9 carry the longest headers — "What happened"/"Actually pumped" — and
+   were verified unclipped down to a 760px viewport; don't shave them.) */
+#jclosed th:nth-child(1){width:9%}#jclosed th:nth-child(2){width:8%}
+#jclosed th:nth-child(3){width:8%}#jclosed th:nth-child(4){width:9%}
+#jclosed th:nth-child(5){width:9%}#jclosed th:nth-child(6){width:9%}
+#jclosed th:nth-child(7){width:9%}#jclosed th:nth-child(8){width:11%}
+#jclosed th:nth-child(9){width:11%}#jclosed th:nth-child(10){width:7%}
+#jclosed th:nth-child(11){width:10%}
+/* #jopen — 8 cols: When Token Model ExpPump BoughtAt ExpSell Cost GradesOn */
+#jopen th:nth-child(1){width:13%}#jopen th:nth-child(2){width:11%}
+#jopen th:nth-child(3){width:11%}#jopen th:nth-child(4){width:12%}
+#jopen th:nth-child(5){width:12%}#jopen th:nth-child(6){width:14%}
+#jopen th:nth-child(7){width:9%}#jopen th:nth-child(8){width:18%}
+/* #jmover — 8 cols: When Token Why BoughtAt +10%12h +10%24h What Result */
 #jmover th:nth-child(1){width:13%}#jmover th:nth-child(2){width:10%}
 #jmover th:nth-child(3){width:19%}#jmover th:nth-child(4){width:12%}
 #jmover th:nth-child(5){width:9%}#jmover th:nth-child(6){width:9%}
 #jmover th:nth-child(7){width:16%}#jmover th:nth-child(8){width:12%}
+#jmover{min-width:920px}#jopen{min-width:900px}
+/* the mover table still shows the "why it bought" prose; let it wrap at spaces */
+.jscroll .jtable td.jwhycell{white-space:normal;word-break:normal;overflow-wrap:normal}
+.jscroll .jtable td.jwhycell .jset{white-space:nowrap}
+/* Per-model P&L cards (_equity_grid) — each model's own books. */
+.eq-pnl{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:2px 0 1px;
+  font-variant-numeric:tabular-nums;font-family:var(--font-mono)}
+.eq-pnl.pos{color:var(--pos)}.eq-pnl.neg{color:var(--neg)}
+.eq-verdict{font-size:10.5px;line-height:1.35;margin-top:6px;color:var(--text-3);
+  text-wrap:pretty}
+.eq-verdict.proven{color:var(--pos)}
+.eq-verdict.noise,.eq-verdict.early{color:var(--text-3);font-style:italic}
 /* sticky header: the column titles pin to the top of the viewport as the WHOLE
    PAGE scrolls. Critically, .listwrap must NOT be a scroll container here (no
    max-height/overflow) — an overflow box would capture the sticky thead and make
