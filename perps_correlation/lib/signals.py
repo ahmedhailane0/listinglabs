@@ -74,6 +74,26 @@ def ema(values: list[float], n: int) -> list[float]:
         out.append(v * k + out[-1] * (1 - k))
     return out
 
+# ── the EXIT PLAN (one source of truth) ──────────────────────────────────────
+# Every trade this engine fires is exited by these rules, so they live here rather
+# than in any one consumer: the Telegram BUY alert PROMISES them ("TP1 +25% → sell
+# half"), tools/grade_fires.py scores the live ledger by them, and
+# tools/trade_model.py simulates them for the backtest/optimizer. They used to be
+# duplicated across all three, which let the backtest book a full +50% with zero
+# fees while the ledger took half off at +25% net of costs — i.e. the optimizer was
+# tuning an instrument nobody trades. Don't re-inline these anywhere.
+#
+# No secrecy cost in publishing them: the alerts broadcast the plan, and
+# fires_log.json (public) already stores tp1/tp2/fees_bps/slip_bps per fire. The
+# ENTRY thresholds below are the edge; the exit plan is not.
+TP1, TP1_FRAC = 0.25, 0.5   # sell half at +25%
+TP2 = 0.50                  # sell the rest at +50%
+TIME_STOP_H = 72            # anything still open closes at the 72h candle
+DUMP_TARGET = 0.20          # dump is a SHORT: cover the -20% drop
+FEE = 0.0005                # taker fee per fill (0.05%)
+SLIP = 0.0010               # slippage per fill (0.10% — these coins are thin)
+MFE_CAP = 2.00              # stop measuring favourable excursion past +200%
+
 # ── thresholds (named so the page can quote them) ─────────────────────────────
 V1_OI_3H = 0.05          # >= +5% OI over 3h (retuned 2026-07-01: OOS test lift 1.39->1.64x)
 V1_PRICE_3H_MAX = 0.05   # <= +5% price over 3h (retuned 2026-07-01: tighter early-move window)

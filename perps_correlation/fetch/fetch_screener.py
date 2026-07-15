@@ -1280,8 +1280,13 @@ def main(argv: list[str]) -> int:
         "generated_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "as_of_hour": as_of,
         "gate": GATE,
-        "thresholds": {k: getattr(signals, k) for k in dir(signals)
-                       if k.isupper() and isinstance(getattr(signals, k), (int, float))},
+        # NO "thresholds" block here. It used to publish every uppercase constant
+        # in lib.signals into this file — which screener_cron.sh commits to the
+        # PUBLIC repo hourly. Nothing ever read it (the page quotes the condition
+        # LABEL strings, which are hard-coded in _eval_v1 etc), and once tuned
+        # params can be applied in-process it would broadcast the edge within the
+        # hour. Don't reintroduce it: anything that needs to render a threshold
+        # should carry its own label, not reflect over the module.
         "counts": {
             "universe": len(recs), "screenable": len(screenable),
             "passing_gate": sum(1 for r in recs.values() if r.get("pass_gate")),

@@ -58,7 +58,7 @@ TGE_CACHE = HERE.parent / "cache" / "scam_tge.json"
 # manipulated-coin list lives on one tab.
 SCREENER_FILE = HERE.parent / "cache" / "screener" / "screener.json"
 SCREENER: dict[str, dict] = {}     # SYM(upper) -> screener token record
-SCREENER_META: dict = {}           # as_of_hour / counts / gate / thresholds
+SCREENER_META: dict = {}           # as_of_hour / counts / gate
 
 # The AI's forward "trade journal": every live Buy-setup fire the box logged, with
 # the outcome it scored 72h later (grade_fires). Public-safe — it exposes the calls
@@ -121,7 +121,7 @@ def _load_screener() -> None:
         d = json.loads(SCREENER_FILE.read_text(encoding="utf-8"))
     except Exception:
         return
-    for k in ("as_of_hour", "counts", "gate", "thresholds"):
+    for k in ("as_of_hour", "counts", "gate"):
         SCREENER_META[k] = d.get(k)
     for sym, r in (d.get("tokens") or {}).items():
         SCREENER[sym.upper()] = r
