@@ -108,12 +108,12 @@ def test_v3_blocked_by_funding():
 
 # ── Buy v2 (IGNITION: OI-confirmed coil-break) ────────────────────────────────
 def _v2_series():
-    # 48h tight flat coil at 10.0, then the last 4 bars break out +10% above the
-    # coil top on a 6x volume burst WHILE OI surges +20% over 3h — funding cold.
+    # 36h tight flat coil at 10.0, then the last 4 bars break out +15% above the
+    # coil top on a 9x volume burst WHILE OI surges +13% over 1h — funding cold.
     n = 60
-    closes = [10.0] * 56 + [11.0] * 4               # break > coil_hi(10.01)*1.08
-    vols = [1.0] * 56 + [6.0] * 4                   # >=5x the coil's median (1.0)
-    oi = [100.0] * 57 + [110.0, 115.0, 120.0]       # oi(t-3h)=100 -> oi(t)=120 = +20%
+    closes = [10.0] * 56 + [11.5] * 4               # break > coil_hi(10.01)*1.12
+    vols = [1.0] * 56 + [9.0] * 4                   # >=8x the coil's median (1.0)
+    oi = [100.0] * 57 + [110.0, 115.0, 130.0]       # oi(t-1h)=115 -> oi(t)=130 = +13%
     return build(oi, closes, vols=vols)
 
 
@@ -129,13 +129,13 @@ def test_v2_blocked_without_oi_surge():
     # Same price/volume breakout but OI stays FLAT -> the conjunction fails: a
     # spot-only fakeout, exactly what Ignition's OI-surge condition filters out.
     n = 60
-    closes = [10.0] * 56 + [11.0] * 4
-    vols = [1.0] * 56 + [6.0] * 4
+    closes = [10.0] * 56 + [11.5] * 4
+    vols = [1.0] * 56 + [9.0] * 4
     oi = [100.0] * n                                # no OI surge
     o, kl, _ = build(oi, closes, vols=vols)
     out = evaluate(o, kl, current_funding=0.0)
     assert out["v2"]["fired"] is False
-    assert out["v2"]["conditions"]["oi_surge>=15%"] is False
+    assert out["v2"]["conditions"]["oi_surge>=10%"] is False
 
 
 # ── insufficient / gappy data must never fire ─────────────────────────────────

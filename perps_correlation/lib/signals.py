@@ -105,15 +105,18 @@ V1_FUNDING_MAX = 0.001   # v1 only: per-interval funding < 0.1% (promoted 2026-0
 # together). Fires on the breakout HOUR — the earliest honest entry for a "cold"
 # pump — and self-limits to ~one fire (once the breakout bar enters the coil
 # window the range is no longer tight). Every knob is loop-tunable.
-V2_COIL_H = 48           # the pre-break base window (hours)
-V2_COIL_MAX = 0.45       # that base was a tight coil: (hi-lo)/lo <= 45% (intraday wicks)
+# (promoted 2026-07-16: challenger held 2.09x forward-OOS lift over 18.5d while the
+# old defaults decayed to 0.77x — demands a more VIOLENT ignition (8x vol, sharp 1h
+# OI surge, +12% break) out of a shorter, sloppier coil. Old: 48h/45%/5x/15%@3h/8%/0.05%.)
+V2_COIL_H = 36           # the pre-break base window (hours)
+V2_COIL_MAX = 0.60       # that base was a coil: (hi-lo)/lo <= 60% (intraday wicks)
 V2_BREAK_LAG = 3         # the break may be up to N bars old — OI confirmation lags the
                          # break candle by ~1h, so we let it confirm before firing
-V2_VOL_MULT = 5.0        # ignition: peak recent vol >= 5x the coil's MEDIAN hourly vol
-V2_OI_SURGE = 0.15       # OI up >= +15% over V2_OI_SURGE_H (leveraged money committing)
-V2_OI_SURGE_H = 3        # ...measured over the last N hours
-V2_BREAK_MARGIN = 0.08   # the break closes above the coil high by >= +8%
-V2_FUND_MAX = 0.0005     # funding still cold (<= 0.05%/interval) = room, not a late chase
+V2_VOL_MULT = 8.0        # ignition: peak recent vol >= 8x the coil's MEDIAN hourly vol
+V2_OI_SURGE = 0.10       # OI up >= +10% over V2_OI_SURGE_H (leveraged money committing)
+V2_OI_SURGE_H = 1        # ...measured over the last N hours
+V2_BREAK_MARGIN = 0.12   # the break closes above the coil high by >= +12%
+V2_FUND_MAX = 0.001      # funding still cold (<= 0.1%/interval) = room, not a late chase
 EMA_FAST, EMA_SLOW = 20, 60   # shared EMA periods (v4's trend variant uses these)
 FUNDING_MAX = 0.001      # LEGACY: kept only for optimize_signals.py's v1 grid getattr
 V3_OI_DD = 0.15          # OI drawdown >= 15% in 4h
@@ -260,9 +263,9 @@ def _eval_v2(oi_m, c_m, h_m, l_m, v_m, t, funding):
     vol_x = (max(r_vol) / med_vol) if med_vol else float("inf")
     oi_surge = (oi0 - oiS) / oiS
     cond = {
-        "tight_coil<=45%": coil_rng <= V2_COIL_MAX,
-        "vol_ignition>=5x": vol_x >= V2_VOL_MULT,
-        "oi_surge>=15%": oi_surge >= V2_OI_SURGE,
+        "tight_coil<=60%": coil_rng <= V2_COIL_MAX,
+        "vol_ignition>=8x": vol_x >= V2_VOL_MULT,
+        "oi_surge>=10%": oi_surge >= V2_OI_SURGE,
         "breaks_coil_high": max(r_close) > coil_hi * (1 + V2_BREAK_MARGIN),
         "funding_cold": funding <= V2_FUND_MAX,
     }

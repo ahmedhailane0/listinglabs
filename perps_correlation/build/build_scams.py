@@ -458,7 +458,9 @@ def _funding_str(rec):
 COND_KEY_MAP = {
     "oi_3up": "oi3up", "oi_3h>=5%": "oi3h5",
     "price_3h<=5%": "px3h8", "breaks_6h_high": "brk6h",
-    # v2 — ignition (OI-confirmed coil-break)
+    # v2 — ignition (OI-confirmed coil-break); old labels kept so a stale
+    # screener.json (box not yet re-pulled after the 2026-07-16 promotion) still maps
+    "tight_coil<=60%": "coiltt", "vol_ignition>=8x": "volign", "oi_surge>=10%": "oisrg",
     "tight_coil<=45%": "coiltt", "vol_ignition>=5x": "volign",
     "oi_surge>=15%": "oisrg", "breaks_coil_high": "brkcoil", "funding_cold": "fundcold",
     "oi/price>=2.0": "oipx20",
