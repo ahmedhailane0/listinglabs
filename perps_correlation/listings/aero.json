@@ -13,7 +13,7 @@
   "total_supply": 1907791309.260528,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2024-02-05T18:00:00Z",
-  "window_end_utc": "2025-08-24T00:00:00Z",
+  "window_end_utc": "2026-07-17T13:30:01Z",
   "events": [
     {
       "exchange": "Coinbase Spot",
@@ -84,6 +84,12 @@
     {
       "exchange": "Upbit",
       "iso_time_utc": "2025-08-22T00:00:00Z"
+    },
+    {
+      "exchange": "Binance Spot",
+      "iso_time_utc": "2026-07-17T07:30:01Z",
+      "note": "Auto-added from BWEnews RSS: \"Binance EN: Binance Will List Aerodrome (AERO) with Seed Tag Applied 币安重要公告: 币安将上线 Aerodrome (AERO) 并适用种子标签 AERO MarketCap: 465.3M (Auto mat\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16338",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
