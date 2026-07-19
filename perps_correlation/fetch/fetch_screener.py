@@ -149,6 +149,14 @@ FIRES_LOG_MAX = 8000
 FIRE_REFRACTORY_H = 72        # one fire per (sym, setup) per 72h — collapses a setup
                               # that fires on several consecutive bars for one event
                               # into a single trade/alert (matches the 72h time-stop).
+STALE_FIRE_MAX_S = 2 * 3600   # never log/alert a fire whose bar is older than this at
+                              # log time — a late/manual run or a gapped series would
+                              # journal an untradeable entry into the OOS ledger (the
+                              # 2026-07-16 ESPORTS fire: bar 05:00, logged 16:30).
+STALE_DATA_MAX_S = 6 * 3600   # tag a coin `stale_h` when its latest evaluated bar lags
+                              # this much — the site must never render hours-old
+                              # OI/funding as "current" (a just-delisted perp keeps
+                              # serving its final numbers forever).
 
 # Local hand-off from fetch/screener_daemon.py (real-time websocket alerter, runs
 # as its own systemd service on the box — NOT git-tracked, not committed). It
@@ -287,6 +295,17 @@ def _klines_5m(sym: str) -> list[tuple]:
             continue
         out.append((int(k[0]) // 1000, _f(k[4])))   # (t_sec, close)
     return out
+
+
+def _perp_statuses() -> dict:
+    """symbol -> exchangeInfo status ("TRADING", "SETTLING", "PENDING_TRADING"…).
+    One bulk call. Empty on failure — callers must treat unknown as trading, so a
+    flaky call can never drop a live coin from the screen."""
+    try:
+        d = _get(f"{FAPI}/fapi/v1/exchangeInfo")
+        return {s.get("symbol"): s.get("status") for s in (d or {}).get("symbols", [])}
+    except Exception:
+        return {}
 
 
 def _funding(sym: str) -> list[tuple[int, float]]:
@@ -919,6 +938,10 @@ def _log_fires(recs: dict) -> int:
             ft = d.get("t") or 0
             if ft - last_fire.get((sym, strat), 0) < FIRE_REFRACTORY_H * 3600:
                 continue                       # same trade still inside the refractory
+            if now - ft > STALE_FIRE_MAX_S:
+                print(f"  fires: skip {sym} {strat} — bar {(now - ft) / 3600:.1f}h "
+                      f"old at log time (untradeable)")
+                continue
             seen.add(key)
             last_fire[(sym, strat)] = ft
             px = r.get("mark_price")
@@ -960,8 +983,9 @@ def _log_fires(recs: dict) -> int:
         th = r.get("as_of") or sig.get("as_of")
         if ps is not None and ps >= ALERT_BUY_ODDS and th:
             key = f"{sym}|buy15|{th}"
-            if key not in seen and (th - last_fire.get((sym, "buy15"), 0)
-                                    >= FIRE_REFRACTORY_H * 3600):
+            if key not in seen and now - th <= STALE_FIRE_MAX_S \
+                    and (th - last_fire.get((sym, "buy15"), 0)
+                         >= FIRE_REFRACTORY_H * 3600):
                 seen.add(key)
                 last_fire[(sym, "buy15")] = th
                 px = r.get("mark_price")
@@ -1104,6 +1128,20 @@ def main(argv: list[str]) -> int:
     # optional `perp_sym` override; fall back to the key.
     def _tkr(s):
         return wl[s].get("perp_sym") or s
+
+    # ── Delisted-perp guard (2026-07-16 audit) ───────────────────────────────
+    # A dead symbol keeps serving its final OI/funding/klines, which would render
+    # as "current" forever (IP: 18 days stale on the live site). exchangeInfo is
+    # authoritative — drop non-TRADING perps; unknown status keeps the coin.
+    statuses = _perp_statuses()
+    if statuses:
+        dead = sorted(s for s in screenable
+                      if statuses.get(f"{_tkr(s)}USDT") not in (None, "TRADING"))
+        if dead:
+            print(f"  delisted perps dropped: "
+                  + ", ".join(f"{s} ({statuses[f'{_tkr(s)}USDT']})" for s in dead))
+            screenable = [s for s in screenable if s not in set(dead)]
+
     recs: dict[str, dict] = {}
     with ThreadPoolExecutor(max_workers=WORKERS) as ex:
         futs = {ex.submit(_fetch_token, _tkr(s), intervals): s for s in screenable}
@@ -1114,6 +1152,17 @@ def main(argv: list[str]) -> int:
                 recs[s] = {"data": "error", "error": f"{type(e).__name__}: {e}",
                            "signals": evaluate([], []), "oi_bn": None,
                            "mark_price": None, "spark": []}
+
+    # ── Stale-series tag ─────────────────────────────────────────────────────
+    # A coin whose latest evaluated bar lags badly (API gap, or a perp that died
+    # since the exchangeInfo call) must not render as fresh. Display flag only —
+    # the data itself is kept untouched.
+    _tnow = _now()
+    for s in screenable:
+        a = recs[s].get("as_of")
+        if a and _tnow - a > STALE_DATA_MAX_S:
+            recs[s]["stale_h"] = round((_tnow - a) / 3600, 1)
+            print(f"  stale data: {s} — latest bar {recs[s]['stale_h']}h old")
 
     # ── Market enrichment: price-checked CMC data (capped) ───────────────────
     market_fetches = 0

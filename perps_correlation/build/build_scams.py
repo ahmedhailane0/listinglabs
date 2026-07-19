@@ -874,6 +874,11 @@ def _flag_chips(rec) -> str:
         flags.append(("perp-priced",
                       f"OI is {ov['ratio']:.1f}× the 24h {vlbl} volume — price set by "
                       f"the perp book, not real spot trading (squeeze trap; report Dim 4)"))
+    sh = (_sig(rec["symbol"]) or {}).get("stale_h")
+    if sh:
+        flags.append(("stale data",
+                      f"screener series ends {sh:g}h ago — OI/funding/price here are "
+                      f"NOT current (gapped feed or dying perp)"))
     chips = "".join(
         f'<span class="flag" title="{html.escape(tip)}">⚠ {html.escape(label)}</span>'
         for label, tip in flags)
