@@ -586,9 +586,9 @@ def _send_results() -> int:
 def _alert_score_watch(recs: dict) -> int:
     """Second alert net: ping when the model rates a coin a standout
     (pump_score >= ALERT_SCORE_WATCH) even if NO discrete setup fired — the
-    safety net for pumps whose shape v1/v4/probe don't capture. Suppressed for a
-    coin that already got a BUY alert this cycle (any of v1/v4/probe fired AND
-    cleared the gate, so it was already sent). Per-coin cooldown
+    safety net for pumps whose shape the discrete setups don't capture. Suppressed
+    for a coin that already got a BUY alert this cycle (any ALERT_STRATS setup
+    fired AND cleared the gate, so it was already sent). Per-coin cooldown
     (SCORE_WATCH_COOLDOWN_S) via SCORE_WATCH_FILE so a coin parked above the line
     doesn't re-ping every hour. No-ops without Telegram. Never raises."""
     if not _tg or not _tg.enabled():
@@ -607,8 +607,12 @@ def _alert_score_watch(recs: dict) -> int:
         if score is None or score < ALERT_SCORE_WATCH:
             continue
         # Already BUY-alerted this coin (a gated setup fired)? Don't double-ping.
+        # ALERT_STRATS, not a hard-coded list: probe was demoted to journal-only
+        # (no BUY alert to duplicate) and v2 was promoted (does BUY-alert) —
+        # the stale ("v1","v4","probe") tuple double-pinged v2 fires and muted
+        # the watch net whenever a journal-only probe fired.
         sig = r.get("signals") or {}
-        if any((sig.get(s) or {}).get("fired") for s in ("v1", "v4", "probe")) \
+        if any((sig.get(s) or {}).get("fired") for s in ALERT_STRATS) \
                 and score >= ALERT_MIN_PUMP:
             continue
         last = state.get(sym, {}).get("t", 0)

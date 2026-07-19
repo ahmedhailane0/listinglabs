@@ -1595,7 +1595,7 @@ def _filter_bar() -> str:
       """ + _cb("px3h8", "Price 3h ≤5%") + _cb("brk6h", "Breaks 6h high") + """
     </fieldset>
     <fieldset class="fp-group"><legend>Ignition (v2)</legend>
-      """ + _cb("coiltt", "Tight coil ≤45%") + _cb("volign", "Volume ≥5×") + _cb("oisrg", "OI surge ≥15%") + _cb("brkcoil", "Breaks coil high") + _cb("fundcold", "Funding cold") + """
+      """ + _cb("coiltt", "Tight coil ≤60%") + _cb("volign", "Volume ≥8×") + _cb("oisrg", "OI surge ≥10%") + _cb("brkcoil", "Breaks coil high") + _cb("fundcold", "Funding cold") + """
     </fieldset>
     <fieldset class="fp-group"><legend>OI / price ratio</legend>
       """ + _cb("oipx20", "OI/price ≥2×") + """
@@ -1667,8 +1667,11 @@ LIVE_JS = (
     'if(t.indexOf("24h")>-1||t.indexOf("price")>-1)ci.px24=i;'
     'else if(t==="bn oi")ci.oibn=i;'
     'else if(t.indexOf("oi (bn+byb)")>-1)ci.oicomb=i;'
-    'else if(t.indexOf("funding")>-1)ci.fund=i;'
-    'else if(t==="vol"||t.indexOf("volume")>-1)ci.vol=i;}'
+    # NOTE: the Vol column is deliberately NOT live-updated. Its build-time value
+    # is CMC MARKET 24h volume; live.json's vol24 is BINANCE-PERP quote volume —
+    # a different measure (often several x apart). Overriding it made the cell
+    # flip meaning on every poll. CMC numbers stay on build cadence by rule.
+    'else if(t.indexOf("funding")>-1)ci.fund=i;}'
     'var rb={},rows=tab.tBodies[0].rows;'
     'for(var r=0;r<rows.length;r++){var s=rows[r].getAttribute("data-sym");if(s)rb[s]=rows[r];}'
     'var tb={};document.querySelectorAll(".tile[data-sym]").forEach(function(t){tb[t.getAttribute("data-sym")]=t;});'
@@ -1683,7 +1686,6 @@ LIVE_JS = (
     'if(ci.oibn!=null&&v.oi_bn!=null)setCell(row.cells[ci.oibn],fmtUsd(v.oi_bn),(+v.oi_bn).toFixed(0));'
     'if(ci.oicomb!=null&&v.oi_combined!=null)setVmain(row.cells[ci.oicomb],fmtUsd(v.oi_combined),(+v.oi_combined).toFixed(0));'
     'if(ci.fund!=null&&v.funding!=null)setCell(row.cells[ci.fund],(v.funding*100).toFixed(3)+"%",(+v.funding).toFixed(8));'
-    'if(ci.vol!=null&&v.vol24!=null)setVmain(row.cells[ci.vol],fmtUsd(v.vol24),(+v.vol24).toFixed(0));'
     'if(v.sig){var lbr=row.querySelector("[data-buyrow]");if(lbr){var lnb=buyBadges(v.sig);if(lbr.innerHTML!==lnb){lbr.innerHTML=lnb;flash(lbr);}}}}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
@@ -1771,8 +1773,8 @@ SETUP_PANEL = """
           breakout as it starts — later than v4, but more confirmed.</p>
       </div>
       <div class="sm-setup"><h3><span class="buy v2 mini">Buy v2</span> Ignition (coil-break)</h3>
-        <p>After a <b>tight multi-day coil</b>, price <b>breaks the coil high</b> on a
-          <b>volume burst (≥5×)</b> with open interest <b>surging ≥15%</b> and funding
+        <p>After a <b>tight coil</b> (~1.5 days), price <b>breaks the coil high by ≥12%</b> on a
+          <b>volume burst (≥8×)</b> with open interest <b>surging ≥10% in an hour</b> and funding
           still cold — leveraged money igniting the move. Catches "cold" pumps that
           skip v1/v4's quiet-accumulation tell (caught VELVET at its breakout).</p>
       </div>
@@ -2028,8 +2030,11 @@ def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
     static SVG (no JS) so it renders inside a hidden tab. Honest about tiny daily
     samples — far less misleading than a cumulative running average."""
     import datetime as _dt
-    SETS = ("v1", "v2", "v4")
-    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a"}
+    # Keep in sync with CORE_SETUPS (dump joined 2026-07-15) — a visible setup
+    # missing here silently drops its trades from this chart while they still
+    # show in the ledger table below it. Colors mirror _MODEL_COLORS.
+    SETS = ("v1", "v2", "v4", "dump")
+    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a", "dump": "#c0392b"}
 
     def _day(e):                                   # bucket by the day it fired
         return (e.get("t") or 0)
@@ -2435,7 +2440,11 @@ def _trades_page(recs) -> str:
                "timeout": ("24h close", "jmiss")}
         mrows = []
         for e in m_closed[:300]:
-            ep = e.get("entry_price") or _o(e, "entry")
+            # outcome.entry FIRST — m_pnl_real is anchored to the real fill (the
+            # open of the candle after the fire), not the mark at log time; showing
+            # entry_price here contradicts the row's own graded result (same bug
+            # the +50% table fixed via _entry_px).
+            ep = _entry_px(e)
             h12, h24 = _o(e, "m_hit_12h"), _o(e, "m_hit_24h")
             k = e.get("strat")
             why = (f'{_setup_chip(k)} '

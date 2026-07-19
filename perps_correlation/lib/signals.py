@@ -25,10 +25,10 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     -> size 5-10%, stop = the 6h breakout level max(H[1..6]).
 
   Buy v2 — IGNITION (OI-confirmed coil-break; the catch-at-break for "cold" pumps)
-    1 the prior 48h base was a tight coil (range <= 45%)
-    2 this hour's volume >= 5x the coil's MEDIAN hourly volume
-    3 OI up >= +15% over the last 3h (leveraged money committing)
-    4 close breaks the coil high by >= +8%      5 funding still cold (<= 0.05%)
+    1 the prior 36h base was a tight coil (range <= 60%)
+    2 peak recent volume >= 8x the coil's MEDIAN hourly volume
+    3 OI up >= +10% over the last 1h (leveraged money committing)
+    4 close breaks the coil high by >= +12%     5 funding still cold (<= 0.1%)
     -> size 5-10%, stop = the coil high (a fall back below = failed break). Catches
        pumps that SKIP v1/v4's quiet-accumulation tell (e.g. VELVET +122%, 2026-06-26:
        OI flat through a 3-day coil, then price+OI+volume exploded together).
