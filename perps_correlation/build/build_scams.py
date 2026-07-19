@@ -1809,11 +1809,27 @@ def _load_fires() -> list:
         return []
 
 
+# Keep in sync with fetch_screener.STALE_FIRE_MAX_S: production refuses to LOG a
+# fire whose bar is >2h old at log time (untradeable hindsight — 2026-07-19 guard),
+# so the site must not COUNT the older ledger rows that predate that guard either.
+# 104 rows (2026-06-20..07-07, launch-batch 72h-lookback backfills + box-gap
+# re-derivations, logged 2h-67h after their bar) were flattering/denting the
+# per-setup expectancies the visibility gate reads (v2 read +0.38%/trade with
+# them, -0.38% without). Raw rows STAY in fires_log for research — this is a
+# counting rule, not a purge.
+LOG_LAG_MAX_S = 2 * 3600
+
+
 def _episodes(fires, hours=72, breadth_max=7):
     """Honest fire counting for the Models page (same rules the graders use):
-    one row per (sym, setup) per 72h (collapses pre-refractory hourly re-fires),
-    then market-wide clusters (> breadth_max coins, same setup, same hour = one
-    market event) keep a single representative sample."""
+    tradeable fires only (logged within LOG_LAG_MAX_S of their bar — the same
+    staleness rule fetch_screener logs by), one row per (sym, setup) per 72h
+    (collapses pre-refractory hourly re-fires), then market-wide clusters
+    (> breadth_max coins, same setup, same hour = one market event) keep a
+    single representative sample."""
+    fires = [e for e in fires
+             if not (e.get("logged_utc") and e.get("t"))
+             or (e["logged_utc"] - e["t"]) <= LOG_LAG_MAX_S]
     out, last = [], {}
     for e in sorted(fires, key=lambda e: (e.get("t") or 0, str(e.get("sym")))):
         k = (e.get("sym"), e.get("strat"))
@@ -2250,10 +2266,13 @@ def _trades_page(recs) -> str:
         return (f"{v*100:+.1f}%") if v is not None else "—"
 
     pnl_cls = "good" if (avg_pnl or 0) > 0 else ("bad" if avg_pnl is not None else "")
+    # "hit target": +50% for the long setups, a −20% DROP for dump (the short) —
+    # one label that can't call a short's success a "+50% pump" (dump joined the
+    # visible set 2026-07-15; its outcome.pump flag means "dropped ≥20%").
     scorecard = (
         '<div class="jcards">'
         + _stat("closed paper trades", n)
-        + _stat("hit +50% / 72h", f"{hits}/{n}" if n else "—",
+        + _stat("hit target (+50% long · −20% short)", f"{hits}/{n}" if n else "—",
                 "good" if hits else "")
         + _stat("win rate (P&amp;L &gt; 0)", _pct0(win_rate))
         + _stat("avg result / trade (net)", _signed(avg_pnl), pnl_cls)
@@ -2270,8 +2289,9 @@ def _trades_page(recs) -> str:
         w = sum(1 for e in cs if (_pnl(e) or 0) > 0)
         ap = [(_pnl(e)) for e in cs if _pnl(e) is not None]
         avg = sum(ap) / len(ap) if ap else None
+        tgt = "hit −20% drop" if k == "dump" else "hit +50%"
         by.append(f'<li><b>{STRAT_NAME[k]}</b> <span>{STRAT_TITLE[k]}</span> — '
-                  f'{len(cs)} closed · {h} hit +50% · {w} green · avg {_signed(avg)}</li>')
+                  f'{len(cs)} closed · {h} {tgt} · {w} green · avg {_signed(avg)}</li>')
     by_html = f'<ul class="jby">{"".join(by)}</ul>' if by else ""
 
     # #3 edge check: strategy vs simply holding the same coins (and BTC) over the
@@ -2370,7 +2390,7 @@ def _trades_page(recs) -> str:
             '<th title="the price it actually closed at">Sold at</th>'
             '<th title="the take-profit the plan was aiming for">Expected sell</th>'
             '<th>What happened</th>'
-            '<th title="the best move it actually reached before closing">Actually pumped</th>'
+            '<th title="the best move within the 72h grading window (can land after the exit)">Actually pumped</th>'
             '<th title="hypothetical stake per paper trade">Cost</th>'
             '<th title="what the stake came back as, net of fees + slippage">Result</th>'
             '</tr></thead><tbody>'
