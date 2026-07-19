@@ -670,7 +670,7 @@ def _list_row(rec) -> str:
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
         f'{_fundcell(r)}'                                # Funding
-        f'{_num_chg_cell(vol, chg["vol"], "24h change in tracked-venue perp 24h volume")}'  # Vol
+        f'{_num_chg_cell(vol, chg["vol"], "change badge: tracked-venue PERP volume 24h change (the main figure is CMC market 24h volume)")}'  # Vol
         f'{_num_cell(fdv, pct=False, color=False)}'      # FDV
         f'{_num_cell(mcap, pct=False, color=False)}</tr>')   # MC
 

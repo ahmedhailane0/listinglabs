@@ -654,7 +654,19 @@ def _tge_cell(cfg: dict) -> str:
             f'<span class="sub">{t.strftime("%H:%M")} UTC</span></td>')
 
 
-LIST_COLS = ["#", "Token", "TGE", "Since", "24h", "7d", "30d", "90d", "FDV", "MC", "OI%", "Funding"]
+LIST_COLS = ["#", "Token", "TGE", "Since", "+24h", "+7d", "+30d", "+90d", "FDV", "MC", "OI%", "Funding"]
+# The checkpoint columns measure vs the LISTING price N hours/days AFTER the
+# Alpha listing (frozen history — lib/metrics CHECKPOINTS), NOT trailing
+# windows. Bare "24h" read as trailing and "contradicted" the Manipulated tab's
+# trailing 24h for the same coin (2026-07-20 audit) — hence the "+" prefix and
+# the tooltips below.
+COL_TIPS = {
+    "Since": "now vs the Alpha listing price",
+    "+24h": "price 24h AFTER the Alpha listing vs the listing price (frozen history, not trailing)",
+    "+7d": "price 7 days AFTER the Alpha listing vs the listing price",
+    "+30d": "price 30 days AFTER the Alpha listing vs the listing price",
+    "+90d": "price 90 days AFTER the Alpha listing vs the listing price",
+}
 
 
 def _list_row(cfg: dict) -> str:
@@ -681,7 +693,9 @@ def _list_row(cfg: dict) -> str:
 
 
 def _list_table(cfgs: list[dict]) -> str:
-    head = "".join(f'<th data-i="{i}">{c}</th>' for i, c in enumerate(LIST_COLS))
+    head = "".join(
+        f'<th data-i="{i}"' + (f' title="{COL_TIPS[c]}"' if c in COL_TIPS else "")
+        + f'>{c}</th>' for i, c in enumerate(LIST_COLS))
     rows = "\n".join(_list_row(c) for c in cfgs)
     return (f'<table class="list" id="ltab"><thead><tr>{head}</tr></thead>'
             f"<tbody>{rows}</tbody></table>")
