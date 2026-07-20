@@ -47,7 +47,7 @@ def _get(url: str, timeout: int = 12):
 
 
 def _compute_signals(base_by_sym: dict[str, str]) -> dict:
-    """Recompute Buy v1/v2/v3 for every screenable coin, REUSING the hourly
+    """Recompute Buy v1/v2/v4 for every screenable coin, REUSING the hourly
     screener's exact per-coin pull + engine (`_fetch_token`) so a live fire is
     bit-identical to what the hourly screener would report — just sooner. Heavy
     (OI-hist + 1H klines + funding per coin), so callers gate it to once per
@@ -66,7 +66,7 @@ def _compute_signals(base_by_sym: dict[str, str]) -> dict:
             rec = _fetch_token(base, intervals)
             s = rec.get("signals") or {}
             verdicts[sym] = {k: 1 if (s.get(k) or {}).get("fired") else 0
-                             for k in ("v1", "v2", "v3", "v4")}
+                             for k in ("v1", "v2", "v4")}
             if rec.get("as_of"):
                 as_of[0] = max(as_of[0] or 0, rec["as_of"])
         except Exception:
@@ -74,7 +74,7 @@ def _compute_signals(base_by_sym: dict[str, str]) -> dict:
 
     with ThreadPoolExecutor(max_workers=24) as ex:
         list(ex.map(work, base_by_sym.items()))
-    counts = {k: sum(v[k] for v in verdicts.values()) for k in ("v1", "v2", "v3", "v4")}
+    counts = {k: sum(v[k] for v in verdicts.values()) for k in ("v1", "v2", "v4")}
     return {"verdicts": verdicts, "counts": counts, "as_of": as_of[0]}
 
 
@@ -99,6 +99,14 @@ def main() -> int:
                 fint[s] = rec["funding_interval_h"]
             if rec.get("oi_byb") is not None:
                 oibyb[s] = rec["oi_byb"]
+        # Universe follows the hourly screener (2026-07-20 audit): fetch_screener's
+        # bulk exchangeInfo guard drops non-TRADING perps from screener.json, so a
+        # delisted coin (e.g. IP) must drop out of live.json too — not keep serving
+        # its final numbers every minute. Fail open: no/empty snapshot changes nothing.
+        toks = set(sc.get("tokens") or {})
+        if toks:
+            base_by_sym = {s: b for s, b in base_by_sym.items() if s in toks}
+            tkr2sym = {t: s for t, s in tkr2sym.items() if s in base_by_sym}
     except Exception:
         pass
 
@@ -141,7 +149,7 @@ def main() -> int:
             "vol24": float(k["quoteVolume"]) if (k and k.get("quoteVolume")) else None,
         }
 
-    # ── Buy v1/v2/v3 verdicts: cached between runs, recomputed once per closed
+    # ── Buy v1/v2/v4 verdicts: cached between runs, recomputed once per closed
     # hour (~90s after the boundary so Binance has posted the new OI + candle).
     # Carried in live.json so the page flips Buy badges + counts live, with no
     # rebuild and no extra git/build churn. ──────────────────────────────────

@@ -104,7 +104,6 @@ STRAT_TITLE = {"v1": "High-control accumulation breakout",
 # plain-English "why the AI bought" — for the trade table (non-expert friendly)
 STRAT_WHY = {"v1": "quiet OI build",
              "v2": "coil breakout on volume",
-             "v3": "washout reversal",
              "v4": "quiet accumulation",
              "buy15": "odds crossed 20%", "probe": "volume break of the coil",
              "dump": "crowded longs rolling over", "bear_trap": "flush bought back",
@@ -2653,7 +2652,13 @@ def _equity_grid(curves) -> str:
 
 def _index(recs) -> str:
     tiles = "\n".join(_tile(r) for r in recs)
-    head = "".join(f'<th data-i="{i}">{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
+    _tips = {"Vol": "CMC market 24h volume (not perp volume; the change badge "
+                    "compares tracked-venue perp volume)",
+             "Price / 24h": "trailing 24h change — live cell, refreshed ~60s "
+                            "from the Binance perp"}
+    head = "".join(
+        f'<th data-i="{i}"' + (f' title="{_tips[c]}"' if c in _tips else "")
+        + f'>{html.escape(c)}</th>' for i, c in enumerate(LIST_COLS))
     rows = "\n".join(_list_row(r) for r in recs)
     c = SCREENER_META.get("counts") or {}
     as_of = SCREENER_META.get("as_of_hour")
@@ -3246,7 +3251,6 @@ const cbs=[...panel.querySelectorAll('input[data-k]')];
 const PRESETS={
   v1:['oi3up','oi3h5','px3h8','brk6h','fund01','oipx20'],
   v2:['coiltt','volign','oisrg','brkcoil','fundcold'],   // Ignition (OI-confirmed coil-break)
-  v3:['oidd15','pxdd10','pxoidd','fund002','oireb8','brkwash'],
   v4:['oibld72','pxflat72','coil45','oilead2','fundsqz']};
 window.__PRESETS=PRESETS;   // shared with LIVE_JS for the live data-cond rewrite
 const pres=[...document.querySelectorAll('.fp-pre')];

@@ -160,7 +160,7 @@ img,svg{{max-width:100%;height:auto}}
     <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.4 8-8 9-4.6-1-8-4-8-9V7z"/><path d="M12 8v4"/><path d="M12 15.5v.5"/></svg></span>
     <h2>Manipulated <span class="n">{f"{SCREENER_N} coins" if SCREENER_N else scam_n}</span></h2>
     <p>Manipulated-coin perp screener: combined Binance&nbsp;+&nbsp;Bybit open
-       interest vs FDV, funding, and Buy v1/v2/v3 accumulation &amp; washout
+       interest vs FDV, funding, and Buy v1/v2/v4 accumulation &amp; ignition
        signals — filter by signal, OI, gate and FDV. Curated coins also carry
        price charts, holders &amp; memos.</p>
     <span class="go">Open screener <span class="arw">→</span></span>
