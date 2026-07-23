@@ -3944,10 +3944,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-22T04:48:30.449737Z",
-      "kraken_futures": "2026-07-22T04:48:30.449737Z",
-      "kucoin_spot": "2026-07-22T04:48:30.449737Z",
-      "kucoin_futures": "2026-07-22T04:48:30.449737Z"
+      "kraken_spot": "2026-07-23T04:51:10.251105Z",
+      "kraken_futures": "2026-07-23T04:51:10.251105Z",
+      "kucoin_spot": "2026-07-23T04:51:10.251105Z",
+      "kucoin_futures": "2026-07-23T04:51:10.251105Z"
     }
   },
   "skhy": {
@@ -3974,6 +3974,32 @@
       "kucoin_futures": "2026-07-10T17:35:28.890967Z",
       "bitget_perp": "2026-07-10T17:35:28.890967Z",
       "gate_perp": "2026-07-10T17:35:28.890967Z"
+    }
+  },
+  "popmart": {
+    "symbol": "POPMART",
+    "floor": "2026-06-23T01:30:03+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-07-02T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-06-26T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-07-23T04:51:10.251105Z",
+      "kraken_futures": "2026-07-23T04:51:10.251105Z",
+      "kucoin_spot": "2026-07-23T04:51:10.251105Z",
+      "kucoin_futures": "2026-07-23T04:51:10.251105Z",
+      "bitget_perp": "2026-07-23T04:51:10.251105Z",
+      "gate_perp": "2026-07-23T04:51:10.251105Z"
     }
   }
 }
