@@ -1,0 +1,18 @@
+{
+  "token": "POPMART",
+  "name": "POPMART",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-22T23:30:03Z",
+  "window_end_utc": "2026-07-23T07:30:03Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-07-23T01:30:03Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch POPMARTUSDT USDⓈ-Margined Perpetual Contract (2026-07-23) 币安重要公告: 币安合约将上线 POPMARTUSDT USDⓈ-M 永续合约 (2\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16344",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
