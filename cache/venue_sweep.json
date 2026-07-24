@@ -3944,10 +3944,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-23T04:51:10.251105Z",
-      "kraken_futures": "2026-07-23T04:51:10.251105Z",
-      "kucoin_spot": "2026-07-23T04:51:10.251105Z",
-      "kucoin_futures": "2026-07-23T04:51:10.251105Z"
+      "kraken_spot": "2026-07-24T07:26:46.245852Z",
+      "kraken_futures": "2026-07-24T07:26:46.245852Z",
+      "kucoin_spot": "2026-07-24T07:26:46.245852Z",
+      "kucoin_futures": "2026-07-24T07:26:46.245852Z"
     }
   },
   "skhy": {
@@ -3983,7 +3983,10 @@
       "kraken_spot": null,
       "kraken_futures": null,
       "kucoin_spot": null,
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-07-23T00:00:00Z"
+      },
       "bitget_perp": {
         "label": "Bitget Perp",
         "iso": "2026-07-02T00:00:00Z"
@@ -3994,10 +3997,10 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-07-23T04:51:10.251105Z",
-      "kraken_futures": "2026-07-23T04:51:10.251105Z",
-      "kucoin_spot": "2026-07-23T04:51:10.251105Z",
-      "kucoin_futures": "2026-07-23T04:51:10.251105Z",
+      "kraken_spot": "2026-07-24T07:26:46.245852Z",
+      "kraken_futures": "2026-07-24T07:26:46.245852Z",
+      "kucoin_spot": "2026-07-24T07:26:46.245852Z",
+      "kucoin_futures": "2026-07-24T07:26:46.245852Z",
       "bitget_perp": "2026-07-23T04:51:10.251105Z",
       "gate_perp": "2026-07-23T04:51:10.251105Z"
     }
