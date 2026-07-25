@@ -13,7 +13,7 @@
   "total_supply": 999999999.8010328,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2024-11-27T08:30:00Z",
-  "window_end_utc": "2025-05-16T00:00:00Z",
+  "window_end_utc": "2026-07-25T13:40:30Z",
   "events": [
     {
       "exchange": "OKX Spot",
@@ -95,6 +95,12 @@
       "exchange": "Binance Spot",
       "iso_time_utc": "2025-10-03T15:00:00Z",
       "note": "first Binance spot candle"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-07-25T07:40:30Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 모포(MORPHO) KRW 마켓 디지털 자산 추가 Upbit 上新: [交易] MORPHO KRW 市场新增数字资产 MORPHO MarketCap: 1.3B (Auto match could be wrong, 自动匹配可能\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16350",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
