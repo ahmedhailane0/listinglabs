@@ -70,7 +70,15 @@ FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
 # short, so hiding it while showing three flat longs told the wrong story about
 # what is actually working. It is still the youngest record here (see the t-stat
 # on its P&L card) — shown, not endorsed.
-CORE_SETUPS = ("v1", "v2", "v4", "dump")
+# v1 RETIRED 2026-07-25 — deliberately in NEITHER list. CORE_SETUPS always show;
+# HIDDEN_SETUPS can auto-return once they turn positive at n >= EARN_MIN_N. v1 belongs
+# in neither: it is not "unproven", it is *tested and dead* (126 fires, expectancy
+# -0.11%, 95% CI [-0.84%, +0.63%], 98.4% stopped out, walk-forward lift 1.00). Putting
+# it in HIDDEN_SETUPS would let a couple of lucky trades nudge expectancy above 0.0 and
+# flicker it back onto the site, which the evidence says would be noise. Absent from
+# both lists = never rendered, never auto-returns. Still logged + graded on the box, so
+# the record keeps accruing and this stays reversible.
+CORE_SETUPS = ("v2", "v4", "dump")
 # Unproven setups: still logged + graded on the box (they keep building a live
 # track record) but HIDDEN from the site until each earns its way back — a setup
 # auto-returns once it has >= EARN_MIN_N graded episodes AND positive avg $ P&L
@@ -91,7 +99,7 @@ PNL_STAKE = 100
 # rebuild. Only this page widens its CSP connect-src to allow it (page_meta arg).
 LIVE_ORIGIN = "https://45-32-102-44.sslip.io"
 LIVE_SRC = f"{LIVE_ORIGIN}/live.json"
-STRATS = ("v1", "v2", "v4")   # v3 dropped (never fired) — not rendered on detail cards
+STRATS = ("v2", "v4")   # v3 dropped (never fired); v1 retired 2026-07-25 (see CORE_SETUPS)
 STRAT_NAME = {"v1": "Buy v1", "v2": "Buy v2", "v3": "Buy v3", "v4": "Buy v4",
               "buy15": "Buy signal", "probe": "Probe", "dump": "Dump (short)",
               "bear_trap": "Bear trap", "spike_retrace": "Spike & retrace"}
@@ -549,11 +557,13 @@ def _tile(rec) -> str:
 # the nth-child widths in EXTRA_CSS in sync. Sort JS reads the header index +
 # <td data-s>, so column changes need no JS change (but the LIVE_JS column
 # resolver matches header TEXT — keep these labels in sync with it).
-# Pump % = the per-coin PumpFinder +50% probability; Old % = the previous-gen
-# logistic engine (for comparison). The per-setup v1/v2/v4 columns were removed per
-# owner — those signals still live on the tiles, detail page, filters, and the AI
-# Track Record sub-tab. The +25%/+10% odds live on the Pump Odds sub-tab.
-LIST_COLS = ["#", "Token", "Pump %", "Old %", "Price / 24h",
+# Pump % = the per-coin PumpFinder +50% probability. The "Old %" comparison column
+# (previous-gen logistic) was REMOVED 2026-07-25 along with the model behind it — the
+# GBM had superseded it a month earlier, so the column was screen space spent on an
+# engine already retired. The per-setup v2/v4 columns were removed per owner — those
+# signals still live on the tiles, detail page, filters, and the AI Track Record
+# sub-tab. The +25%/+10% odds live on the Pump Odds sub-tab.
+LIST_COLS = ["#", "Token", "Pump %", "Price / 24h",
              "BN OI", "OI (BN+BYB)", "Funding", "Vol", "FDV", "MC"]
 
 
@@ -664,7 +674,6 @@ def _list_row(rec) -> str:
         f'<tr class="lrow" data-sym="{html.escape(sym)}" {_filter_attrs(rec)}>'
         f'<td class="rank"></td>{tok}'
         f'{_pump_cell(r)}'                               # Pump % (PumpFinder, +50%)
-        f'{_pump_cell_old(r)}'                           # Old % (previous logistic engine)
         f'{_price24_cell(rec)}'                          # Price / 24h
         f'{_num_cell(oi_bn, pct=False, color=False)}'    # BN OI
         f'{_num_chg_cell(oi, chg["oi"], "24h change in tracked-venue perp OI")}'   # OI (BN+BYB)
@@ -1489,7 +1498,7 @@ def _signals_section(sym, rec=None) -> str:
             f'{_dt_hour(as_of) if as_of else "—"} UTC</span>'
             f'<span id="live-badge" class="live-wait" title="OI · funding · Binance volume · price update live every ~60s">● connecting…</span></h3>'
             f'{meta}<div class="buycards">{"".join(cards)}</div>{_binance_btn(sym)}'
-            f'<p class="note">Buy v1, v2 &amp; v4 are mechanical long setups on open interest, '
+            f'<p class="note">Buy v2 &amp; v4 are mechanical long setups on open interest, '
             f'price and funding — the model\'s live trades are tracked on the '
             f'<a href="trades.html">AI Trades</a> tab. Research signals, not financial advice.'
             f'</p></section>')
@@ -1587,7 +1596,6 @@ def _filter_bar() -> str:
 </div>
 <div id="fpanel" class="fpanel" style="display:none">
   <div class="fp-presets">
-    <button class="fp-pre" data-pre="v1">Buy v1</button>
     <button class="fp-pre" data-pre="v2">Buy v2</button>
     <button class="fp-pre" data-pre="v4">Buy v4</button>
   </div>
@@ -1654,14 +1662,16 @@ LIVE_JS = (
     'function tileMeta(t,label,txt){var sp=t.querySelectorAll(".tile-meta span");'
     'for(var i=0;i<sp.length;i++){var b=sp[i].querySelector("b");if(b&&b.textContent.trim()===label){'
     'var n=sp[i].lastChild;if(n&&n.nodeType===3&&n.textContent!==" "+txt){n.textContent=" "+txt;flash(sp[i]);}return;}}}'
-    'function buyBadges(sig){var o="";["v1","v2","v4"].forEach(function(k){'
+    'function buyBadges(sig){var o="";["v2","v4"].forEach(function(k){'
     'if(sig&&sig[k])o+="<span class=\\"buy "+k+" mini\\" title=\\""+k+" fired\\">Buy "+k+"</span>";});return o;}'
     # Rebuild the pipe-delimited data-cond string from the live fired flags, so
-    # the (checkbox-driven) Buy v1-v4 preset filters track the live verdicts:
+    # the (checkbox-driven) Buy v2/v4 preset filters track the live verdicts:
     # a strategy fires iff ALL its conditions are true, so the union of fired
     # strategies' condition keys is exactly what their checkboxes test for.
+    # (v1 retired 2026-07-25 — dropped here too so the live refresh can't
+    # resurrect a Buy v1 badge on a page that no longer has a v1 column.)
     'function condFromSig(sig){var P=window.__PRESETS;if(!P)return null;var seen={},o="|";'
-    '["v1","v2","v4"].forEach(function(k){if(sig&&sig[k])(P[k]||[]).forEach(function(c){'
+    '["v2","v4"].forEach(function(k){if(sig&&sig[k])(P[k]||[]).forEach(function(c){'
     'if(!seen[c]){seen[c]=1;o+=c+"|";}});});return o==="|"?"||":o;}'
     'function setCount(id,val){var el=document.getElementById(id);'
     'if(el&&val!=null&&el.textContent!==String(val)){el.textContent=val;flash(el);}}'
@@ -1693,7 +1703,8 @@ LIVE_JS = (
     'if(v.sig){var lbr=row.querySelector("[data-buyrow]");if(lbr){var lnb=buyBadges(v.sig);if(lbr.innerHTML!==lnb){lbr.innerHTML=lnb;flash(lbr);}}}}'
     'var tile=tb[sym];if(tile){if(v.price!=null)tileMeta(tile,"Price",fmtPrice(v.price));if(v.oi_combined!=null)tileMeta(tile,"OI",fmtUsd(v.oi_combined));'
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
-    'if(d.sig_counts){setCount("cnt-v1",d.sig_counts.v1);setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v4",d.sig_counts.v4);}'
+    # cnt-v1 dropped 2026-07-25 with v1's retirement (the element no longer exists)
+    'if(d.sig_counts){setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v4",d.sig_counts.v4);}'
     # re-run the filter (data-cond just changed) so a Buy v1-v4 preset shows
     # exactly the coins now firing, then re-apply the active sort so the row
     # order matches the live values (e.g. the top 24h mover stays on top).
@@ -1771,21 +1782,16 @@ SETUP_PANEL = """
         <ul><li><b>Squeeze</b> flavour — funding is negative (shorts trapped = fuel).</li>
         <li><b>Trend</b> flavour — funding calm/slightly positive with an EMA20&gt;EMA60 uptrend.</li></ul>
       </div>
-      <div class="sm-setup"><h3><span class="buy v1 mini">Buy v1</span> Accumulation breakout</h3>
-        <p>OI surges <b>≥5% in 3h</b> while price barely moves (<b>≤5%</b>), then
-          price <b>breaks the 6h high</b> with funding still low. Catches the
-          breakout as it starts — later than v4, but more confirmed.</p>
-      </div>
       <div class="sm-setup"><h3><span class="buy v2 mini">Buy v2</span> Ignition (coil-break)</h3>
         <p>After a <b>tight coil</b> (~1.5 days), price <b>breaks the coil high by ≥12%</b> on a
           <b>volume burst (≥8×)</b> with open interest <b>surging ≥10% in an hour</b> and funding
           still cold — leveraged money igniting the move. Catches "cold" pumps that
-          skip v1/v4's quiet-accumulation tell (caught VELVET at its breakout).</p>
+          skip v4's quiet-accumulation tell (caught VELVET at its breakout).</p>
       </div>
     </div>
     <p class="sm-foot">Use the <b>⚙ Filter</b> panel to build your own screen
       (OI +40% / price flat / funding &lt;0 / OI/MC…), or click a preset
-      (Buy v1, v2 or v4) to load that setup's conditions. Signals recompute each
+      (Buy v2 or v4) to load that setup's conditions. Signals recompute each
       hour and update live.</p>
   </div>
 </div>
@@ -2050,11 +2056,11 @@ def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
     static SVG (no JS) so it renders inside a hidden tab. Honest about tiny daily
     samples — far less misleading than a cumulative running average."""
     import datetime as _dt
-    # Keep in sync with CORE_SETUPS (dump joined 2026-07-15) — a visible setup
-    # missing here silently drops its trades from this chart while they still
-    # show in the ledger table below it. Colors mirror _MODEL_COLORS.
-    SETS = ("v1", "v2", "v4", "dump")
-    COL = {"v1": "#2e8b57", "v2": "#3b7cc4", "v4": "#c47a3a", "dump": "#c0392b"}
+    # Keep in sync with CORE_SETUPS (dump joined 2026-07-15; v1 retired 2026-07-25)
+    # — a visible setup missing here silently drops its trades from this chart while
+    # they still show in the ledger table below it. Colors mirror _MODEL_COLORS.
+    SETS = ("v2", "v4", "dump")
+    COL = {"v2": "#3b7cc4", "v4": "#c47a3a", "dump": "#c0392b"}
 
     def _day(e):                                   # bucket by the day it fired
         return (e.get("t") or 0)
@@ -2554,7 +2560,7 @@ from luck (each card says so).</p></header>
 </div>
 </main>
 {THEME_JS}{_JOURNAL_TABS_JS}{_WINRATE_TIP_JS}"""
-    desc = ("The AI's live trade ledger on the Manipulated tab — every Buy v1/v2/v4 setup "
+    desc = ("The AI's live trade ledger on the Manipulated tab — every Buy v2/v4 setup "
             "it bought, graded 72h later on real price: which token, the model's confidence, "
             "stop, take-profit, stake and the realistic $ result. Research paper signals, "
             "not executed trades.")
@@ -2667,8 +2673,8 @@ def _index(recs) -> str:
 <header><h1>Manipulated</h1>
 {site_nav("scams")}
 {scams_subnav("screener")}
-<p>{len(recs)} coins · Buy v1 <b id="cnt-v1">{c.get('v1', 0)}</b> · v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v1/v2/v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v1/v2/v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
-<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v1/v2/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
+<p>{len(recs)} coins · Buy v2 <b id="cnt-v2">{c.get('v2', 0)}</b> · v4 <b id="cnt-v4">{c.get('v4', 0)}</b> · <b>{c.get('passing_gate', 0)}</b> pass (BN+BYB OI)/FDV ≥ 8% · signals as of {asof_txt} UTC <button id="setup-help" type="button" class="setup-help" title="What do Buy v2/v4 mean?">ℹ How the setups work</button> <span id="live-badge" class="live-wait" title="Price · 24h · OI · funding + Buy v2/v4 update live from the box (~60s; signals at each hour close)">● connecting…</span></p>
+<p class="sub">Manipulated-coin perp screener — combined Binance+Bybit OI, funding &amp; Buy v2/v4 setups; click a coin for its detail + signals. Not financial advice.</p></header>
 {SETUP_PANEL}
 {_filter_bar()}
 <div id="views" class="view-grid">
@@ -2856,21 +2862,23 @@ EXTRA_CSS = """
 .jrow>.card.span{margin-top:0;flex:1 1 360px;min-width:0}
 .jrow>.wc-card{flex:1 1 360px;max-width:460px}
 @media(max-width:760px){.jrow>.wc-card{max-width:none}}
-/* deterministic column widths (11 cols: #, Token, Pump, Old, Price/24h,
-   BN OI, OI (BN+BYB), Funding, Vol, FDV, MC). */
+/* deterministic column widths (10 cols: #, Token, Pump, Price/24h, BN OI,
+   OI (BN+BYB), Funding, Vol, FDV, MC). "Old %" was column 4 until 2026-07-25;
+   removing it shifted EVERY index below it by one, so all three tiers of this
+   nth-child block were renumbered together. If you add/remove a column again,
+   renumber all three tiers or the phone view silently hides the wrong ones. */
 #ltab{table-layout:fixed;min-width:940px}
 #ltab th{overflow:hidden}
 #ltab th:nth-child(1){width:3%}                    /* # */
-#ltab th:nth-child(2){width:24%;text-align:left}   /* Token */
-#ltab th:nth-child(3){width:6%}                    /* Pump */
-#ltab th:nth-child(4){width:6%}                    /* Old */
-#ltab th:nth-child(5){width:11%}                   /* Price / 24h */
-#ltab th:nth-child(6){width:9%}                    /* BN OI */
-#ltab th:nth-child(7){width:11%}                   /* OI (BN+BYB) */
-#ltab th:nth-child(8){width:9%}                    /* Funding */
-#ltab th:nth-child(9){width:9%}                    /* Vol */
-#ltab th:nth-child(10){width:6%}                   /* FDV */
-#ltab th:nth-child(11){width:6%}                   /* MC */
+#ltab th:nth-child(2){width:26%;text-align:left}   /* Token */
+#ltab th:nth-child(3){width:7%}                    /* Pump */
+#ltab th:nth-child(4){width:12%}                   /* Price / 24h */
+#ltab th:nth-child(5){width:9%}                    /* BN OI */
+#ltab th:nth-child(6){width:11%}                   /* OI (BN+BYB) */
+#ltab th:nth-child(7){width:9%}                    /* Funding */
+#ltab th:nth-child(8){width:9%}                    /* Vol */
+#ltab th:nth-child(9){width:7%}                    /* FDV */
+#ltab th:nth-child(10){width:7%}                   /* MC */
 /* Token cell degrades cleanly as the column narrows: the sparkline + symbol keep
    their slots, and only the NAME ellipsis-truncates (so the symbol — the key id —
    is never the thing that gets cut). min-width:0 lets the flex children shrink. */
@@ -2894,17 +2902,17 @@ EXTRA_CSS = """
 .topnav a{white-space:nowrap}
 @media(max-width:1080px){
   #ltab{min-width:0;width:100%}
+  /* tablet: hide # (1), BN OI (5), Vol (8), FDV (9), MC (10) */
   #ltab th:nth-child(1),#ltab td:nth-child(1),
-  #ltab th:nth-child(6),#ltab td:nth-child(6),
+  #ltab th:nth-child(5),#ltab td:nth-child(5),
+  #ltab th:nth-child(8),#ltab td:nth-child(8),
   #ltab th:nth-child(9),#ltab td:nth-child(9),
-  #ltab th:nth-child(10),#ltab td:nth-child(10),
-  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
-  #ltab th:nth-child(2){width:26%}                 /* Token */
-  #ltab th:nth-child(3){width:9%}                  /* Pump */
-  #ltab th:nth-child(4){width:9%}                  /* Old */
-  #ltab th:nth-child(5){width:18%}                 /* Price / 24h */
-  #ltab th:nth-child(7){width:19%}                 /* OI (BN+BYB) */
-  #ltab th:nth-child(8){width:19%}                 /* Funding */
+  #ltab th:nth-child(10),#ltab td:nth-child(10){display:none}
+  #ltab th:nth-child(2){width:28%}                 /* Token */
+  #ltab th:nth-child(3){width:10%}                 /* Pump */
+  #ltab th:nth-child(4){width:20%}                 /* Price / 24h */
+  #ltab th:nth-child(6){width:21%}                 /* OI (BN+BYB) */
+  #ltab th:nth-child(7){width:21%}                 /* Funding */
   /* token cell: smaller sparkline + drop the in-cell buy badges (the v1/v2/v4
      columns now carry that), so the name+symbol stay legible in a tight column */
   #ltab td.tok a{gap:7px}
@@ -2918,19 +2926,18 @@ EXTRA_CSS = """
   .topnav a{font-size:12px;padding:3px 10px}
   .filters{padding:10px 14px}
   /* keep Token · Pump · Price/24h · OI(BN+BYB) · Funding; hide the rest
-     (Old %, BN OI, Vol, FDV, MC — low-priority on a phone). */
+     (# (1), BN OI (5), Vol (8), FDV (9), MC (10) — low-priority on a phone). */
   #ltab{min-width:0;width:100%}
   #ltab th:nth-child(1),#ltab td:nth-child(1),
-  #ltab th:nth-child(4),#ltab td:nth-child(4),
-  #ltab th:nth-child(6),#ltab td:nth-child(6),
+  #ltab th:nth-child(5),#ltab td:nth-child(5),
+  #ltab th:nth-child(8),#ltab td:nth-child(8),
   #ltab th:nth-child(9),#ltab td:nth-child(9),
-  #ltab th:nth-child(10),#ltab td:nth-child(10),
-  #ltab th:nth-child(11),#ltab td:nth-child(11){display:none}
+  #ltab th:nth-child(10),#ltab td:nth-child(10){display:none}
   #ltab th:nth-child(2){width:38%}                 /* Token */
   #ltab th:nth-child(3){width:12%}                 /* Pump */
-  #ltab th:nth-child(5){width:20%}                 /* Price / 24h */
-  #ltab th:nth-child(7){width:16%}                 /* OI (BN+BYB) */
-  #ltab th:nth-child(8){width:14%}                 /* Funding */
+  #ltab th:nth-child(4){width:20%}                 /* Price / 24h */
+  #ltab th:nth-child(6){width:16%}                 /* OI (BN+BYB) */
+  #ltab th:nth-child(7){width:14%}                 /* Funding */
   #ltab th{font-size:10.5px}
   #ltab td,#ltab th{padding:7px 4px}
   #ltab td.n{font-size:12px}

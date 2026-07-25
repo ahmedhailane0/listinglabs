@@ -69,7 +69,15 @@ ALERT_MIN_PUMP = 7.0
 # (0-5 -$46, 5-10 -$55, 10-15 -$28, 15-20 -$15). Only the 30+ band is positive
 # (+$86) but on just 3 fires — too thin to keep alerting on. Still logged +
 # graded below, so it earns alerts back if that high-score edge holds up.
-ALERT_STRATS = {"v1", "v4", "v2"}
+# v1 RETIRED from alerts on 2026-07-25 — killed on evidence, not on a hunch. 126
+# graded tradeable fires: expectancy -0.11%/trade with a 95% CI of [-0.84%, +0.63%],
+# i.e. it is measurably incapable of paying for itself. The mechanism is visible in
+# the exits: 98.4% of v1 fires are STOPPED OUT and only 0.8% ever reach +50% — below
+# the ~5-9% base rate, so its entries are anti-predictive for the very move it hunts.
+# Walk-forward lift sits at 1.00 (four folds: 1.3/0.9/1.0/0.0) = no information, and
+# 42 nightly optimizer runs failed to rescue it. It was one of only two setups that
+# could ping the phone, so retiring it is also the single biggest cut to alert noise.
+ALERT_STRATS = {"v4", "v2"}
 # Every detector that goes into the fire-log (order = log order).
 LOGGED_STRATS = ("v1", "v4", "v2", "probe", "dump", "bear_trap", "spike_retrace")
 # Breadth gate: when MORE than this many coins fire the SAME setup in the SAME
@@ -170,12 +178,16 @@ DAEMON_FIRES_LIVE = OUTDIR / "daemon" / "fires_live.jsonl"
 # so this no-ops there). When present, writes a 0-100 `pump_score` per coin.
 try:
     from tools.pump_score import (load_model as _load_pump_model,
-                                  load_model_logistic as _load_pump_model_log,
                                   load_model_25 as _load_pump_model_25,
                                   load_model_10 as _load_pump_model_10,
                                   score_series as _pump_score)
     _PUMP_MODEL = _load_pump_model()           # +50% (the headline Pump %)
-    _PUMP_MODEL_LOG = _load_pump_model_log()   # previous-gen logistic, for the "Old %" column
+    # Previous-gen logistic sidecar KILLED 2026-07-25. The GBM superseded it a month
+    # earlier (3.1x -> 4.0x OOS lift) and it was already flagged "retired", yet it was
+    # still refitted nightly and still rendered as the site's "Old %" column. Left as
+    # None so `pump_score_log` stays present-but-null in screener.json (older readers
+    # keep working) while nothing fits, scores, or displays it.
+    _PUMP_MODEL_LOG = None
     _PUMP_MODEL_25 = _load_pump_model_25()     # +25% (pump-odds ladder)
     _PUMP_MODEL_10 = _load_pump_model_10()     # +10% (pump-odds ladder)
 except Exception:
