@@ -1851,7 +1851,7 @@
   },
   "morpho": {
     "symbol": "MORPHO",
-    "floor": "2024-10-28T14:30:00+00:00",
+    "floor": "2024-10-22T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -1898,7 +1898,8 @@
         "label": "Gate.io Perp",
         "iso": "2024-11-21T00:00:00Z"
       }
-    }
+    },
+    "checked": {}
   },
   "newt": {
     "symbol": "NEWT",
@@ -3944,10 +3945,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-24T07:26:46.245852Z",
-      "kraken_futures": "2026-07-24T07:26:46.245852Z",
-      "kucoin_spot": "2026-07-24T07:26:46.245852Z",
-      "kucoin_futures": "2026-07-24T07:26:46.245852Z"
+      "kraken_spot": "2026-07-25T09:18:24.292803Z",
+      "kraken_futures": "2026-07-25T09:18:24.292803Z",
+      "kucoin_spot": "2026-07-25T09:18:24.292803Z",
+      "kucoin_futures": "2026-07-25T09:18:24.292803Z"
     }
   },
   "skhy": {
@@ -3997,9 +3998,9 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-07-24T07:26:46.245852Z",
-      "kraken_futures": "2026-07-24T07:26:46.245852Z",
-      "kucoin_spot": "2026-07-24T07:26:46.245852Z",
+      "kraken_spot": "2026-07-25T09:18:24.292803Z",
+      "kraken_futures": "2026-07-25T09:18:24.292803Z",
+      "kucoin_spot": "2026-07-25T09:18:24.292803Z",
       "kucoin_futures": "2026-07-24T07:26:46.245852Z",
       "bitget_perp": "2026-07-23T04:51:10.251105Z",
       "gate_perp": "2026-07-23T04:51:10.251105Z"
