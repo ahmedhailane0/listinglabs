@@ -4008,7 +4008,7 @@
   },
   "aeon": {
     "symbol": "AEON",
-    "floor": "2026-06-27T10:10:07+00:00",
+    "floor": "2026-06-27T00:00:00+00:00",
     "venues": {
       "kraken_spot": null,
       "kraken_futures": null,
@@ -4024,6 +4024,10 @@
       "gate_spot": {
         "label": "Gate.io Spot",
         "iso": "2026-07-27T00:00:00Z"
+      },
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-07-27T00:00:00Z"
       }
     },
     "checked": {
@@ -4032,7 +4036,8 @@
       "kucoin_spot": "2026-07-27T11:32:35.188351Z",
       "kucoin_futures": "2026-07-27T11:32:35.188351Z",
       "bitget_spot": "2026-07-27T11:32:35.188351Z",
-      "gate_spot": "2026-07-27T11:32:35.188351Z"
+      "gate_spot": "2026-07-27T11:32:35.188351Z",
+      "bitget_perp": "2026-07-27T13:57:06.311164Z"
     }
   },
   "bsc": {
