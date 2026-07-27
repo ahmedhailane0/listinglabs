@@ -125,8 +125,17 @@ def fetch_klines(tkr: str, start_ms: int) -> list[tuple]:
             if len(k) > 6 and int(k[6]) >= now_ms0:
                 continue                       # forming candle — not settled yet
             t = _hour_floor(int(k[0]) // 1000)
-            out[t] = (t, float(k[1]), float(k[2]), float(k[3]),
-                      float(k[4]), float(k[5]))
+            # Fields 7-10 (quote volume, trade count, taker-BUY base + quote) ride
+            # along in the SAME response and were being thrown away. They are the
+            # only order-flow this pipeline can get keylessly: trade count is a
+            # crowd counter, quoteVol/numTrades is average trade size (whale vs
+            # crowd), takerBuyQuote/quoteVol is the aggressive-buy share.
+            # Appended, never inserted — every existing reader indexes 0-5 and
+            # must keep working against caches written before this change.
+            row = [t, float(k[1]), float(k[2]), float(k[3]), float(k[4]), float(k[5])]
+            if len(k) > 10:
+                row += [float(k[7]), float(k[8]), float(k[9]), float(k[10])]
+            out[t] = tuple(row)
         oldest = min(int(k[0]) for k in d)
         if oldest <= start_ms or len(d) < 1500:
             break
@@ -214,7 +223,11 @@ def extract_one(sym: str, rec: dict) -> dict:
         "symbol": sym, "ticker": tkr,
         "fetched_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "oi": [[t, round(v, 2)] for t, v in oi],
-        "klines": [[k[0], k[1], k[2], k[3], k[4], k[5]] for k in kl],
+        # rows are [t,o,h,l,c,v] and, since 2026-07-27, + [quoteVol, nTrades,
+        # takerBuyBase, takerBuyQuote]. Written as list(k) so the flow tail is
+        # preserved when present and simply absent on older cached rows —
+        # consumers must length-check, never assume 10.
+        "klines": [list(k) for k in kl],
         "funding": [[t, r] for t, r in fund],
         "meta": {"oi": oi_gaps, "klines": kl_gaps, "funding_pts": len(fund)},
     }
