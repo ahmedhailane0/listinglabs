@@ -3945,10 +3945,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-26T10:59:59.822651Z",
-      "kraken_futures": "2026-07-26T10:59:59.822651Z",
-      "kucoin_spot": "2026-07-26T10:59:59.822651Z",
-      "kucoin_futures": "2026-07-26T10:59:59.822651Z"
+      "kraken_spot": "2026-07-27T11:32:35.188351Z",
+      "kraken_futures": "2026-07-27T11:32:35.188351Z",
+      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
+      "kucoin_futures": "2026-07-27T11:32:35.188351Z"
     }
   },
   "skhy": {
@@ -3998,12 +3998,57 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-07-26T10:59:59.822651Z",
-      "kraken_futures": "2026-07-26T10:59:59.822651Z",
-      "kucoin_spot": "2026-07-26T10:59:59.822651Z",
+      "kraken_spot": "2026-07-27T11:32:35.188351Z",
+      "kraken_futures": "2026-07-27T11:32:35.188351Z",
+      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
       "kucoin_futures": "2026-07-24T07:26:46.245852Z",
       "bitget_perp": "2026-07-23T04:51:10.251105Z",
       "gate_perp": "2026-07-23T04:51:10.251105Z"
+    }
+  },
+  "aeon": {
+    "symbol": "AEON",
+    "floor": "2026-06-27T10:10:07+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-07-27T00:00:00Z"
+      },
+      "kucoin_futures": null,
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-07-27T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-07-27T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-07-27T11:32:35.188351Z",
+      "kraken_futures": "2026-07-27T11:32:35.188351Z",
+      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
+      "kucoin_futures": "2026-07-27T11:32:35.188351Z",
+      "bitget_spot": "2026-07-27T11:32:35.188351Z",
+      "gate_spot": "2026-07-27T11:32:35.188351Z"
+    }
+  },
+  "bsc": {
+    "symbol": "BSC",
+    "floor": "2026-06-27T10:10:07+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null
+    },
+    "checked": {
+      "kraken_spot": "2026-07-27T11:32:35.188351Z",
+      "kraken_futures": "2026-07-27T11:32:35.188351Z",
+      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
+      "kucoin_futures": "2026-07-27T11:32:35.188351Z"
     }
   }
 }
