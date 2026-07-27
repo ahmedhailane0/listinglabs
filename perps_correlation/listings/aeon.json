@@ -1,0 +1,27 @@
+{
+  "token": "AEON",
+  "name": "AEON",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-27T08:10:07Z",
+  "window_end_utc": "2026-07-27T16:10:07Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-07-27T10:10:07Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: AEON (AEON) Contract Address: 0x277add739c6e0477616948\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16357",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0x277add739c6e0477616948357af9e79fe1ec9b80",
+  "gecko_pool": "0x25042161f871a34e77a7af1aff74aa1a0dc9b4c661fd53c7504948ad97f8d13f",
+  "fdv_usd": 198200004.5516728,
+  "fdv_source": "Binance Alpha listings API, 2026-07-27 (current, not at-listing)",
+  "mcap_usd": 37261600.85571448,
+  "circulating_supply": 188000000.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "aeon"
+}
