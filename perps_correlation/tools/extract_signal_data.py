@@ -20,8 +20,14 @@ aligns OI + klines onto a strict hourly grid, REPORTS every missing hour, and (a
 real fix, not a paper-over) refetches klines to fill kline gaps. OI has no keyless
 backfill, so OI gaps are reported, never invented. Output:
 
-  cache/screener/raw/<SYM>.json      — {oi:[[t,usd]], klines:[[t,o,h,l,c,v]],
+  cache/screener/raw/<SYM>.json      — {oi:[[t,usd]],
+                                        klines:[[t,o,h,l,c,v,
+                                                 quoteVol,nTrades,
+                                                 takerBuyBase,takerBuyQuote]],
                                         funding:[[t,rate]], meta:{...}}
+     The four order-flow fields are APPENDED (since 2026-07-27) and are absent
+     from caches written before that, so readers must length-check rather than
+     assume 10 — lib.signals._maps already indexes 0-5 with a guard.
   cache/screener/extract_report.json — per-coin span / point-count / gap summary
 
 Run:  python tools/extract_signal_data.py [SYM ...]   (no args = all screenable)
