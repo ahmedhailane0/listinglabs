@@ -3945,10 +3945,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-27T11:32:35.188351Z",
-      "kraken_futures": "2026-07-27T11:32:35.188351Z",
-      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
-      "kucoin_futures": "2026-07-27T11:32:35.188351Z"
+      "kraken_spot": "2026-07-28T13:04:19.355634Z",
+      "kraken_futures": "2026-07-28T13:04:19.355634Z",
+      "kucoin_spot": "2026-07-28T13:04:19.355634Z",
+      "kucoin_futures": "2026-07-28T13:04:19.355634Z"
     }
   },
   "skhy": {
@@ -3998,9 +3998,9 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-07-27T11:32:35.188351Z",
-      "kraken_futures": "2026-07-27T11:32:35.188351Z",
-      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
+      "kraken_spot": "2026-07-28T13:04:19.355634Z",
+      "kraken_futures": "2026-07-28T13:04:19.355634Z",
+      "kucoin_spot": "2026-07-28T13:04:19.355634Z",
       "kucoin_futures": "2026-07-24T07:26:46.245852Z",
       "bitget_perp": "2026-07-23T04:51:10.251105Z",
       "gate_perp": "2026-07-23T04:51:10.251105Z"
@@ -4016,7 +4016,10 @@
         "label": "KuCoin Spot",
         "iso": "2026-07-27T00:00:00Z"
       },
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-07-28T00:00:00Z"
+      },
       "bitget_spot": {
         "label": "Bitget Spot",
         "iso": "2026-07-27T00:00:00Z"
@@ -4032,10 +4035,10 @@
       "gate_perp": null
     },
     "checked": {
-      "kraken_spot": "2026-07-27T11:32:35.188351Z",
-      "kraken_futures": "2026-07-27T11:32:35.188351Z",
+      "kraken_spot": "2026-07-28T13:04:19.355634Z",
+      "kraken_futures": "2026-07-28T13:04:19.355634Z",
       "kucoin_spot": "2026-07-27T11:32:35.188351Z",
-      "kucoin_futures": "2026-07-27T11:32:35.188351Z",
+      "kucoin_futures": "2026-07-28T13:04:19.355634Z",
       "bitget_spot": "2026-07-27T11:32:35.188351Z",
       "gate_spot": "2026-07-27T11:32:35.188351Z",
       "bitget_perp": "2026-07-27T13:57:06.311164Z",
@@ -4052,10 +4055,10 @@
       "kucoin_futures": null
     },
     "checked": {
-      "kraken_spot": "2026-07-27T11:32:35.188351Z",
-      "kraken_futures": "2026-07-27T11:32:35.188351Z",
-      "kucoin_spot": "2026-07-27T11:32:35.188351Z",
-      "kucoin_futures": "2026-07-27T11:32:35.188351Z"
+      "kraken_spot": "2026-07-28T13:04:19.355634Z",
+      "kraken_futures": "2026-07-28T13:04:19.355634Z",
+      "kucoin_spot": "2026-07-28T13:04:19.355634Z",
+      "kucoin_futures": "2026-07-28T13:04:19.355634Z"
     }
   }
 }
