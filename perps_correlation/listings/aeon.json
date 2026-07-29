@@ -4,7 +4,7 @@
   "new": true,
   "source": "bwenews-auto",
   "window_start_utc": "2026-07-27T08:10:07Z",
-  "window_end_utc": "2026-07-27T16:10:07Z",
+  "window_end_utc": "2026-07-29T11:23:19Z",
   "events": [
     {
       "exchange": "KuCoin Spot",
@@ -29,7 +29,7 @@
     {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-07-27T10:10:07Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: AEON (AEON) Contract Address: 0x277add739c6e0477616948\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16357",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: AEON (AEON) Contract Address: 0x277add739c6e0477616948\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16357",
       "source": "bwenews"
     },
     {
@@ -41,6 +41,12 @@
       "exchange": "Gate.io Perp",
       "iso_time_utc": "2026-07-28T00:00:00Z",
       "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-07-29T05:23:19Z",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [新增市场] 瑞波美元 (RLUSD)、AEON (AEON) 新增韩元交易对 AEON MarketCap: 17.8M AEONBSC MarketCap: 17.7M (Auto match could \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16362",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
