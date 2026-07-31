@@ -1,0 +1,32 @@
+{
+  "token": "GRVT",
+  "name": "GRVT",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-30T11:00:00Z",
+  "window_end_utc": "2026-07-31T17:30:11Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-07-30T12:00:00Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1785412800000, contract on BSC)."
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-07-31T11:30:11Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined GRVTUSDT Perpetual Contract (2026-07-31) 币安重要公告: 币安合约将于2026年7月31日上线 USDⓈ-M GRVTUSDT 永续\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16369",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0x46f2564e0fa8248d15125e7e54173cfbdef91be7",
+  "gecko_pool": "0x7469666fbe1935485b983f7eeb6b9a736cebe38788dbdebcdf6fd8fce28e226e",
+  "fdv_usd": 255969032.89165303,
+  "fdv_source": "Binance Alpha listings API, 2026-07-31 (current, not at-listing)",
+  "mcap_usd": 29260416.04575343,
+  "circulating_supply": 114312328.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "grvt"
+}
