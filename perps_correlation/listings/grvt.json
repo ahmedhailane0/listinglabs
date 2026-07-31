@@ -7,14 +7,39 @@
   "window_end_utc": "2026-07-31T17:30:11Z",
   "events": [
     {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-07-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-07-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-07-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-07-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-07-30T12:00:00Z",
       "note": "Trading start per Binance Alpha listings API (listingTime=1785412800000, contract on BSC)."
     },
     {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-07-31T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-07-31T11:30:11Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined GRVTUSDT Perpetual Contract (2026-07-31) 币安重要公告: 币安合约将于2026年7月31日上线 USDⓈ-M GRVTUSDT 永续\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16369",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined GRVTUSDT Perpetual Contract (2026-07-31) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e8e2026\u5e747\u670831\u65e5\u4e0a\u7ebf USD\u24c8-M GRVTUSDT \u6c38\u7eed\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16369",
       "source": "bwenews"
     }
   ],
