@@ -512,10 +512,18 @@ def evaluate(oi, klines, funding=None, current_funding=None,
 
 # Backtest lift per setup — the figure the site prints on each detector card.
 # SINGLE SOURCE OF TRUTH: the site imports this instead of hardcoding the number,
-# because hardcoded copies of it drifted out of sync three times (the spike_retrace
-# card read "2.9x" against this file's 2.26x for weeks). If a restudy moves one of
+# because hardcoded copies of it drifted out of sync. If a restudy moves one of
 # these, change it HERE and the site follows. Keep the prose in the docstring/comments
 # above each setup in sync too. `target` is what the lift is measured against.
+#
+# UNRESOLVED (2026-08-03) — spike_retrace has TWO figures on record and nobody has
+# said which is canonical: 2.26x here (original 2026-06 price-action study, per-hour
+# over 207k coin-hours) vs ~2.9x in lib/CLAUDE.md + the 2026-07 re-validation. The
+# weekly review flagged the site's 2.9x as drift against this file; it may instead
+# have been the re-validated number. 2.26x is used below only because this file is
+# the engine. Moot on the live site today (spike_retrace is HIDDEN, so no card
+# renders) — resolve before it earns its way back. lib/CLAUDE.md also mixes per-hour
+# and per-episode framings for bear_trap (4.6x / 2.9x); these constants are PER-HOUR.
 BACKTEST_LIFT = {
     "probe":         (2.5,  "+50% pump"),
     "dump":          (6.2,  "−20% drop"),
