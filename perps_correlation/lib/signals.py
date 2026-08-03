@@ -52,7 +52,7 @@ The rules (evaluated at hour t; OI[k]/C[k]/H[k]/L[k] = value k hours before t):
     -> size 5-10%, stop = the coil low. Backtest ~2.5x lift to a +50%/72h pump.
 
   dump — distribution (#6, SHORT; after a markup, longs crowd in and roll over)
-    1 ran up >= +40% over 48h      2 stalled (last 12h <= +5%)
+    1 ran up >= +30% over 48h      2 stalled (last 6h <= +10%)
     3 funding hot (>= 0.05%)        4 OI still elevated vs 48h ago
     -> short 5-10%, invalidated above the markup peak. Backtest ~6.2x lift to a
        -20%/72h drop. Validated against price DOWN, not the pump label.
@@ -144,10 +144,21 @@ PROBE_COIL_MAX = 0.40    # the pre-probe range was a tight coil (<= 40%)
 # Distribution / dump (#6) — the SHORT side: after a markup, longs crowd in (hot
 # funding) and price rolls over while OI is still elevated → the operator distributes
 # into euphoria. Validated against price DOWN (not the +50% pump label).
+# PROMOTED 2026-08-03 from the box champion/challenger (was RUNUP 0.40 /
+# STALL_H 12 / STALL_MAX 0.05). The challenger held a wide, stable forward gap
+# for 20 days — fwd lift 1.91 vs the champion's 0.42, expectancy -4.48% vs
+# -17.70% — i.e. the OLD production params were the broken half of the pair.
+# Promoted by hand at 17 of the 25 forward fires CC_MIN_N wants, so this is
+# ahead of the loop's own confirmation bar: a deliberate human call on a
+# demonstrably bad champion, not a triggered promotion. NOTE both sides are
+# still NEGATIVE expectancy — this makes dump less costly, not profitable, and
+# it stays HIDDEN from the site (see build_scams HIDDEN_SETUPS) until it earns
+# back on live results. Looser entry (30% run-up, 6h stall window, 10% stall
+# tolerance) = fires earlier and more often than the old params.
 DUMP_RUNUP_H = 48        # the markup window
-DUMP_RUNUP = 0.40        # ran >= +40% (a markup happened)
-DUMP_STALL_H = 12        # then stalled/rolled over in the last N hours
-DUMP_STALL_MAX = 0.05    # last-Nh change <= +5% (momentum gone)
+DUMP_RUNUP = 0.30        # ran >= +30% (a markup happened)
+DUMP_STALL_H = 6         # then stalled/rolled over in the last N hours
+DUMP_STALL_MAX = 0.10    # last-Nh change <= +10% (momentum gone)
 DUMP_FUNDING = 0.0005    # funding hot (>= 0.05%/interval = crowded longs)
 # Bear trap — the shakeout-and-reclaim (Dimension-01 price-action factor): price
 # flushed >=15% below the 2-day-ago close somewhere in the window, has RECLAIMED
@@ -385,8 +396,9 @@ def _eval_probe(c_m, h_m, l_m, v_m, t):
 
 
 def _eval_dump(oi_m, c_m, h_m, t, funding):
-    """Distribution / dump (#6, SHORT): after a markup (>= +40%/48h), price stalls
-    or rolls over (last 12h <= +5%) while funding is hot (crowded longs) and OI is
+    """Distribution / dump (#6, SHORT): after a markup (>= DUMP_RUNUP over
+    DUMP_RUNUP_H), price stalls or rolls over (last DUMP_STALL_H hours <=
+    DUMP_STALL_MAX) while funding is hot (crowded longs) and OI is
     still elevated (positions not yet unwound) — the operator distributing into
     euphoria. A bearish setup; validated against price DOWN, not the pump label."""
     Rh, Sh = DUMP_RUNUP_H, DUMP_STALL_H
@@ -399,10 +411,14 @@ def _eval_dump(oi_m, c_m, h_m, t, funding):
     peak = max(highs)
     runup = (peak - cR) / cR                          # how big the markup was
     stall = (c0 - cS) / cS                            # recent momentum (rolling over?)
+    # Labels are DERIVED from the constants, never typed literally: they are
+    # written into screener.json + fires_log.json and read by humans, so a
+    # hardcoded "ran_up>=40%" silently lies the moment the threshold is tuned
+    # (which is exactly what the 2026-08-03 promotion would have done).
     cond = {
-        "ran_up>=40%": runup >= DUMP_RUNUP,
-        "stalled<=5%": stall <= DUMP_STALL_MAX,
-        "funding_hot>=0.05%": funding >= DUMP_FUNDING,
+        f"ran_up>={DUMP_RUNUP:.0%}": runup >= DUMP_RUNUP,
+        f"stalled<={DUMP_STALL_MAX:.0%}": stall <= DUMP_STALL_MAX,
+        f"funding_hot>={DUMP_FUNDING:.2%}": funding >= DUMP_FUNDING,
         "oi_still_elevated": oi0 >= oiR,
     }
     return {"fired": all(cond.values()), "conditions": cond,
