@@ -66,10 +66,13 @@ SCREENER_META: dict = {}           # as_of_hour / counts / gate
 FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
 # The setups always shown on the site. v3 was dropped (never fired), so featuring
 # it would misrepresent "what the AI thinks is a good trade". `dump` joined
-# 2026-07-15: it is the only setup with a positive live expectancy AND the only
-# short, so hiding it while showing three flat longs told the wrong story about
-# what is actually working. It is still the youngest record here (see the t-stat
-# on its P&L card) — shown, not endorsed.
+# 2026-07-15 as the only SHORT, so hiding it while showing only flat longs told
+# the wrong story about what is actually being tried. It was also the strongest
+# live expectancy at the time; that has since reversed (2026-08-03: n=15,
+# -6.4%/trade, t=-1.27 — negative but still inside the noise band, so it stays
+# shown pending more grades, per the |t|>=2 bar the P&L cards use). Do not
+# restate a live expectancy ranking in this comment — it drifts; read the t-stat
+# on the P&L card instead. It remains the youngest record here — shown, not endorsed.
 # v1 RETIRED 2026-07-25 — deliberately in NEITHER list. CORE_SETUPS always show;
 # HIDDEN_SETUPS can auto-return once they turn positive at n >= EARN_MIN_N. v1 belongs
 # in neither: it is not "unproven", it is *tested and dead* (126 fires, expectancy
@@ -1467,7 +1470,7 @@ def _signals_section(sym, rec=None) -> str:
         "bear_trap": ("🪤 Bear trap", "a ≥15% flush fully reclaimed — the dip got bought back",
                       "beartrap", "4.6× lift to a +50% pump"),
         "spike_retrace": ("🌊 Spike & retrace", "a +30% spike sold back down while shorts crowd in",
-                          "spikeret", "2.9× lift to a +50% pump"),
+                          "spikeret", "2.26× lift to a +50% pump"),
     }
     _vis = _visible_setups_cached()
     for k, (nm, ttl, css, cred) in EXTRA.items():
@@ -1771,8 +1774,8 @@ SETUP_PANEL = """
     <h2>How the Buy setups work</h2>
     <p class="sm-lead">Every setup scans for the fingerprint of a coin being
       quietly <b>set up before a pump</b>: money (open interest) piling in while
-      the operator keeps the price calm — then the markup. The four setups catch
-      different points of that arc. A green <span class="buy v1 mini">Buy</span>
+      the operator keeps the price calm — then the markup. The two setups below
+      catch different points of that arc. A green <span class="buy v2 mini">Buy</span>
       badge = firing right now. Research signals, not financial advice.</p>
     <div class="sm-grid">
       <div class="sm-setup"><h3><span class="buy v4 mini">Buy v4</span> Coiled accumulation <em>· earliest</em></h3>
@@ -2512,7 +2515,7 @@ def _trades_page(recs) -> str:
         '<section class="card span jscore" id="movers">'
         '<h3>+10% Movers <span class="asof">same setups · easier target: +10% within 24h</span></h3>'
         '<p class="jnote">A faster, higher-frequency <b>early-mover</b> track: the SAME '
-        'v1/v2/v4 fires, scored against a <b>+10% target within 24h</b> (the first leg of '
+        'live setups&rsquo; fires, scored against a <b>+10% target within 24h</b> (the first leg of '
         'a move) instead of +50%/72h. More trades, smaller wins — read it as an '
         'early-warning feed, not the main pump bet.</p>'
         f'{m_score}</section>')
