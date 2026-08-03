@@ -2234,7 +2234,10 @@ def _outcome_story(o, short=False) -> str:
     }
     cls, txt, what = stories.get(xr, ("jmiss", "⚪ Closed at 72h", "closed at the 72h mark"))
     # The painful case worth naming: stopped out, then the coin ran anyway.
-    if xr == "stopped" and mfe >= 0.25 and not short:
+    # The bar is TP1 — the first take-profit — so this fires exactly when the
+    # trade would have banked its first tier had the stop not closed it. Was a
+    # bare 0.25 literal, indistinguishable from a stale duplicate of TP1.
+    if xr == "stopped" and mfe >= TP1 and not short:
         cls, txt = "jstop", "🔴 Stopped, then ran"
         what = "the stop closed the trade first — then the coin went on without it"
     return f'<span class="{cls}" title="{html.escape(what)} — {html.escape(peak)}">{txt}</span>'
