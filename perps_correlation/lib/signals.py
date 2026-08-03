@@ -510,6 +510,29 @@ def evaluate(oi, klines, funding=None, current_funding=None,
     return out
 
 
+# Backtest lift per setup — the figure the site prints on each detector card.
+# SINGLE SOURCE OF TRUTH: the site imports this instead of hardcoding the number,
+# because hardcoded copies of it drifted out of sync three times (the spike_retrace
+# card read "2.9x" against this file's 2.26x for weeks). If a restudy moves one of
+# these, change it HERE and the site follows. Keep the prose in the docstring/comments
+# above each setup in sync too. `target` is what the lift is measured against.
+BACKTEST_LIFT = {
+    "probe":         (2.5,  "+50% pump"),
+    "dump":          (6.2,  "−20% drop"),
+    "bear_trap":     (4.65, "+50% pump"),
+    "spike_retrace": (2.26, "+50% pump"),
+}
+
+
+def lift_label(strat: str) -> str:
+    """"2.26× lift to a +50% pump" for a setup, or "" if it has no studied lift."""
+    v = BACKTEST_LIFT.get(strat)
+    if not v:
+        return ""
+    mult, target = v
+    return f"{mult:g}× lift to a {target}"
+
+
 def _empty(insufficient: bool = False):
     return {"fired": False, "t": None, "insufficient": insufficient,
             "conditions": {}, "stop": None, "position": None}

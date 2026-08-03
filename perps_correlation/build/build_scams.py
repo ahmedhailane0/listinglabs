@@ -27,6 +27,7 @@ from build.build_listing_report import theme_toggle_button, THEME_JS  # shared d
 from build.build_funding import _investors_from_item, _excel_amounts  # same funding source as reactions
 from lib.listing_chart import fmt_usd_compact, fmt_subscript_price, parse_iso
 from lib.interactive_chart import timeseries_html
+from lib.signals import lift_label                          # backtest-lift copy, single source of truth
 
 HERE = Path(__file__).resolve().parents[1]   # perps_correlation/ (project root, NOT this subfolder)
 SITE = HERE / "Listinglabs" / "scams"
@@ -1462,18 +1463,23 @@ def _signals_section(sym, rec=None) -> str:
     # Extra detectors (probe/dump/bear_trap/spike_retrace) are HIDDEN from the site
     # while they build a live record — they render here only if they've earned their
     # way back via _visible_setups() (see the trades tab). Still logged+graded on the box.
+    # The "N× lift" credential is NOT written here — it comes from lib.signals'
+    # BACKTEST_LIFT via lift_label(), so a restudy changes one number in one place
+    # instead of drifting away from the engine (this card read 2.9× against
+    # signals.py's 2.26× for weeks before the 2026-08 sweep caught it).
     EXTRA = {
         "probe": ("⚡ Probe day", "volume break out of the coil — the pre-vertical test",
-                  "probe", "2.5× lift to a +50% pump"),
+                  "probe"),
         "dump": ("🔻 Distribution — short", "crowded longs rolling over after a markup",
-                 "dump", "6.2× lift to a −20% drop"),
+                 "dump"),
         "bear_trap": ("🪤 Bear trap", "a ≥15% flush fully reclaimed — the dip got bought back",
-                      "beartrap", "4.6× lift to a +50% pump"),
+                      "beartrap"),
         "spike_retrace": ("🌊 Spike & retrace", "a +30% spike sold back down while shorts crowd in",
-                          "spikeret", "2.26× lift to a +50% pump"),
+                          "spikeret"),
     }
     _vis = _visible_setups_cached()
-    for k, (nm, ttl, css, cred) in EXTRA.items():
+    for k, (nm, ttl, css) in EXTRA.items():
+        cred = lift_label(k)
         if k not in _vis:
             continue
         d = s.get(k) or {}
@@ -1774,8 +1780,8 @@ SETUP_PANEL = """
     <h2>How the Buy setups work</h2>
     <p class="sm-lead">Every setup scans for the fingerprint of a coin being
       quietly <b>set up before a pump</b>: money (open interest) piling in while
-      the operator keeps the price calm — then the markup. The two setups below
-      catch different points of that arc. A green <span class="buy v2 mini">Buy</span>
+      the operator keeps the price calm — then the markup. Each setup below
+      catches a different point of that arc. A green <span class="buy v2 mini">Buy</span>
       badge = firing right now. Research signals, not financial advice.</p>
     <div class="sm-grid">
       <div class="sm-setup"><h3><span class="buy v4 mini">Buy v4</span> Coiled accumulation <em>· earliest</em></h3>
