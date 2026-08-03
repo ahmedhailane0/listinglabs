@@ -51,7 +51,7 @@ def _compute_signals(base_by_sym: dict[str, str]) -> dict:
     screener's exact per-coin pull + engine (`_fetch_token`) so a live fire is
     bit-identical to what the hourly screener would report — just sooner. Heavy
     (OI-hist + 1H klines + funding per coin), so callers gate it to once per
-    closed hour. Returns {verdicts:{sym:{v1,v2,v3 fired bools}}, counts, as_of}."""
+    closed hour. Returns {verdicts:{sym:{v1,v2,v4 fired bools}}, counts, as_of}."""
     from fetch.fetch_screener import _fetch_token, _binance_intervals
     try:
         intervals = _binance_intervals()
