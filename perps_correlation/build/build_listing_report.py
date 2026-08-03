@@ -967,14 +967,18 @@ def screener_count() -> int | None:
         return None
 
 
-# Page location -> relative hrefs for the four nav destinations, one row per
+# Page location -> relative hrefs for the three nav destinations, one row per
 # `active` value so links resolve correctly from any folder depth.
+# The 4th "journal" destination + its own row were removed 2026-08-03: the
+# 2026-07-13 merge folded journal.html into trades.html, no builder has written
+# journal.html since, and site_nav is only ever called with reactions/funnel/
+# scams. The column was unpacked into a discarded `_j` — dead routing data
+# pointing at a page that does not exist.
 _NAV_REL = {
-    #            reactions                  funnel                          manipulated            journal
-    "reactions": ("index.html",             "../funnel/report/index.html",  "../scams/index.html",  "../scams/journal.html"),
-    "funnel":    ("../../report/index.html", "index.html",                  "../../scams/index.html", "../../scams/journal.html"),
-    "scams":     ("../report/index.html",   "../funnel/report/index.html",  "index.html",           "journal.html"),
-    "journal":   ("../report/index.html",   "../funnel/report/index.html",  "index.html",           "journal.html"),
+    #            reactions                  funnel                          manipulated
+    "reactions": ("index.html",             "../funnel/report/index.html",  "../scams/index.html"),
+    "funnel":    ("../../report/index.html", "index.html",                  "../../scams/index.html"),
+    "scams":     ("../report/index.html",   "../funnel/report/index.html",  "index.html"),
 }
 
 
@@ -983,7 +987,7 @@ def site_nav(active: str) -> str:
     pill changes. `active` ∈ {reactions, funnel, scams}. (AI Track Record is no
     longer a top tab — it's a sub-tab under Manipulated; pages there pass "scams".)
     No counts on the tabs (they read cleaner and can't drift between pages)."""
-    r, f, s, _j = _NAV_REL.get(active, _NAV_REL["scams"])
+    r, f, s = _NAV_REL.get(active, _NAV_REL["scams"])
     tabs = [
         ("reactions", r, "Binance Alpha &amp; Perps"),
         ("funnel",    f, "CEX → Korea"),

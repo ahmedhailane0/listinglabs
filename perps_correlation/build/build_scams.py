@@ -1711,7 +1711,7 @@ LIVE_JS = (
     'var badge=document.getElementById("live-badge");'
     'function apply(d){var tk=(d&&d.tokens)||{};'
     'for(var sym in tk){var v=tk[sym],row=rb[sym];'
-    # live-rewrite data-cond (drives the Buy v1-v4 preset filter) on both the
+    # live-rewrite data-cond (drives the Buy setup preset filter) on both the
     # row and the tile, so a filtered list stays in lock-step with the header
     # counts without waiting for a site rebuild.
     'if(v.sig){var cs=condFromSig(v.sig);if(cs!=null){if(row)row.setAttribute("data-cond",cs);var tlf=tb[sym];if(tlf)tlf.setAttribute("data-cond",cs);}}'
@@ -1724,7 +1724,7 @@ LIVE_JS = (
     'if(v.sig){var br=tile.querySelector("[data-buyrow]");if(br){var nb=buyBadges(v.sig);if(br.innerHTML!==nb){br.innerHTML=nb;flash(br);}}}}}'
     # cnt-v1 dropped 2026-07-25 with v1's retirement (the element no longer exists)
     'if(d.sig_counts){setCount("cnt-v2",d.sig_counts.v2);setCount("cnt-v4",d.sig_counts.v4);}'
-    # re-run the filter (data-cond just changed) so a Buy v1-v4 preset shows
+    # re-run the filter (data-cond just changed) so a Buy setup preset shows
     # exactly the coins now firing, then re-apply the active sort so the row
     # order matches the live values (e.g. the top 24h mover stays on top).
     'if(window.__refilter)window.__refilter();'
@@ -1899,11 +1899,13 @@ def _real_pnl(e):
     return o.get("pnl_real") if o.get("pnl_real") is not None else o.get("pnl_ownstop")
 
 
-# The exit plan every graded trade is scored on — mirrors tools/grade_fires.py
-# (TP1/TP1_FRAC/TP2/DUMP_TARGET). Sell half at +25%, the rest at +50%; otherwise
-# the setup's own stop or the 72h close. Shorts (dump) cover at −20%.
-TP1, TP1_FRAC, TP2 = 0.25, 0.5, 0.50
-DUMP_TARGET = 0.20
+# The exit plan every graded trade is scored on. IMPORTED, never re-declared:
+# these drive the $ P&L this page prints, and the optimizer actively searches the
+# exit space (EXIT_ITERS candidates per nightly run), so a local copy would go
+# stale the moment an exit change is promoted — the site would keep reporting
+# money against an exit plan the grader no longer uses, and nothing would fail.
+# lib.signals is the single source of truth; tools/grade_fires.py reads the same.
+from lib.signals import TP1, TP1_FRAC, TP2, DUMP_TARGET   # noqa: E402
 
 
 def _entry_px(e):
@@ -3272,12 +3274,13 @@ const rows=[...document.querySelectorAll('.lrow')];const items=[...tiles,...rows
 const search=document.getElementById('search'),count=document.getElementById('count');
 const panel=document.getElementById('fpanel'),btnF=document.getElementById('btn-filter');
 const cbs=[...panel.querySelectorAll('input[data-k]')];
-// Buy v1-v4 presets TICK their condition checkboxes (so you see what each setup
+// Buy setup presets TICK their condition checkboxes (so you see what each setup
 // means) and filter through them. data-cond is kept live by LIVE_JS — rewritten
 // from the box's fired flags each poll — so a preset still matches the live
 // header counts even though it filters on the per-condition checkboxes.
+// v1's entry was removed 2026-08-03: it retired 2026-07-25, no .fp-pre button
+// renders it and condFromSig hardcodes ["v2","v4"], so it was unreachable.
 const PRESETS={
-  v1:['oi3up','oi3h5','px3h8','brk6h','fund01','oipx20'],
   v2:['coiltt','volign','oisrg','brkcoil','fundcold'],   // Ignition (OI-confirmed coil-break)
   v4:['oibld72','pxflat72','coil45','oilead2','fundsqz']};
 window.__PRESETS=PRESETS;   // shared with LIVE_JS for the live data-cond rewrite
