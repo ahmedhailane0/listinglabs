@@ -82,13 +82,23 @@ FIRES_LOG = HERE.parent / "cache" / "screener" / "fires_log.json"
 # flicker it back onto the site, which the evidence says would be noise. Absent from
 # both lists = never rendered, never auto-returns. Still logged + graded on the box, so
 # the record keeps accruing and this stays reversible.
-CORE_SETUPS = ("v2", "v4", "dump")
+CORE_SETUPS = ("v2", "v4")
+# `dump` DEMOTED to HIDDEN 2026-08-03. It joined CORE on 2026-07-15 as the only
+# short AND the best live expectancy at the time; both halves of that case expired.
+# Live: n=15 episodes, -6.4%/trade. Worse, the box's champion/challenger has spent
+# 20 forward days saying the PRODUCTION params are the bad ones (champion fwd lift
+# 0.42 / exp -17.70% vs challenger 1.91 / -4.48%, accruing 17 of the 25 fires it
+# needs to trigger). Showing it as a live call while its own tuner says its params
+# are broken is the opposite of what this page is for. CORE has no auto-demote path
+# — only HIDDEN auto-returns — so a losing core setup stays up until a human moves
+# it, which is why this sat visible for weeks. As HIDDEN it keeps firing, logging
+# and grading, and returns on its own at EARN_MIN_N with positive expectancy.
 # Unproven setups: still logged + graded on the box (they keep building a live
 # track record) but HIDDEN from the site until each earns its way back — a setup
 # auto-returns once it has >= EARN_MIN_N graded episodes AND positive avg $ P&L
 # (see _visible_setups()). buy15 is the pump-odds "buy signal"; the rest are the
 # experimental detectors (probe/bear_trap/spike_retrace).
-HIDDEN_SETUPS = ("probe", "bear_trap", "spike_retrace", "buy15")
+HIDDEN_SETUPS = ("probe", "bear_trap", "spike_retrace", "buy15", "dump")
 EARN_MIN_N = 30        # graded episodes a hidden setup needs before it may show
 EARN_MIN_EXP = 0.0     # ...and its avg realized P&L must be above this to unhide
 JOURNAL_SETUPS = CORE_SETUPS   # back-compat alias (kept for readability below)
@@ -2065,11 +2075,13 @@ def _winrate_chart(rows, pnl_fn=_real_pnl, target_label="+50% / 72h") -> str:
     static SVG (no JS) so it renders inside a hidden tab. Honest about tiny daily
     samples — far less misleading than a cumulative running average."""
     import datetime as _dt
-    # Keep in sync with CORE_SETUPS (dump joined 2026-07-15; v1 retired 2026-07-25)
-    # — a visible setup missing here silently drops its trades from this chart while
-    # they still show in the ledger table below it. Colors mirror _MODEL_COLORS.
-    SETS = ("v2", "v4", "dump")
-    COL = {"v2": "#3b7cc4", "v4": "#c47a3a", "dump": "#c0392b"}
+    # DERIVED from the visibility gate, never hand-listed: a hardcoded set that
+    # fell behind CORE_SETUPS/HIDDEN_SETUPS silently dropped a visible setup's
+    # trades from this chart while they still showed in the ledger table below it.
+    # Colors come from the shared _MODEL_COLORS so a setup looks the same here as
+    # on every other chart (grey fallback if a new setup has no color yet).
+    SETS = tuple(_visible_setups_cached())
+    COL = {s: _MODEL_COLORS.get(s, "#7f8c9a") for s in SETS}
 
     def _day(e):                                   # bucket by the day it fired
         return (e.get("t") or 0)
