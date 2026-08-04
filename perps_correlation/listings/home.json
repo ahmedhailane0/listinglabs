@@ -13,7 +13,7 @@
   "total_supply": 10000000000.0,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2025-06-09T18:00:00Z",
-  "window_end_utc": "2025-09-10T11:30:00Z",
+  "window_end_utc": "2026-08-04T10:30:19Z",
   "events": [
     {
       "exchange": "Binance Alpha",
@@ -80,6 +80,12 @@
       "exchange": "Bitget Spot",
       "iso_time_utc": "2025-08-04T00:00:00Z",
       "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-08-04T04:30:19Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 디파이앱(HOME) 신규 거래지원 안내 (KRW, USDT 마켓) Upbit 上新: [交易] 关于 HOME 新增交易支持的公告（KRW、USDT 交易对） HOME MarketCap: 38.2M (Auto match co\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16373",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
