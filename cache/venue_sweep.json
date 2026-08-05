@@ -1343,8 +1343,8 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-08-04T06:37:20.175945Z",
-      "kraken_futures": "2026-08-04T06:37:20.175945Z"
+      "kraken_spot": "2026-08-05T09:21:37.206960Z",
+      "kraken_futures": "2026-08-05T09:21:37.206960Z"
     }
   },
   "hyper": {
@@ -4112,17 +4112,20 @@
       "kraken_spot": null,
       "kraken_futures": null,
       "kucoin_spot": null,
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-08-04T00:00:00Z"
+      },
       "gate_perp": {
         "label": "Gate.io Perp",
         "iso": "2026-08-03T00:00:00Z"
       }
     },
     "checked": {
-      "kraken_spot": "2026-08-04T06:37:20.175945Z",
-      "kraken_futures": "2026-08-04T06:37:20.175945Z",
-      "kucoin_spot": "2026-08-04T06:37:20.175945Z",
-      "kucoin_futures": "2026-08-04T06:37:20.175945Z",
+      "kraken_spot": "2026-08-05T09:21:37.206960Z",
+      "kraken_futures": "2026-08-05T09:21:37.206960Z",
+      "kucoin_spot": "2026-08-05T09:21:37.206960Z",
+      "kucoin_futures": "2026-08-05T09:21:37.206960Z",
       "gate_perp": "2026-08-03T08:38:40.217779Z"
     }
   }
