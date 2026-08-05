@@ -4,7 +4,7 @@
   "new": true,
   "source": "bwenews-auto",
   "window_start_utc": "2026-07-30T11:00:00Z",
-  "window_end_utc": "2026-07-31T17:30:11Z",
+  "window_end_utc": "2026-08-05T10:42:33Z",
   "events": [
     {
       "exchange": "KuCoin Spot",
@@ -39,7 +39,13 @@
     {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-07-31T11:30:11Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined GRVTUSDT Perpetual Contract (2026-07-31) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e8e2026\u5e747\u670831\u65e5\u4e0a\u7ebf USD\u24c8-M GRVTUSDT \u6c38\u7eed\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16369",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined GRVTUSDT Perpetual Contract (2026-07-31) 币安重要公告: 币安合约将于2026年7月31日上线 USDⓈ-M GRVTUSDT 永续\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16369",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-08-05T04:42:33Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 그래비티토큰(GRVT) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: 【交易】Gravity Token (GRVT) 新增交易支持通知（KRW、BTC、USDT 交易对） GRVT MarketCap\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16377",
       "source": "bwenews"
     }
   ],
