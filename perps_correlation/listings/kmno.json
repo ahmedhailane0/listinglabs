@@ -13,7 +13,7 @@
   "total_supply": 9999958235.004217,
   "mcap_source": "CMC/GeckoTerminal (current, not at-listing)",
   "window_start_utc": "2024-12-20T13:00:00Z",
-  "window_end_utc": "2025-09-20T00:00:00Z",
+  "window_end_utc": "2026-08-07T08:09:47Z",
   "events": [
     {
       "exchange": "Bybit Spot",
@@ -80,6 +80,12 @@
     {
       "exchange": "Bithumb",
       "iso_time_utc": "2025-09-18T00:00:00Z"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-08-07T02:09:47Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: [거래] 카미노파이낸스(KMNO) KRW 마켓 디지털 자산 추가 Upbit 上新: [交易] Kamino Finance (KMNO) 在 KRW 市场新增数字资产 KMNO MarketCap: 148.1M (Auto match co\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16383",
+      "source": "bwenews"
     }
   ],
   "not_listed": [],
