@@ -1579,7 +1579,7 @@
   },
   "kmno": {
     "symbol": "KMNO",
-    "floor": "2024-11-20T19:00:00+00:00",
+    "floor": "2024-10-21T00:00:00+00:00",
     "venues": {
       "okx_spot": {
         "label": "OKX Spot",
@@ -1620,6 +1620,10 @@
         "label": "Gate.io Perp",
         "iso": "2024-11-20T00:00:00Z"
       }
+    },
+    "checked": {
+      "kraken_futures": "2026-08-07T03:34:22.147611Z",
+      "kucoin_futures": "2026-08-07T03:34:22.147611Z"
     }
   },
   "la": {
