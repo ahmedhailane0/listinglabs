@@ -188,24 +188,24 @@
     "chain": "stable",
     "contract": "0x0000000000000000000000000000000000001003",
     "image": "https://coin-images.coingecko.com/coins/images/69242/small/stable-logotype-framed-square-light.png?1762753913",
-    "price": 0.03253684,
-    "mcap": 821539755,
-    "fdv": 3253141199,
-    "vol": 9057293,
+    "price": 0.03248584,
+    "mcap": 820467654,
+    "fdv": 3248574775,
+    "vol": 9202949,
     "n_prices": 181,
     "cmc_slug": null,
     "funding": {
       "amount": null,
       "investors": []
     },
-    "circ_supply": 25253750685.0,
+    "circ_supply": 25256223593.0,
     "total_supply": 100000000000.0,
     "max_supply": 100000000000.0,
     "ath_price": 0.04323745,
-    "circ_ratio": 0.25253750685,
-    "peak_mcap": 1091907782.5551531,
+    "circ_ratio": 0.25256223593,
+    "peak_mcap": 1092014704.7911577,
     "supply_source": "coingecko",
-    "refreshed_at": 1786305389.00042
+    "refreshed_at": 1786312406.0123029
   },
   "MON": {
     "symbol": "MON",
@@ -228,14 +228,14 @@
     "chain": "",
     "contract": "",
     "image": "https://coin-images.coingecko.com/coins/images/38927/large/mon.png?1766029057",
-    "price": 0.02105044,
-    "mcap": 248960851,
-    "fdv": 2119725747,
-    "vol": 11378501,
+    "price": 0.02114265,
+    "mcap": 250015273,
+    "fdv": 2128703406,
+    "vol": 11653042,
     "n_prices": 181,
     "cmc_slug": "monad",
-    "oi_usd": 51949635.87620107,
-    "oi_pct_mcap": 20.87763955632192,
+    "oi_usd": 52166290.83643917,
+    "oi_pct_mcap": 20.88603305340341,
     "funding": {
       "amount": null,
       "investors": []
@@ -247,7 +247,7 @@
     "circ_ratio": 0.11744955760870078,
     "peak_mcap": 577411100.03665,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307685.9986184
+    "refreshed_at": 1786312641.9214005
   },
   "H": {
     "symbol": "H",
@@ -270,10 +270,10 @@
     "chain": "ethereum",
     "contract": "0xcf5104d094e3864cfcbda43b82e1cefd26a016eb",
     "image": "https://coin-images.coingecko.com/coins/images/279/small/ethereum.png?1696501628",
-    "price": 0.078671,
-    "mcap": 156671868,
-    "fdv": 786590934,
-    "vol": 3787011,
+    "price": 0.078719,
+    "mcap": 156824029,
+    "fdv": 787354879,
+    "vol": 3465164,
     "n_prices": 181,
     "cmc_slug": null,
     "funding": {
@@ -289,7 +289,7 @@
     "circ_ratio": 0.1991783293903,
     "peak_mcap": 1700477020.0365107,
     "supply_source": "coingecko",
-    "refreshed_at": 1786305417.7865655,
+    "refreshed_at": 1786312411.5238204,
     "price_guarded": true
   },
   "GWEI": {
@@ -330,7 +330,7 @@
     "circ_ratio": 0.21,
     "peak_mcap": 517960800.0,
     "supply_source": "coingecko",
-    "refreshed_at": 1786305459.593731
+    "refreshed_at": 1786312463.646664
   },
   "UB": {
     "symbol": "UB",
@@ -353,18 +353,18 @@
     "chain": "binance-smart-chain",
     "contract": "0x40b8129b786d766267a7a118cf8c07e31cdb6fde",
     "image": "https://coin-images.coingecko.com/coins/images/69108/small/unibase.png?1757501820",
-    "price": 0.134141,
-    "mcap": 335392945,
-    "fdv": 1341571778,
-    "vol": 3724318,
+    "price": 0.132722,
+    "mcap": 331852006,
+    "fdv": 1327408022,
+    "vol": 3585417,
     "n_prices": 181,
     "cmc_slug": "unibase",
     "funding": {
       "amount": null,
       "investors": []
     },
-    "oi_usd": 50118663.65476802,
-    "oi_pct_mcap": 14.954957124749987,
+    "oi_usd": 49895096.28264851,
+    "oi_pct_mcap": 15.053227639161607,
     "circ_supply": 2500000000.0,
     "total_supply": 10000000000.0,
     "max_supply": 10000000000.0,
@@ -372,7 +372,7 @@
     "circ_ratio": 0.25,
     "peak_mcap": 608892500.0,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307526.5162246,
+    "refreshed_at": 1786312482.5646605,
     "price_guarded": true
   },
   "DEXE": {
@@ -397,13 +397,13 @@
     "contract": "0xde4ee8057785a7e8e800db58f9784845a5c2cbd6",
     "image": "https://coin-images.coingecko.com/coins/images/12713/small/DEXE_token_logo.png?1696512514",
     "price": 2.18,
-    "mcap": 210711550,
-    "fdv": 210711550,
-    "vol": 24567875,
+    "mcap": 210404529,
+    "fdv": 210404529,
+    "vol": 22983838,
     "n_prices": 181,
     "cmc_slug": "dexe",
-    "oi_usd": 48574673.9641026,
-    "oi_pct_mcap": 26.600096100389376,
+    "oi_usd": 46464365.72085302,
+    "oi_pct_mcap": 25.471852347841633,
     "funding": {
       "amount": null,
       "investors": []
@@ -415,7 +415,7 @@
     "circ_ratio": 0.8676652023334674,
     "peak_mcap": 4095414421.300254,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307532.1361094
+    "refreshed_at": 1786312488.2268434
   },
   "VVV": {
     "symbol": "VVV",
@@ -448,16 +448,16 @@
       "amount": null,
       "investors": []
     },
-    "oi_usd": 78499452.5889592,
-    "oi_pct_mcap": 13.97140241364877,
-    "circ_supply": 47643222.48168975,
-    "total_supply": 80747750.82096444,
+    "oi_usd": 78752193.26692258,
+    "oi_pct_mcap": 14.032701373809347,
+    "circ_supply": 47643633.80720772,
+    "total_supply": 80748188.22813565,
     "max_supply": null,
     "ath_price": 22.58,
-    "circ_ratio": 0.5900253814787396,
-    "peak_mcap": 1075783963.6365545,
+    "circ_ratio": 0.5900272792821242,
+    "peak_mcap": 1075793251.3667502,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307561.2217164
+    "refreshed_at": 1786312540.6602905
   },
   "LIT": {
     "symbol": "LIT",
@@ -480,14 +480,14 @@
     "chain": "ethereum",
     "contract": "0x232ce3bd40fcd6f80f3d55a522d03f25df784ee2",
     "image": "https://coin-images.coingecko.com/coins/images/71121/small/lighter.png?1765888098",
-    "price": 2.31,
-    "mcap": 578464020,
-    "fdv": 2313856080,
-    "vol": 24491858,
+    "price": 2.36,
+    "mcap": 590958758,
+    "fdv": 2363835032,
+    "vol": 25720659,
     "n_prices": 181,
     "cmc_slug": "lighter",
-    "oi_usd": 400309316.2811404,
-    "oi_pct_mcap": 67.3563818677853,
+    "oi_usd": 397457037.4105195,
+    "oi_pct_mcap": 67.22911003285076,
     "funding": {
       "amount": null,
       "investors": []
@@ -499,7 +499,7 @@
     "circ_ratio": 0.25,
     "peak_mcap": 1965000000.0,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307603.4486353
+    "refreshed_at": 1786312559.305808
   },
   "KAS": {
     "symbol": "KAS",
@@ -522,26 +522,26 @@
     "chain": "",
     "contract": "",
     "image": "https://coin-images.coingecko.com/coins/images/25751/small/kaspa-icon-exchanges.png?1696524837",
-    "price": 0.02654919,
-    "mcap": 733572114,
-    "fdv": 733670294,
-    "vol": 4377015,
+    "price": 0.0265176,
+    "mcap": 732452567,
+    "fdv": 732562008,
+    "vol": 4599183,
     "n_prices": 181,
     "cmc_slug": "kaspa",
-    "oi_usd": 47209674.53762078,
-    "oi_pct_mcap": 6.457020745242427,
+    "oi_usd": 46776578.91504182,
+    "oi_pct_mcap": 6.38683794004542,
     "funding": {
       "amount": null,
       "investors": []
     },
-    "circ_supply": 27629635406.995937,
-    "total_supply": 27629635406.995937,
+    "circ_supply": 27629759558.62721,
+    "total_supply": 27629759558.62721,
     "max_supply": 28704026601.0,
     "ath_price": 0.207411,
     "circ_ratio": 1.0,
-    "peak_mcap": 5730690309.4004345,
+    "peak_mcap": 5730716059.814428,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307661.5992694
+    "refreshed_at": 1786312570.779474
   },
   "GUA": {
     "symbol": "GUA",
@@ -564,18 +564,18 @@
     "chain": "binance-smart-chain",
     "contract": "0xa5c8e1513b6a08334b479fe4d71f1253259469be",
     "image": "https://coin-images.coingecko.com/coins/images/70828/small/superfortune.png?1764058443",
-    "price": 0.03650638,
-    "mcap": 1642832,
-    "fdv": 36507384,
-    "vol": 7412557,
+    "price": 0.03818643,
+    "mcap": 1718389,
+    "fdv": 38186427,
+    "vol": 1655044,
     "n_prices": 181,
     "cmc_slug": "superfortune",
     "funding": {
       "amount": null,
       "investors": []
     },
-    "oi_usd": 30514902.336695835,
-    "oi_pct_mcap": 662.6003065141684,
+    "oi_usd": 31061100.178030465,
+    "oi_pct_mcap": 648.9042091019886,
     "circ_supply": 125000000.0,
     "total_supply": 1000000000.0,
     "max_supply": 1000000000.0,
@@ -583,7 +583,7 @@
     "circ_ratio": 0.125,
     "peak_mcap": 210000000.0,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307715.136923,
+    "refreshed_at": 1786312647.6159992,
     "price_guarded": true
   },
   "AERO": {
@@ -613,20 +613,20 @@
     "vol": 7934268,
     "n_prices": 181,
     "cmc_slug": "aerodrome-finance",
-    "oi_usd": 50500433.15331746,
-    "oi_pct_mcap": 12.299699273355746,
+    "oi_usd": 50498614.89928911,
+    "oi_pct_mcap": 12.295774612549854,
     "funding": {
       "amount": null,
       "investors": []
     },
-    "circ_supply": 973126368.3064878,
+    "circ_supply": 973126269.0757399,
     "total_supply": 1954641365.6841474,
     "max_supply": null,
     "ath_price": 2.32,
-    "circ_ratio": 0.49785417693024325,
-    "peak_mcap": 2257653174.4710517,
+    "circ_ratio": 0.49785412616351454,
+    "peak_mcap": 2257652944.2557163,
     "supply_source": "coinmarketcap",
-    "refreshed_at": 1786307757.4992776
+    "refreshed_at": 1786312699.881914
   },
   "BILL": {
     "symbol": "BILL",
@@ -1150,11 +1150,11 @@
     "ath_price": 2.08,
     "supply_source": "coinmarketcap",
     "n_prices": 181,
-    "oi_usd": 20144492.891719688,
-    "oi_pct_mcap": 10.55054838903413,
+    "oi_usd": 20328300.08819757,
+    "oi_pct_mcap": 10.765401846372578,
     "circ_ratio": 0.42109870871950106,
     "peak_mcap": 875885314.1365622,
-    "refreshed_at": 1786307680.395683
+    "refreshed_at": 1786312623.1547422
   },
   "COLLECT": {
     "symbol": "COLLECT",
@@ -1168,20 +1168,20 @@
     "days": "",
     "chart_link": "",
     "resolved": true,
-    "price": 0.054592,
-    "mcap": 29312892,
-    "fdv": 163759176,
-    "vol": 1912130,
+    "price": 0.054631,
+    "mcap": 29341931,
+    "fdv": 163921403,
+    "vol": 1883889,
     "circ_supply": 537000000.0,
     "total_supply": 3000000000.0,
     "max_supply": 3000000000.0,
     "ath_price": 0.116018,
     "supply_source": "coinmarketcap",
     "n_prices": 181,
-    "oi_usd": 16698133.109315788,
-    "oi_pct_mcap": 56.96541470945661,
+    "oi_usd": 16644901.173493704,
+    "oi_pct_mcap": 56.788310641566696,
     "circ_ratio": 0.179,
     "peak_mcap": 62301666.0,
-    "refreshed_at": 1786307609.1292026
+    "refreshed_at": 1786312565.0097945
   }
 }
