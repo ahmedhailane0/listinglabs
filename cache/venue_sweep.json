@@ -4177,5 +4177,26 @@
       "gate_spot": "2026-08-11T14:54:25.002767Z",
       "gate_perp": "2026-08-11T14:54:25.002767Z"
     }
+  },
+  "unitree": {
+    "symbol": "UNITREE",
+    "floor": "2026-07-20T02:30:09+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-08-04T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-08-19T03:39:24.523676Z",
+      "kraken_futures": "2026-08-19T03:39:24.523676Z",
+      "kucoin_spot": "2026-08-19T03:39:24.523676Z",
+      "kucoin_futures": "2026-08-19T03:39:24.523676Z",
+      "gate_perp": "2026-08-19T03:39:24.523676Z"
+    }
   }
 }

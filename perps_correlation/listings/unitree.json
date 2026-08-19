@@ -7,9 +7,14 @@
   "window_end_utc": "2026-08-19T08:30:09Z",
   "events": [
     {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-08-04T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-08-19T02:30:09Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch UNITREEUSDT USDⓈ-Margined Perpetual Contract (2026-08-19) 币安重要公告: 币安合约将上线 UNITREEUSDT U本位永续合约 (2026-\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16408",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch UNITREEUSDT USD\u24c8-Margined Perpetual Contract (2026-08-19) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e0a\u7ebf UNITREEUSDT U\u672c\u4f4d\u6c38\u7eed\u5408\u7ea6 (2026-\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16408",
       "source": "bwenews"
     }
   ],
