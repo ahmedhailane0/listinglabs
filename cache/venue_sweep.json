@@ -4189,6 +4189,10 @@
       "gate_perp": {
         "label": "Gate.io Perp",
         "iso": "2026-08-04T00:00:00Z"
+      },
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-08-19T00:00:00Z"
       }
     },
     "checked": {
@@ -4196,7 +4200,8 @@
       "kraken_futures": "2026-08-19T03:39:24.523676Z",
       "kucoin_spot": "2026-08-19T03:39:24.523676Z",
       "kucoin_futures": "2026-08-19T03:39:24.523676Z",
-      "gate_perp": "2026-08-19T03:39:24.523676Z"
+      "gate_perp": "2026-08-19T03:39:24.523676Z",
+      "bitget_perp": "2026-08-19T07:10:48.890132Z"
     }
   }
 }
