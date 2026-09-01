@@ -1,0 +1,32 @@
+{
+  "token": "MARSCOIN",
+  "name": "MarsCoin",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-07-30T05:50:04Z",
+  "window_end_utc": "2026-09-01T14:45:05Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-07-30T06:50:04Z",
+      "note": "Trading start per Binance Alpha listings API (listingTime=1785394204934, contract on BSC)."
+    },
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-09-01T08:45:05Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined MARSCOINUSDT Perpetual Contract (2026-09-01) 币安重要公告: 币安合约将于2026年9月01日上线 MARSCOINUSDT U\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16434",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0xfe189e97832da1573e4e4ff034f4ffc3a15c7777",
+  "gecko_pool": "0x94f3ed36706c746ad59fadcaf271b7431ab1d8f1",
+  "fdv_usd": 71383898.427021,
+  "fdv_source": "Binance Alpha listings API, 2026-09-01 (current, not at-listing)",
+  "mcap_usd": 71383898.427021,
+  "circulating_supply": 1000000000.0,
+  "total_supply": 1000000000.0,
+  "cmc_slug": null
+}
