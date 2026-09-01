@@ -1,0 +1,18 @@
+{
+  "token": "HK0625",
+  "name": "HK0625",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-01T00:15:01Z",
+  "window_end_utc": "2026-09-01T08:15:01Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-09-01T02:15:01Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch HK0625USDT USDⓈ-Margined Quanto Perpetual Contract (2026-09-01) 币安重要公告: 币安合约将于2026年9月1日上线 HK0625USDT\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16433",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
