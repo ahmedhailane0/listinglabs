@@ -4219,5 +4219,39 @@
       "kucoin_spot": "2026-09-01T05:51:59.050747Z",
       "kucoin_futures": "2026-09-01T05:51:59.050747Z"
     }
+  },
+  "marscoin": {
+    "symbol": "MARSCOIN",
+    "floor": "2026-06-30T06:50:04+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-09-01T00:00:00Z"
+      },
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-09-01T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-08-27T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-08-30T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-09-01T10:38:45.480419Z",
+      "kraken_futures": "2026-09-01T10:38:45.480419Z",
+      "kucoin_spot": "2026-09-01T10:38:45.480419Z",
+      "kucoin_futures": "2026-09-01T10:38:45.480419Z",
+      "bitget_perp": "2026-09-01T10:38:45.480419Z",
+      "gate_spot": "2026-09-01T10:38:45.480419Z",
+      "gate_perp": "2026-09-01T10:38:45.480419Z"
+    }
   }
 }
