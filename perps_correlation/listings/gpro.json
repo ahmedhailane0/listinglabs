@@ -1,0 +1,18 @@
+{
+  "token": "GPRO",
+  "name": "GPRO",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-03T10:30:25Z",
+  "window_end_utc": "2026-09-03T18:30:25Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-09-03T12:30:25Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined GPROUSDT Perpetual Contract (2026-09-03) 币安重要公告: 币安合约将于2026年9月3日上线 GPROUSDT U本位永续合约 ——\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16437",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
