@@ -7,9 +7,19 @@
   "window_end_utc": "2026-09-03T18:30:25Z",
   "events": [
     {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-09-03T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-09-03T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-09-03T12:30:25Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined GPROUSDT Perpetual Contract (2026-09-03) 币安重要公告: 币安合约将于2026年9月3日上线 GPROUSDT U本位永续合约 ——\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16437",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined GPROUSDT Perpetual Contract (2026-09-03) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e8e2026\u5e749\u67083\u65e5\u4e0a\u7ebf GPROUSDT U\u672c\u4f4d\u6c38\u7eed\u5408\u7ea6 \u2014\u2014\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16437",
       "source": "bwenews"
     }
   ],
