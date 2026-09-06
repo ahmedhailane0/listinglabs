@@ -1,0 +1,18 @@
+{
+  "token": "PONS",
+  "name": "PONS",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-06T03:55:11Z",
+  "window_end_utc": "2026-09-06T11:55:11Z",
+  "events": [
+    {
+      "exchange": "Binance Perp",
+      "iso_time_utc": "2026-09-06T05:55:11Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined PONSUSDT and 哈基米USDT Perpetual Contracts (2026-09-06) 币安重要公告: 币安合约将于2026年9月6日上线 USDⓈ-M\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16442",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": []
+}
