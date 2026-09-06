@@ -4282,5 +4282,42 @@
       "bitget_perp": "2026-09-03T17:08:15.852121Z",
       "gate_perp": "2026-09-03T17:08:15.852121Z"
     }
+  },
+  "pons": {
+    "symbol": "PONS",
+    "floor": "2026-08-07T05:55:11+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-08-27T00:00:00Z"
+      },
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-09-01T00:00:00Z"
+      },
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-08-31T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-08-27T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-08-30T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-09-06T09:22:51.887288Z",
+      "kraken_futures": "2026-09-06T09:22:51.887288Z",
+      "kucoin_spot": "2026-09-06T09:22:51.887288Z",
+      "kucoin_futures": "2026-09-06T09:22:51.887288Z",
+      "bitget_perp": "2026-09-06T09:22:51.887288Z",
+      "gate_spot": "2026-09-06T09:22:51.887288Z",
+      "gate_perp": "2026-09-06T09:22:51.887288Z"
+    }
   }
 }

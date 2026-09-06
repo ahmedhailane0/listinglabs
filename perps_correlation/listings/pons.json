@@ -7,9 +7,34 @@
   "window_end_utc": "2026-09-06T11:55:11Z",
   "events": [
     {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-08-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-08-27T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-08-30T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-08-31T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-09-01T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-09-06T05:55:11Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined PONSUSDT and 哈基米USDT Perpetual Contracts (2026-09-06) 币安重要公告: 币安合约将于2026年9月6日上线 USDⓈ-M\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16442",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined PONSUSDT and \u54c8\u57fa\u7c73USDT Perpetual Contracts (2026-09-06) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e8e2026\u5e749\u67086\u65e5\u4e0a\u7ebf USD\u24c8-M\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16442",
       "source": "bwenews"
     }
   ],
