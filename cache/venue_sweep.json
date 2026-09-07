@@ -4308,6 +4308,10 @@
       "gate_perp": {
         "label": "Gate.io Perp",
         "iso": "2026-08-30T00:00:00Z"
+      },
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-09-07T00:00:00Z"
       }
     },
     "checked": {
@@ -4317,7 +4321,39 @@
       "kucoin_futures": "2026-09-06T09:22:51.887288Z",
       "bitget_perp": "2026-09-06T09:22:51.887288Z",
       "gate_spot": "2026-09-06T09:22:51.887288Z",
-      "gate_perp": "2026-09-06T09:22:51.887288Z"
+      "gate_perp": "2026-09-06T09:22:51.887288Z",
+      "bitget_spot": "2026-09-07T15:51:10.541814Z"
+    }
+  },
+  "cnpy": {
+    "symbol": "CNPY",
+    "floor": "2026-08-08T12:00:09+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null,
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-09-07T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-09-07T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-09-07T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-09-07T15:51:10.541814Z",
+      "kraken_futures": "2026-09-07T15:51:10.541814Z",
+      "kucoin_spot": "2026-09-07T15:51:10.541814Z",
+      "kucoin_futures": "2026-09-07T15:51:10.541814Z",
+      "bitget_spot": "2026-09-07T15:51:10.541814Z",
+      "gate_spot": "2026-09-07T15:51:10.541814Z",
+      "gate_perp": "2026-09-07T15:51:10.541814Z"
     }
   }
 }

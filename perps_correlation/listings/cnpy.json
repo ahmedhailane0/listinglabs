@@ -7,9 +7,24 @@
   "window_end_utc": "2026-09-07T18:00:09Z",
   "events": [
     {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-09-07T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-09-07T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-09-07T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-09-07T12:00:09Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Canopy (CNPY) Contract Address: 0xc69b16cf18cea1e5d0bb\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16443",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Canopy (CNPY) Contract Address: 0xc69b16cf18cea1e5d0bb\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16443",
       "source": "bwenews"
     }
   ],
