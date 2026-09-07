@@ -1,0 +1,27 @@
+{
+  "token": "CNPY",
+  "name": "Canopy",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-07T10:00:09Z",
+  "window_end_utc": "2026-09-07T18:00:09Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-09-07T12:00:09Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Canopy (CNPY) Contract Address: 0xc69b16cf18cea1e5d0bb\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16443",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0xc69b16cf18cea1e5d0bb6a1a9db802097790ddd2",
+  "gecko_pool": "0xc7bb4cf4c51fd655ea0368255929f1a42ba1a67e1e8805c54e81d61dc28f3f74",
+  "fdv_usd": 149758173.73385072,
+  "fdv_source": "Binance Alpha listings API, 2026-09-07 (current, not at-listing)",
+  "mcap_usd": 26936681.79913544,
+  "circulating_supply": 100726000.0,
+  "total_supply": 560000000.0,
+  "cmc_slug": "canopy"
+}
