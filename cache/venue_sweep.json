@@ -4264,7 +4264,10 @@
       "kraken_spot": null,
       "kraken_futures": null,
       "kucoin_spot": null,
-      "kucoin_futures": null,
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-09-07T00:00:00Z"
+      },
       "bitget_perp": {
         "label": "Bitget Perp",
         "iso": "2026-09-03T00:00:00Z"
@@ -4275,10 +4278,10 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-09-06T22:30:57.026316Z",
-      "kraken_futures": "2026-09-06T22:30:57.026316Z",
-      "kucoin_spot": "2026-09-06T22:30:57.026316Z",
-      "kucoin_futures": "2026-09-06T22:30:57.026316Z",
+      "kraken_spot": "2026-09-08T00:41:05.122098Z",
+      "kraken_futures": "2026-09-08T00:41:05.122098Z",
+      "kucoin_spot": "2026-09-08T00:41:05.122098Z",
+      "kucoin_futures": "2026-09-08T00:41:05.122098Z",
       "bitget_perp": "2026-09-03T17:08:15.852121Z",
       "gate_perp": "2026-09-03T17:08:15.852121Z"
     }
