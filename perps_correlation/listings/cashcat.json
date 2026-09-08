@@ -7,9 +7,29 @@
   "window_end_utc": "2026-09-08T17:19:17Z",
   "events": [
     {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-08-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-09-08T11:19:17Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Artificial Inu (AI) Contract Address: 0x2e8c31162b855a\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16451",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Artificial Inu (AI) Contract Address: 0x2e8c31162b855a\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16451",
       "source": "bwenews"
     }
   ],
