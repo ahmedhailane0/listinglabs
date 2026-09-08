@@ -1,0 +1,27 @@
+{
+  "token": "CASHCAT",
+  "name": "Cash Cat",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-04T07:30:20Z",
+  "window_end_utc": "2026-09-08T17:19:17Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-09-08T11:19:17Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Artificial Inu (AI) Contract Address: 0x2e8c31162b855a\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16451",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "robinhood",
+  "token_contract": "0x020bfc650a365f8bb26819deaabf3e21291018b4",
+  "gecko_pool": "0xd42a491087a15e5afd51feb3606066cc152d2b09",
+  "fdv_usd": 176452063.19108143,
+  "fdv_source": "Binance Alpha listings API, 2026-09-08 (current, not at-listing)",
+  "mcap_usd": 174348953.3283354,
+  "circulating_supply": 988081126.2576821,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "cash-cat"
+}
