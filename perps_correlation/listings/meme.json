@@ -1,0 +1,27 @@
+{
+  "token": "MEME",
+  "name": "A Meme Coin",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-09T08:21:52Z",
+  "window_end_utc": "2026-09-09T16:21:52Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-09-09T10:21:52Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: A Meme Coin (MEME) Contract Address: 0x385f4f8ae47651c\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16453",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "robinhood",
+  "token_contract": "0x385f4f8ae47651ce5f58f5265395a669f8281e18",
+  "gecko_pool": "0x4b7c86491df95f366b31217b2950d2c5136a2f19b6879613eac73d0e69092a1a",
+  "fdv_usd": 87909478.62911299,
+  "fdv_source": "Binance Alpha listings API, 2026-09-09 (current, not at-listing)",
+  "mcap_usd": 87909478.59005193,
+  "circulating_supply": 999999999.5556674,
+  "total_supply": 1000000000.0,
+  "cmc_slug": "a-meme-coin"
+}
