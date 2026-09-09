@@ -7,9 +7,49 @@
   "window_end_utc": "2026-09-09T16:21:52Z",
   "events": [
     {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-08-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-08-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-08-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-08-10T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-08-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2026-08-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-08-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-08-11T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-09-09T10:21:52Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: A Meme Coin (MEME) Contract Address: 0x385f4f8ae47651c\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16453",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: A Meme Coin (MEME) Contract Address: 0x385f4f8ae47651c\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16453",
       "source": "bwenews"
     }
   ],
