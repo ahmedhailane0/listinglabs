@@ -7,9 +7,49 @@
   "window_end_utc": "2026-09-24T13:30:38Z",
   "events": [
     {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-08-25T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-08-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2026-08-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-08-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-08-26T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Spot",
       "iso_time_utc": "2026-09-24T07:30:38Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Hyperliquid (HYPE) with Seed Tag Applied 币安重要公告: 币安将上线 Hyperliquid (HYPE) 并打上种子标签 HYPE MarketCap: 23.4B (Auto \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16485",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Hyperliquid (HYPE) with Seed Tag Applied \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5c06\u4e0a\u7ebf Hyperliquid (HYPE) \u5e76\u6253\u4e0a\u79cd\u5b50\u6807\u7b7e HYPE MarketCap: 23.4B (Auto \" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16485",
       "source": "bwenews"
     }
   ],
