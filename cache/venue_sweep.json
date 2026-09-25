@@ -4486,5 +4486,21 @@
       "gate_spot": "2026-09-24T12:08:42.050875Z",
       "gate_perp": "2026-09-24T12:08:42.050875Z"
     }
+  },
+  "gstock": {
+    "symbol": "GSTOCK",
+    "floor": "2026-08-26T11:36:09+00:00",
+    "venues": {
+      "kraken_spot": null,
+      "kraken_futures": null,
+      "kucoin_spot": null,
+      "kucoin_futures": null
+    },
+    "checked": {
+      "kraken_spot": "2026-09-25T17:30:35.733805Z",
+      "kraken_futures": "2026-09-25T17:30:35.733805Z",
+      "kucoin_spot": "2026-09-25T17:30:35.733805Z",
+      "kucoin_futures": "2026-09-25T17:30:35.733805Z"
+    }
   }
 }
