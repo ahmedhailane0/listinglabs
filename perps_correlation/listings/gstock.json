@@ -1,0 +1,27 @@
+{
+  "token": "GSTOCK",
+  "name": "Gstock",
+  "new": true,
+  "source": "bwenews-auto",
+  "window_start_utc": "2026-09-25T09:36:09Z",
+  "window_end_utc": "2026-09-25T17:36:09Z",
+  "events": [
+    {
+      "exchange": "Binance Alpha",
+      "iso_time_utc": "2026-09-25T11:36:09Z",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Gstock (GSTOCK) Contract Address: 0xcafdbce93477261db8\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16492",
+      "source": "bwenews"
+    }
+  ],
+  "not_listed": [],
+  "annotations": [],
+  "chain": "bsc",
+  "token_contract": "0xcafdbce93477261db8250e42bdae6e66733f9e20",
+  "gecko_pool": "0x7a907a283ef913eb25bee3afd110f687a3fb7eed",
+  "fdv_usd": 21322286.53738033,
+  "fdv_source": "Binance Alpha listings API, 2026-09-25 (current, not at-listing)",
+  "mcap_usd": 21322286.53738033,
+  "circulating_supply": 987836818.1348398,
+  "total_supply": 987836818.1348398,
+  "cmc_slug": "gstock"
+}
