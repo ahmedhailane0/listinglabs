@@ -4290,8 +4290,14 @@
     "symbol": "PONS",
     "floor": "2026-07-28T00:00:00+00:00",
     "venues": {
-      "kraken_spot": null,
-      "kraken_futures": null,
+      "kraken_spot": {
+        "label": "Kraken Spot",
+        "iso": "2026-09-25T00:00:00Z"
+      },
+      "kraken_futures": {
+        "label": "Kraken Futures",
+        "iso": "2026-09-25T00:00:00Z"
+      },
       "kucoin_spot": {
         "label": "KuCoin Spot",
         "iso": "2026-08-27T00:00:00Z"
@@ -4318,8 +4324,8 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-09-24T23:27:35.065663Z",
-      "kraken_futures": "2026-09-24T23:27:35.065663Z",
+      "kraken_spot": "2026-09-25T23:44:15.189819Z",
+      "kraken_futures": "2026-09-25T23:44:15.189819Z",
       "kucoin_spot": "2026-09-06T09:22:51.887288Z",
       "kucoin_futures": "2026-09-06T09:22:51.887288Z",
       "bitget_perp": "2026-09-06T09:22:51.887288Z",
@@ -4350,10 +4356,10 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-09-24T23:27:35.065663Z",
-      "kraken_futures": "2026-09-24T23:27:35.065663Z",
-      "kucoin_spot": "2026-09-24T23:27:35.065663Z",
-      "kucoin_futures": "2026-09-24T23:27:35.065663Z",
+      "kraken_spot": "2026-09-25T23:44:15.189819Z",
+      "kraken_futures": "2026-09-25T23:44:15.189819Z",
+      "kucoin_spot": "2026-09-25T23:44:15.189819Z",
+      "kucoin_futures": "2026-09-25T23:44:15.189819Z",
       "bitget_spot": "2026-09-07T15:51:10.541814Z",
       "gate_spot": "2026-09-07T15:51:10.541814Z",
       "gate_perp": "2026-09-07T15:51:10.541814Z"
@@ -4383,8 +4389,8 @@
       }
     },
     "checked": {
-      "kraken_spot": "2026-09-24T23:27:35.065663Z",
-      "kraken_futures": "2026-09-24T23:27:35.065663Z",
+      "kraken_spot": "2026-09-25T23:44:15.189819Z",
+      "kraken_futures": "2026-09-25T23:44:15.189819Z",
       "kucoin_spot": "2026-09-08T14:24:22.234910Z",
       "kucoin_futures": "2026-09-08T14:24:22.234910Z",
       "gate_spot": "2026-09-08T14:24:22.234910Z",
