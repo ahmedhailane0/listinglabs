@@ -4,7 +4,7 @@
   "new": true,
   "source": "bwenews-auto",
   "window_start_utc": "2026-09-04T07:30:20Z",
-  "window_end_utc": "2026-09-08T17:19:17Z",
+  "window_end_utc": "2026-09-28T11:27:06Z",
   "events": [
     {
       "exchange": "KuCoin Spot",
@@ -29,7 +29,13 @@
     {
       "exchange": "Binance Alpha",
       "iso_time_utc": "2026-09-08T11:19:17Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Artificial Inu (AI) Contract Address: 0x2e8c31162b855a\" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16451",
+      "note": "Auto-listed from BWEnews RSS: \"Binance Alpha Listing(Doesn't mean official listing): Binance Alpha lists new tokens: Artificial Inu (AI) Contract Address: 0x2e8c31162b855a\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16451",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-09-28T05:27:06Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: 캐시캣(CASHCAT) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: 关于上线 CASHCAT (CASHCAT) 新交易对的公告（KRW、BTC、USDT 市场） CASHCAT MarketCap: 166.\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16498",
       "source": "bwenews"
     }
   ],
