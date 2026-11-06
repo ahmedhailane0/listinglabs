@@ -1,12 +1,13 @@
 {
- "state": "ok",
- "age_h_at_check": 0.91,
- "last_box_run_utc": "2026-10-07T08:18:33Z",
- "checked_utc": "2026-10-07T09:13:21Z",
- "since": null,
- "daemon_state": "ok",
- "loop_state": "ok",
- "live_state": "ok",
+ "state": "down",
+ "age_h_at_check": 591.0,
+ "last_box_run_utc": "2026-10-12T12:20:29Z",
+ "checked_utc": "2026-11-06T03:20:35Z",
+ "since": "2026-11-06T03:20:35Z",
+ "daemon_state": "down",
+ "loop_state": "down",
+ "live_state": "down",
  "live_seen": true,
- "daemon_age_h_at_check": 0.92
+ "daemon_age_h_at_check": 591.01,
+ "daemon_since": "2026-11-06T03:20:35Z"
 }
