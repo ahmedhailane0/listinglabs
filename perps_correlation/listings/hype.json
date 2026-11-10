@@ -4,7 +4,7 @@
   "new": true,
   "source": "bwenews-auto",
   "window_start_utc": "2026-09-24T05:30:38Z",
-  "window_end_utc": "2026-09-24T13:30:38Z",
+  "window_end_utc": "2026-11-10T11:13:55Z",
   "events": [
     {
       "exchange": "Bitget Spot",
@@ -49,7 +49,19 @@
     {
       "exchange": "Binance Spot",
       "iso_time_utc": "2026-09-24T07:30:38Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Hyperliquid (HYPE) with Seed Tag Applied \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5c06\u4e0a\u7ebf Hyperliquid (HYPE) \u5e76\u6253\u4e0a\u79cd\u5b50\u6807\u7b7e HYPE MarketCap: 23.4B (Auto \" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16485",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Will List Hyperliquid (HYPE) with Seed Tag Applied 币安重要公告: 币安将上线 Hyperliquid (HYPE) 并打上种子标签 HYPE MarketCap: 23.4B (Auto \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16485",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Upbit",
+      "iso_time_utc": "2026-11-10T04:50:02Z",
+      "note": "Auto-added from BWEnews RSS: \"UPBIT LISTING: 하이퍼리퀴드(HYPE) 신규 거래지원 안내 (KRW, BTC, USDT 마켓) Upbit 上新: 关于上线 Hyperliquid (HYPE) 交易支持的公告（KRW、BTC、USDT 市场） HYPE MarketCap: 18.7B \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16610",
+      "source": "bwenews"
+    },
+    {
+      "exchange": "Bithumb",
+      "iso_time_utc": "2026-11-10T05:13:55Z",
+      "note": "Auto-added from BWEnews RSS: \"Bithumb Listing: [마켓 추가 Bithumb上新: [新增市场] 现货市场新增 Hyperliquid (HYPE)、Collector Crypt (CARDS) 韩元交易对 HYPE MarketCap: 18.8B CARDS MarketCap: 206\" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16611",
       "source": "bwenews"
     }
   ],
