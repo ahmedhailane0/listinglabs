@@ -7,9 +7,49 @@
   "window_end_utc": "2026-11-11T11:00:31Z",
   "events": [
     {
+      "exchange": "Bitget Spot",
+      "iso_time_utc": "2026-10-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Bitget Perp",
+      "iso_time_utc": "2026-10-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Spot",
+      "iso_time_utc": "2026-10-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Gate.io Perp",
+      "iso_time_utc": "2026-10-12T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Spot",
+      "iso_time_utc": "2026-10-13T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "Kraken Futures",
+      "iso_time_utc": "2026-10-13T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Spot",
+      "iso_time_utc": "2026-10-13T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
+      "exchange": "KuCoin Futures",
+      "iso_time_utc": "2026-10-13T00:00:00Z",
+      "note": "earliest-candle sweep (daily resolution)"
+    },
+    {
       "exchange": "Binance Perp",
       "iso_time_utc": "2026-11-11T05:00:31Z",
-      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USDⓈ-Margined HYPEUSDC and TRXUSDC Perpetual Contracts (2026-11-11) 币安重要公告: 币安合约将上线 USDⓈ-M HYPEUSDC \" (announcement time, approximate — not candle-verified). https://t.me/BWEnews/16613",
+      "note": "Auto-listed from BWEnews RSS: \"Binance EN: Binance Futures Will Launch USD\u24c8-Margined HYPEUSDC and TRXUSDC Perpetual Contracts (2026-11-11) \u5e01\u5b89\u91cd\u8981\u516c\u544a: \u5e01\u5b89\u5408\u7ea6\u5c06\u4e0a\u7ebf USD\u24c8-M HYPEUSDC \" (announcement time, approximate \u2014 not candle-verified). https://t.me/BWEnews/16613",
       "source": "bwenews"
     }
   ],

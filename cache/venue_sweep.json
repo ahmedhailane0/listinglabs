@@ -4508,5 +4508,53 @@
       "kucoin_spot": "2026-11-10T22:11:07.694908Z",
       "kucoin_futures": "2026-11-10T22:11:07.694908Z"
     }
+  },
+  "trx": {
+    "symbol": "TRX",
+    "floor": "2026-10-12T05:00:31+00:00",
+    "venues": {
+      "kraken_spot": {
+        "label": "Kraken Spot",
+        "iso": "2026-10-13T00:00:00Z"
+      },
+      "kraken_futures": {
+        "label": "Kraken Futures",
+        "iso": "2026-10-13T00:00:00Z"
+      },
+      "kucoin_spot": {
+        "label": "KuCoin Spot",
+        "iso": "2026-10-13T00:00:00Z"
+      },
+      "kucoin_futures": {
+        "label": "KuCoin Futures",
+        "iso": "2026-10-13T00:00:00Z"
+      },
+      "bitget_spot": {
+        "label": "Bitget Spot",
+        "iso": "2026-10-12T00:00:00Z"
+      },
+      "bitget_perp": {
+        "label": "Bitget Perp",
+        "iso": "2026-10-12T00:00:00Z"
+      },
+      "gate_spot": {
+        "label": "Gate.io Spot",
+        "iso": "2026-10-12T00:00:00Z"
+      },
+      "gate_perp": {
+        "label": "Gate.io Perp",
+        "iso": "2026-10-12T00:00:00Z"
+      }
+    },
+    "checked": {
+      "kraken_spot": "2026-11-11T17:09:06.984861Z",
+      "kraken_futures": "2026-11-11T17:09:06.984861Z",
+      "kucoin_spot": "2026-11-11T17:09:06.984861Z",
+      "kucoin_futures": "2026-11-11T17:09:06.984861Z",
+      "bitget_spot": "2026-11-11T17:09:06.984861Z",
+      "bitget_perp": "2026-11-11T17:09:06.984861Z",
+      "gate_spot": "2026-11-11T17:09:06.984861Z",
+      "gate_perp": "2026-11-11T17:09:06.984861Z"
+    }
   }
 }
